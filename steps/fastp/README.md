@@ -34,7 +34,7 @@ By default:
   * `--out-json`: output json with metrics
   * `--out-html`: output html with metrics
 
-## How run
+## How to run
 
 ```bash
 docker build -t fastp .
