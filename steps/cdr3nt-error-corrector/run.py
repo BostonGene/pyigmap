@@ -53,6 +53,7 @@ def run_command(command: list[str]) -> str:
         command_process = subprocess.run(command, text=True, capture_output=True, check=True)
     except subprocess.CalledProcessError as e:
         logger.critical(e.stderr)
+        logger.critical(e.stdout)
         logger.critical(f"Failed to run '{' '.join(command)}', exiting...")
         sys.exit(1)
     except Exception as e:
