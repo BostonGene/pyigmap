@@ -31,7 +31,7 @@ Run script:
 bash build_ref.sh
 ``` 
 
-## How run
+## How to run
 
 ```bash
 docker build -t vidjil .

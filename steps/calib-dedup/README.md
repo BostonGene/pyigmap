@@ -40,7 +40,7 @@ See [here](https://github.com/vpc-ccg/calib?tab=readme-ov-file#error-correction-
 * `--out-fq2`: path to the output deduplicated reverse fastq (`path/to/cR2.fastq.gz`)
 * `--out-json`: path to the output json with metrics (`path/to/calib.json`)
 
-## How run
+## How to run
 
 ```bash
 docker build -t calib-dedup .
@@ -55,9 +55,9 @@ docker run \
    --out-fq1 /root/cR1.fastq.gz \
    --out-fq2 /root/cR2.fastq.gz \
    --out-json /root/calib.json \
-   --kmer-size 6 \
-   --minimizer-count 2 \
-   --minimizer-threshold 2 \
+   --kmer-size 8 \
+   --minimizer-count 7 \
+   --minimizer-threshold 7 \
    --error-tolerance 2 \
    --fq1-barcode-pattern "^UMI:N{12}" # UMI - the first 12 nucleotides
 ```

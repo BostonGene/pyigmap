@@ -28,7 +28,7 @@ bash build_ref.sh
 cp /tmp/igblast.reference.tar.gz .
 ``` 
 
-## How run
+## How to run
 
 ```bash
 docker build -t igblast .
