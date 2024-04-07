@@ -1,11 +1,12 @@
 FROM python:3.9-bullseye
 
+ENV SOFT_DIR=/usr/local/bin
+
 ENV FASTP_VERSION 0.23.4
-RUN wget -q http://opengene.org/fastp/fastp.${FASTP_VERSION} -O /usr/local/bin/fastp && \
-    chmod a+x /usr/local/bin/fastp
+RUN wget -q http://opengene.org/fastp/fastp.${FASTP_VERSION} -O ${SOFT_DIR}/fastp && \
+    chmod a+x ${SOFT_DIR}/fastp
 
-WORKDIR /
+COPY run.py ${SOFT_DIR}/run.py
 
-COPY run.py .
-
-ENTRYPOINT ["python3.9", "run.py"]
+# Uncomment it if you need to run an executable container
+# ENTRYPOINT ["python3.9", "${SOFT_DIR}/run.py"]
