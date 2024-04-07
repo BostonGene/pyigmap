@@ -8,7 +8,7 @@ include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from '.
 
 params.vidjil_ref = './steps/vidjil/vidjil.germline.tar.gz'
 params.igblast_ref = './steps/igblast/igblast.reference.tar.gz'
-params.olga_models = './steps/cdr3nt-error-corrector/olga-models.tar.gz'
+params.olga_models = './steps/cdr3nt_error_corrector/olga-models.tar.gz'
 params.outdir = './results'
 params.reads = 'all'
 
