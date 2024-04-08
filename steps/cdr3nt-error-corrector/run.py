@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
     parser.add_argument('--pgen-threshold', type=float, default=0, help='Pgen (generation probability) threshold value')
-    parser.add_argument('--calculate-pgen', type=bool, default=False, help='Whether to calculate pgen or not')
+    parser.add_argument('--calculate-pgen', action='store_true', help='Calculate pgen via OLGA')
     parser.add_argument('--clonotype-collapse-factor', type=float, default=0.05,
                         help='Factor value, that involved in collapsing of clonotype duplicates')
     parser.add_argument('--only-productive', help='Filter out non-productive clonotypes', action='store_true')
