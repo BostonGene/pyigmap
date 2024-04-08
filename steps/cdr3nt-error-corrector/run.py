@@ -34,14 +34,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
     parser.add_argument('--pgen-threshold', type=float, default=0, help='Pgen (generation probability) threshold value')
-    parser.add_argument('--calculate-pgen', type=float, default=True, help='Whether to calculate pgen or not')
+    parser.add_argument('--calculate-pgen', type=bool, default=False, help='Whether to calculate pgen or not')
     parser.add_argument('--clonotype-collapse-factor', type=float, default=0.05,
                         help='Factor value, that involved in collapsing of clonotype duplicates')
     parser.add_argument('--only-productive', help='Filter out non-productive clonotypes', action='store_true')
     parser.add_argument('--remove-chimeras', action='store_true',
                         help='Remove chimeras clonotypes, that have different locus in v-/j-genes')
     parser.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
-    parser.add_argument('--olga-models', type=str, help='Archive with OLGA models', required=True)
+    parser.add_argument('--olga-models', type=str, default=None, help='Archive with OLGA models')
     parser.add_argument('--out-corrected-annotation', type=str, help='Output corrected annotation', required=True)
     parser.add_argument('--out-json', type=str, help='Output json with metrics')
     parser.add_argument('--out-archive', type=str, help='Output archive with all results', required=True)
@@ -146,7 +146,11 @@ def save_corrected_annotation(annotation: pd.DataFrame, annotation_path: str):
 
 
 def run(args: argparse.Namespace) -> None:
-    decompress(args.olga_models)
+    if args.calculate_pgen:
+        if not args.olga_models:
+            raise FileNotFoundError('Pgen calculation is on but no OLGA model is provided')
+
+        decompress(args.olga_models)
 
     annotation, loci_count = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
                                                   only_functional=args.only_functional,
