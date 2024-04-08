@@ -34,6 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
     parser.add_argument('--pgen-threshold', type=float, default=0, help='Pgen (generation probability) threshold value')
+    parser.add_argument('--calculate-pgen', type=float, default=True, help='Whether to calculate pgen or not')
     parser.add_argument('--clonotype-collapse-factor', type=float, default=0.05,
                         help='Factor value, that involved in collapsing of clonotype duplicates')
     parser.add_argument('--only-productive', help='Filter out non-productive clonotypes', action='store_true')
@@ -159,9 +160,12 @@ def run(args: argparse.Namespace) -> None:
             corrector = ClonotypeCorrector(args.clonotype_collapse_factor)
             corrected_annotation = corrector.correct_full(annotation_by_locus)
 
-            pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
-            corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'],
-                                                               corrected_annotation['junction'])
+            if args.calculate_pgen:
+                pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
+                corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'],
+                                                                   corrected_annotation['junction'])
+            else:
+                args.pgen_threshold = 0
 
             corrected_annotations.append(corrected_annotation)
             logger.info(f'{locus} locus has been processed.')
