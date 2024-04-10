@@ -61,3 +61,10 @@ docker run \
    --error-tolerance 2 \
    --fq1-barcode-pattern "^UMI:N{12}" # UMI - the first 12 nucleotides
 ```
+
+## Run tests
+
+```bash
+pip install -r requirements.txt
+pytest unit-tests/ -v
+```
