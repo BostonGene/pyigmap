@@ -18,24 +18,24 @@ TRANSLATION_TABLE = bytes.maketrans(b"ATGCRYSWKMBDHVN", b"TACGAAAAAAAAAAA")
 
 ALLOWED_LETTERS_IN_UMI = 'ATGCN'
 
-NORMAL_NUCLEOTIDES = ['a', 't', 'g', 'c']
+NORMAL_NUCLEOTIDES = ['A', 'T', 'G', 'C']
 IUPAC_WILDCARDS = [
-    'r',  # A or G
-    'y',  # C or T
-    's',  # G or C
-    'w',  # A or T
-    'k',  # G or T
-    'm',  # A or C
-    'b',  # C or G or T
-    'd',  # A or G or T
-    'h',  # A or C or T
-    'v',  # A or C or G
-    'n'  # any base
+    'R',  # A or G
+    'Y',  # C or T
+    'S',  # G or C
+    'W',  # A or T
+    'K',  # G or T
+    'M',  # A or C
+    'B',  # C or G or T
+    'D',  # A or G or T
+    'H',  # A or C or T
+    'V',  # A or C or G
+    'N'   # any base
 ]
 
 
 class BarcodePattern:
-    def __init__(self, pattern: str, max_error=10, wildcard_cost=1, normal_cost=2):
+    def __init__(self, pattern: str, max_error=10, wildcard_cost=4, normal_cost=6):
         self.max_error = max_error
         self.pattern = pattern
         self.wildcard_cost = wildcard_cost
@@ -49,19 +49,19 @@ class BarcodePattern:
 
         logger.info(f'Preparing pattern {self.pattern}...')
 
-        self._validate_pattern(self.pattern, self.umi_len)
-        pattern = self._add_brackets_around_barcode(self.pattern, barcode_type='UMI')
+        pattern = self.pattern.upper()
+        self._validate_pattern(pattern, self.umi_len)
+        pattern = self._add_brackets_around_barcode(pattern, barcode_type='UMI')
         pattern = self._replace_barcode_type_to_regex_group(pattern, barcode_type='UMI')
         pattern = self._replace_nucleotide_patterns(pattern)
-        pattern = self._add_nucleotide_cost(pattern, ''.join(IUPAC_WILDCARDS), mismatch_cost=self.wildcard_cost)
-        pattern = self._add_nucleotide_cost(pattern, ''.join(NORMAL_NUCLEOTIDES), mismatch_cost=self.normal_cost)
+        pattern = self._add_nucleotide_cost(pattern, IUPAC_WILDCARDS, mismatch_cost=self.wildcard_cost)
+        pattern = self._add_nucleotide_cost(pattern, NORMAL_NUCLEOTIDES, mismatch_cost=self.normal_cost)
         pattern = pattern.replace('{*}', '*')
-        pattern = self._replace_lowercase_to_uppercase(pattern)
 
         logger.info(f'Pattern prepared and converted into {pattern}')
         return pattern
 
-    def _add_nucleotide_cost(self, pattern: str, nucleotides: str, mismatch_cost: int):
+    def _add_nucleotide_cost(self, pattern: str, nucleotides: list[str], mismatch_cost: int):
         """
         Adds mismatch cost for fuzzy subpattern (lower-case letters)
 
@@ -69,16 +69,8 @@ class BarcodePattern:
         ^N{0:2}tggtatcaacgcagagt(UMI:N{14}) -> ^N{0:2}(tggtatcaacgcagagt){2s<=10}(UMI:N{14}),
         where 2s<=10: s - single nucleotide substitution, 2 - cost of one substitution, 10 - max mismatches count
         """
-        return re.sub(rf'([{nucleotides}]+)', rf'(\1){{{mismatch_cost}s<={self.max_error}}}', pattern)
-
-    def _replace_lowercase_to_uppercase(self, pattern):
-        """
-        Replaces lowercase nucleotide letters to uppercase
-
-        ^N{0:2}(tggtatcaacgcagagt){2s<=10}(UMI:N{14}) -> ^N{0:2}(TGGTATCAACGCAGAGT){2s<=10}(UMI:N{14})
-        """
-        all_nucleotide_letters = ''.join(NORMAL_NUCLEOTIDES) + ''.join(IUPAC_WILDCARDS)
-        return re.sub(rf'([{all_nucleotide_letters}]+)', lambda m: m.group(1).upper(), pattern)
+        nucleotides = ''.join(nucleotides)
+        return re.sub(rf'(?<![\w([])([{nucleotides}]+)(?![\w\])])', rf'(\1){{{mismatch_cost}s<={self.max_error}}}', pattern)
 
     def _parse_barcode_length(self, barcode_type='UMI') -> int:
         """
