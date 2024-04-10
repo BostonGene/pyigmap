@@ -7,3 +7,4 @@ install: ## Install and check dependencies
 	docker build -t vidjil steps/vidjil
 	docker build -t igblast steps/igblast
 	docker build -t cdr3nt-error-corrector steps/cdr3nt-error-corrector
+	docker build -t downloader steps/downloader
