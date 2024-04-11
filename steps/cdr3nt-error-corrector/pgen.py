@@ -41,7 +41,7 @@ class PgenModel:
         logger.info(f'Detecting spurious rearrangements in {self.locus} via OLGA tool...')
 
         with Pool(processes=os.cpu_count()) as pool:
-            pgen_values = pool.starmap(self.calculate_pgen, cdr3_aa)
+            pgen_values = pool.starmap(self.calculate_pgen, [cdr3_aa])
 
         logger.info(f'Spurious rearrangements detection in {self.locus} has been done.')
 
