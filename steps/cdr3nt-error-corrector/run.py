@@ -164,12 +164,10 @@ def run(args: argparse.Namespace) -> None:
             corrector = ClonotypeCorrector(args.clonotype_collapse_factor)
             corrected_annotation = corrector.correct_full(annotation_by_locus)
 
-            if args.calculate_pgen:
+            if args.calculate_pgen or args.pgen_threshold:
                 pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
                 corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'],
                                                                    corrected_annotation['junction'])
-            else:
-                args.pgen_threshold = 0
 
             corrected_annotations.append(corrected_annotation)
             logger.info(f'{locus} locus has been processed.')

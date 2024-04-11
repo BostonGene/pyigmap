@@ -4,6 +4,7 @@ This step removes spurious rearrangements via [OLGA](https://github.com/statbiop
 
 ## Parameters
 * `--pgen-threshold` (**optional**): probability generation (pgen) threshold; all clones with `pgen <= pgen_threshold` will be removed. If you need disable this filtration, remove **pgen_threshold** from your `values.yml`.
+* `--calculate-pgen` (**optional**): calculate generation probability of clonotypes. Automatically on if `--pgen-threshold` is set and not 0
 * `--only-functional` (**optional**): filter out non-functional clonotypes
 * `--only-productive` (**optional**): filter out non-productive clonotypes
 * `--clonotype-collapse-factor` (**optional**): value, that involved in clonotypes collapsing
