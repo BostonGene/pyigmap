@@ -31,7 +31,7 @@ class PgenModel:
         self.olga_models_dir = olga_models_dir
         self.model = self.get_olga_model()
 
-    def get_pgen(self, cdr3_aa: list[str], cdr3_n: list[str]) -> list[float]:
+    def get_pgen(self, cdr3_aa: list[str]) -> list[float]:
         """
         Calculates the generation probability (Pgen) of the sequence in parallel.
 
@@ -41,14 +41,13 @@ class PgenModel:
         logger.info(f'Detecting spurious rearrangements in {self.locus} via OLGA tool...')
 
         with Pool(processes=os.cpu_count()) as pool:
-            args_list = zip(cdr3_aa, cdr3_n)
-            pgen_values = pool.starmap(self.calculate_pgen, args_list)
+            pgen_values = pool.starmap(self.calculate_pgen, cdr3_aa)
 
         logger.info(f'Spurious rearrangements detection in {self.locus} has been done.')
 
         return pgen_values
 
-    def calculate_pgen(self, cdr3_aa: str, cdr3_nt: str) -> Union[float, None]:
+    def calculate_pgen(self, cdr3_aa: str) -> Union[float, None]:
         """
         Calculates the generation probability (Pgen) of the sequence
 
@@ -59,8 +58,6 @@ class PgenModel:
         """
         if self.model:
             probability = self.model.compute_aa_CDR3_pgen(cdr3_aa)
-            if not probability:
-                probability = self.model.compute_nt_CDR3_pgen(cdr3_nt)
             return probability
         return None
 

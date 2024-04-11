@@ -7,7 +7,7 @@ ALLOWED_LOCUS_CHIMERAS = {'TRAV', 'TRDV', 'TRAJ', 'TRDJ'}
 
 
 def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float) -> pd.DataFrame:
-    annotation = filter_pgen(annotation, pgen_threshold) if pgen_threshold else annotation
+    annotation = filter_pgen(annotation, pgen_threshold) if isinstance(pgen_threshold, (int, float)) else annotation
     annotation = remove_non_productive(annotation) if only_productive else annotation
     annotation = remove_out_of_frame(annotation)
     annotation = drop_duplicates_in_different_loci(annotation, use_pgen=True)

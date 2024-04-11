@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
                         action='extend', required=True, type=str)
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
-    parser.add_argument('--pgen-threshold', type=float, default=0, help='Pgen (generation probability) threshold value')
+    parser.add_argument('--pgen-threshold', type=float, help='Pgen (generation probability) threshold value')
     parser.add_argument('--calculate-pgen', action='store_true', help='Calculate pgen via OLGA')
     parser.add_argument('--clonotype-collapse-factor', type=float, default=0.05,
                         help='Factor value, that involved in collapsing of clonotype duplicates')
@@ -146,7 +146,7 @@ def save_corrected_annotation(annotation: pd.DataFrame, annotation_path: str):
 
 
 def run(args: argparse.Namespace) -> None:
-    if args.calculate_pgen or args.pgen_threshold:
+    if args.calculate_pgen or isinstance(args.pgen_threshold, (int, float)):
         if not args.olga_models:
             raise FileNotFoundError('Pgen calculation is on but no OLGA model is provided')
 
@@ -166,8 +166,7 @@ def run(args: argparse.Namespace) -> None:
 
             if args.calculate_pgen or args.pgen_threshold:
                 pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
-                corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'],
-                                                                   corrected_annotation['junction'])
+                corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'],)
 
             corrected_annotations.append(corrected_annotation)
             logger.info(f'{locus} locus has been processed.')
