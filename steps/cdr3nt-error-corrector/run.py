@@ -146,7 +146,7 @@ def save_corrected_annotation(annotation: pd.DataFrame, annotation_path: str):
 
 
 def run(args: argparse.Namespace) -> None:
-    if args.calculate_pgen:
+    if args.calculate_pgen or args.pgen_threshold:
         if not args.olga_models:
             raise FileNotFoundError('Pgen calculation is on but no OLGA model is provided')
 
