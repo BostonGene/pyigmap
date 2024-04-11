@@ -164,7 +164,7 @@ def run(args: argparse.Namespace) -> None:
             corrector = ClonotypeCorrector(args.clonotype_collapse_factor)
             corrected_annotation = corrector.correct_full(annotation_by_locus)
 
-            if args.calculate_pgen or args.pgen_threshold:
+            if args.calculate_pgen or isinstance(args.pgen_threshold, (int, float)):
                 pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
                 corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'])
 
