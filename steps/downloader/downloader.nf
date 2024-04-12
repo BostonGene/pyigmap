@@ -12,7 +12,16 @@ process GetLinks {
     script:
         """
         link_1=\$(ffq --ftp $sample_id | jq -r '.[0] | .url')
+        if [ -z "\$link_1" ]; then
+            echo "Error: failed to retrieve fastq1 link for $sample_id" >&2
+            exit 1
+        fi
+
         link_2=\$(ffq --ftp $sample_id | jq -r '.[1] | .url')
+        if [ -z "\$link_2" ]; then
+            echo "Error: failed to retrieve fastq2 link for $sample_id" >&2
+            exit 1
+        fi
         """
 }
 
@@ -27,15 +36,15 @@ process Download {
         val read
 
     output:
-        path "${sample_id}_${read}.fastq.gz", emit: fq
+        path "${sample_id}_R${read}.fastq.gz", emit: fq
 
     script:
         """
         if [[ "${reads_to_save}" == "all" ]]; then
-            wget -q "${link}" -O "${sample_id}_${read}.fastq.gz"
+            wget -q "${link}" -O "${sample_id}_R${read}.fastq.gz"
         else
             lines_to_save=\$(( ${reads_to_save} * 4 ))
-            wget -qO- "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_${read}.fastq.gz"
+            wget -qO- "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz"
         fi
         """
 }
