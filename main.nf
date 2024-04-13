@@ -27,13 +27,13 @@ log.info "OLGA models          : ${params.olga_models}"
 log.info ""
 
 workflow {
-    reads_to_save = Channel.from(params.reads)
     if (params.sample) {
         if (params.fq1 || params.fq2) {
             error "Error: --sample cannot be used with --fq1 and --fq2 at the same time, exiting..."
         }
         ArrayList sample = params.sample.split(",")
         sample_ch = Channel.from(sample)
+        reads_to_save = Channel.from(params.reads)
         DOWNLOAD_FASTQ(sample_ch, reads_to_save)
         fq1 = DOWNLOAD_FASTQ.out.fq1
         fq2 = DOWNLOAD_FASTQ.out.fq2
@@ -41,10 +41,15 @@ workflow {
         if (!params.fq1 || !params.fq2) {
             error "Error: single-end is not supported, exiting..."
         }
-        fq1 = file(params.fq1)
-        fq2 = file(params.fq2)
-        DownsampleRead1(fq1, reads_to_save, Channel.from("1"))
-        DownsampleRead2(fq2, reads_to_save, Channel.from("2"))
+        fq1 = Channel.fromPath(params.fq1)
+        fq2 = Channel.fromPath(params.fq2)
+        if (params.reads.toString().isInteger()) {
+            reads_to_save = Channel.from(params.reads)
+            DownsampleRead1(fq1, reads_to_save, Channel.from("1"))
+            DownsampleRead2(fq2, reads_to_save, Channel.from("2"))
+            fq1 = DownsampleRead1.out.fq
+            fq2 = DownsampleRead2.out.fq
+        }
     }
     igblast_ref = file(params.igblast_ref)
     vidjil_ref = file(params.vidjil_ref)
