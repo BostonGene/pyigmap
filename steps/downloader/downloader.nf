@@ -1,5 +1,4 @@
 process GetLinks {
-    publishDir "${params.outdir}/calib", mode: 'copy', overwrite: false
     container 'downloader'
 
     input:
@@ -26,7 +25,7 @@ process GetLinks {
 }
 
 process Download {
-    publishDir "${params.outdir}/calib", mode: 'copy', overwrite: false
+    publishDir "${params.outdir}/downloaded", mode: 'copy', overwrite: false
     container 'downloader'
 
     input:
@@ -43,18 +42,18 @@ process Download {
         if [[ "${reads_to_save}" == "all" ]]; then
             wget -q "${link}" -O "${sample_id}_R${read}.fastq.gz"
         else
-            lines_to_save=\$(( ${reads_to_save} * 4 ))
+            let lines_to_save=$reads_to_save*4
             wget -qO- "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz"
         fi
         """
 }
 
 process Downsample {
-    publishDir "${params.outdir}/calib", mode: 'copy', overwrite: false
+    publishDir "${params.outdir}/downsampled", mode: 'copy', overwrite: false
     container 'downloader'
 
     input:
-        val fastq
+        path fastq
         val reads_to_save
         val read
 
@@ -63,7 +62,8 @@ process Downsample {
 
     script:
         """
-        lines_to_save=\$( expr $reads_to_save * 4 )
+        #!/bin/bash
+        let lines_to_save=$reads_to_save*4
         zcat $fastq | head -\$lines_to_save | gzip > R${read}.fastq.gz
         """
 }
