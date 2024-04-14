@@ -7,12 +7,12 @@ import filter
 
 @fixture(scope='module')
 def annotation_path_tcr() -> str:
-    return "../test_annotation_tcr.tsv"
+    return "./test_data/test_annotation_tcr.tsv"
 
 
 @fixture(scope='module')
 def annotation_path_bcr() -> str:
-    return "../test_annotation_bcr.tsv"
+    return "./test_data/test_annotation_bcr.tsv"
 
 
 @fixture(scope='module')
