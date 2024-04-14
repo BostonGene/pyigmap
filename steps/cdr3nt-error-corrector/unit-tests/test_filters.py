@@ -17,7 +17,10 @@ def annotation_path_bcr() -> str:
 
 @fixture(scope='module')
 def annotation_object() -> pd.DataFrame:
-    return airr.read_annotation(annotation_path_tcr, annotation_path_bcr)[0]
+    return airr.read_annotation(annotation_path_tcr, annotation_path_bcr,
+                                only_functional=False,
+                                remove_chimeras=False
+                                )[0]
 
 
 def test_remove_non_functional(annotation_object):
