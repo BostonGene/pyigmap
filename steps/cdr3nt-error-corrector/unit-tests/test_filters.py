@@ -17,7 +17,7 @@ def annotation_path_bcr() -> str:
 
 @fixture(scope='module')
 def annotation_object() -> pd.DataFrame:
-    return airr.read_annotation(annotation_path_tcr, annotation_path_bcr,
+    return airr.read_annotation('./test_data/test_annotation_tcr.tsv.gz', "./test_data/test_annotation_tcr.tsv.gz",
                                 only_functional=False,
                                 remove_chimeras=False
                                 )[0]
