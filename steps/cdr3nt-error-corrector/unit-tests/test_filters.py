@@ -1,23 +1,17 @@
 from pytest import fixture
 import pandas as pd
+import os
 
 import airr
 import filter
 
-
-@fixture(scope='module')
-def annotation_path_tcr() -> str:
-    return "./test_data/test_annotation_tcr.tsv.gz"
-
-
-@fixture(scope='module')
-def annotation_path_bcr() -> str:
-    return "./test_data/test_annotation_bcr.tsv.gz"
-
+cwd = os.getcwd()
+test_annotation_tcr_paths = os.path.join(cwd, 'unit-tests', 'test_data', 'test_annotation_tcr.tsv.gz')
+test_annotation_bcr_paths = os.path.join(cwd, 'unit-tests', 'test_data', 'test_annotation_bcr.tsv.gz')
 
 @fixture(scope='module')
 def annotation_object() -> pd.DataFrame:
-    return airr.read_annotation('./test_data/test_annotation_tcr.tsv.gz', "./test_data/test_annotation_tcr.tsv.gz",
+    return airr.read_annotation(test_annotation_tcr_paths, test_annotation_bcr_paths,
                                 only_functional=False,
                                 remove_chimeras=False
                                 )[0]
