@@ -9,6 +9,7 @@ cwd = os.getcwd()
 test_annotation_tcr_paths = os.path.join(cwd, 'unit-tests', 'test_data', 'test_annotation_tcr.tsv.gz')
 test_annotation_bcr_paths = os.path.join(cwd, 'unit-tests', 'test_data', 'test_annotation_bcr.tsv.gz')
 
+
 @fixture(scope='module')
 def annotation_object() -> pd.DataFrame:
     return airr.read_annotation(test_annotation_tcr_paths, test_annotation_bcr_paths,
@@ -43,3 +44,15 @@ def test_drop_duplicates_in_different_loci(annotation_object):
 def test_remove_out_of_frame(annotation_object):
     filtered_annotation = filter.remove_out_of_frame(annotation_object)
     assert len(filtered_annotation[filtered_annotation['junction'].str.len() % 3 != 0]) == 0
+
+
+def test_remove_chimeras(annotation_object):
+    filtered_annotation = filter.remove_chimeras(annotation_object)
+    v_flag = filtered_annotation.T.apply(
+        lambda x: any([locus[0:3].upper() != x.locus and not locus[0:3].upper() in filter.ALLOWED_LOCUS_CHIMERAS for
+                       locus in x.v_call.split(',')])).sum()
+    j_flag = filtered_annotation.T.apply(
+        lambda x: any([locus[0:3].upper() != x.locus and not locus[0:3].upper() in filter.ALLOWED_LOCUS_CHIMERAS for
+                       locus in x.j_call.split(',')])).sum()
+
+    assert not v_flag or j_flag
