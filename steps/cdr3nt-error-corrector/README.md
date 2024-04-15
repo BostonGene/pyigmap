@@ -55,3 +55,10 @@ docker run \
    --out-json /root/stat.json \
    --out-archive /root/pyigmap.tar.gz # archive with final results
 ```
+
+## Run tests
+
+```bash
+pip install -r requirements.txt
+pytest unit-tests/ -v
+```
