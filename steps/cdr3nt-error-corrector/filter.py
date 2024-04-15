@@ -46,11 +46,11 @@ def drop_duplicates_in_different_loci(annotation: pd.DataFrame, use_pgen=False) 
 def _filter_cdr3_by_metrics(annotation: pd.DataFrame, use_pgen: bool) -> pd.DataFrame:
     if use_pgen and any(annotation['pgen'].isna()):
         return annotation[annotation['pgen'] == annotation['pgen'].max()]
-    elif not any(annotation['j_support'].isna()):
+    elif not all(annotation['j_support'].isna()):
         return annotation[annotation['j_support'] == annotation['j_support'].min()]
-    elif not any(annotation['v_support'].isna()):
+    elif not all(annotation['v_support'].isna()):
         return annotation[annotation['v_support'] == annotation['v_support'].min()]
-    return annotation
+    return annotation.drop_duplicates(subset=['junction'], keep='first')
 
 
 def _remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str):
