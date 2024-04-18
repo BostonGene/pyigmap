@@ -5,17 +5,6 @@ import os
 import airr
 import filter
 
-test_annotation_tcr_paths = os.path.join('unit_tests', 'test_data', 'test_annotation_tcr.tsv.gz')
-test_annotation_bcr_paths = os.path.join('unit_tests', 'test_data', 'test_annotation_bcr.tsv.gz')
-
-
-@fixture(scope='module')
-def annotation_object() -> pd.DataFrame:
-    return airr.read_annotation(test_annotation_tcr_paths, test_annotation_bcr_paths,
-                                only_functional=False,
-                                remove_chimeras=False
-                                )[0]
-
 
 @fixture(scope='module')
 def annotation_with_duplicates_in_different_loci() -> pd.DataFrame:
@@ -28,14 +17,34 @@ def annotation_with_duplicates_in_different_loci() -> pd.DataFrame:
 
 
 @fixture(scope='module')
+def annotation_non_productive() -> pd.DataFrame:
+    return pd.DataFrame(data={'stop_codon': ['F', 'T', 'F', 'F', 'F'],
+                              'vj_in_frame': ['T', 'F', 'T', 'T', 'T'],
+                              'v_frameshift': ['F', 'F', 'F', 'T', 'F'],
+                              'productive': ['T', 'T', 'T', 'T', 'F'], })
+
+
+@fixture(scope='module')
+def annotation_non_functional() -> pd.DataFrame:
+    return pd.DataFrame(data={'junction_aa': ['CAAAAW', 'CAA*W', 'CAAAAAF', 'CAA_W', 'AAAAAAA'],
+                              'junction': [None, 'AAAAAA', 'AAAAAAA', 'AAAAA', None]
+                              })
+
+
+@fixture(scope='module')
+def annotation_out_of_frame() -> pd.DataFrame:
+    return pd.DataFrame(data={'junction': ['TTTTTTT', 'GGGG', 'GGG', 'AAAAAA'], })
+
+
+@fixture(scope='module')
 def annotation_with_chimeras() -> pd.DataFrame:
     return pd.DataFrame(data={'locus': ['IGH', 'IGL'],
                               'v_call': ['IGHV', 'IGLV'],
                               'j_call': ['IGLJ', 'IGHJ']})
 
 
-def test_remove_non_functional(annotation_object):
-    filtered_annotation = filter.remove_non_functional(annotation_object)
+def test_remove_non_functional(annotation_non_functional):
+    filtered_annotation = filter.remove_non_functional(annotation_non_functional)
     assert len(filtered_annotation[filtered_annotation['junction'].isna() |
                                    filtered_annotation['junction_aa'].str.contains('_', na=False) |
                                    filtered_annotation['junction_aa'].str.contains('\*', na=False) |
@@ -44,8 +53,8 @@ def test_remove_non_functional(annotation_object):
                                      filtered_annotation['junction_aa'].str.endswith('W', na=False))]) == 0
 
 
-def test_remove_non_productive(annotation_object):
-    filtered_annotation = filter.remove_non_productive(annotation_object)
+def test_remove_non_productive(annotation_non_productive):
+    filtered_annotation = filter.remove_non_productive(annotation_non_productive)
     assert len(filtered_annotation[(filtered_annotation['stop_codon'] == 'T') |
                                    (filtered_annotation['vj_in_frame'] == 'F') |
                                    (filtered_annotation['v_frameshift'] == 'T') |
@@ -71,8 +80,8 @@ def test_drop_duplicates_in_different_loci(annotation_with_duplicates_in_differe
     )
 
 
-def test_remove_out_of_frame(annotation_object):
-    filtered_annotation = filter.remove_out_of_frame(annotation_object)
+def test_remove_out_of_frame(annotation_out_of_frame):
+    filtered_annotation = filter.remove_out_of_frame(annotation_out_of_frame)
     assert len(filtered_annotation[filtered_annotation['junction'].str.len() % 3 != 0]) == 0
 
 
