@@ -54,3 +54,13 @@ docker run \
    --out-json /root/stat.json \
    --out-archive /root/pyigmap.tar.gz # archive with final results
 ```
+
+## Run tests
+
+```bash
+python3 -m venv venv
+. env/bin/activate
+pip3 install -r requirements.txt
+
+pytest unit_tests/ -v
+```
