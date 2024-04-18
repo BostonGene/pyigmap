@@ -37,23 +37,21 @@ bash build_ref.sh
 ```bash
 docker build -t cdr3nt-error-corrector .
 
-# should contain: raw_annotation.TCR.tsv.gz and raw_annotation.BCR.tsv.gz, olga-models.tar.gz and calib.json (or fastp.json)
-FOLDER_WITH_DATA=path/to/your/folder
-
 docker run \
-   -v ${FOLDER_WITH_DATA}:/root/ \
+   -v ./unit_tests/test_data:/root/ \
+   -v ./olga-models.tar.gz:/root/olga-models.tar.gz \
    cdr3nt-error-corrector \
-   --in-tcr-annotation /root/raw_annotation.TCR.tsv.gz \
-   --in-bcr-annotation /root/raw_annotation.BCR.tsv.gz \
+   --in-tcr-annotation /root/test_annotation_tcr.tsv.gz \
+   --in-bcr-annotation /root/test_annotation_bcr.tsv.gz \
    --pgen-threshold 0 \
    --only-functional \
    --remove-chimeras \
    --clonotype-collapse-factor 0.05 \
    --olga-models /root/olga-models.tar.gz \
    --out-corrected-annotation /root/corrected_annotation.tsv \
-   --in-json /root/calib.json \
+   --in-json /root/test_fastp.json \
    --out-json /root/stat.json \
-   --out-archive /root/pyigmap.tar.gz # archive with final results
+   --out-archive /root/pyigmap.tar.gz # archive with final results will be saved into ./unit_tests/test_data/
 ```
 
 ## Run tests
