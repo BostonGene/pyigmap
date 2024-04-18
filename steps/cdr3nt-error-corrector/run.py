@@ -16,6 +16,13 @@ logger = set_logger(name=__file__)
 os.makedirs(OLGA_MODELS_DIR, exist_ok=True)
 
 
+def check_argument_consistency(args: argparse.Namespace) -> list[str]:
+    msg_list = []
+    if not args.olga_models and (args.calculate_pgen or args.pgen_threshold is not None):
+        msg_list += ["Pgen calculation is enabled, but no OLGA model is provided"]
+    return msg_list
+
+
 def parse_args() -> argparse.Namespace:
     """
     Parses arguments.
@@ -29,22 +36,31 @@ def parse_args() -> argparse.Namespace:
                         action='extend', required=True, type=str)
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
-    parser.add_argument('--pgen-threshold', type=float, default=0, help='Pgen (generation probability) threshold value')
+    parser.add_argument('--pgen-threshold', type=float, help='Pgen (generation probability) threshold value')
+    parser.add_argument('--calculate-pgen', action='store_true', help='Calculate pgen via OLGA')
     parser.add_argument('--clonotype-collapse-factor', type=float, default=0.05,
                         help='Factor value, that involved in collapsing of clonotype duplicates')
     parser.add_argument('--only-productive', help='Filter out non-productive clonotypes', action='store_true')
     parser.add_argument('--remove-chimeras', action='store_true',
                         help='Remove chimeras clonotypes, that have different locus in v-/j-genes')
     parser.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
-    parser.add_argument('--olga-models', type=str, help='Archive with OLGA models', required=True)
+    parser.add_argument('--olga-models', type=str, help='Archive with OLGA models')
     parser.add_argument('--out-corrected-annotation', type=str, help='Output corrected annotation', required=True)
     parser.add_argument('--out-json', type=str, help='Output json with metrics')
     parser.add_argument('--out-archive', type=str, help='Output archive with all results', required=True)
-    return parser.parse_args()
+
+    args = parser.parse_args()
+
+    error_message_list = check_argument_consistency(args)
+    if error_message_list:
+        parser.error("\n".join(error_message_list))
+
+    return args
 
 
 def run(args: argparse.Namespace) -> None:
-    decompress(args.olga_models)
+    if args.calculate_pgen or args.pgen_threshold is not None:
+        decompress(args.olga_models)
 
     annotation, loci_count = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
                                                   only_functional=args.only_functional,
@@ -58,9 +74,9 @@ def run(args: argparse.Namespace) -> None:
             corrector = ClonotypeCorrector(args.clonotype_collapse_factor)
             corrected_annotation = corrector.correct_full(annotation_by_locus)
 
-            pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
-            corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'],
-                                                               corrected_annotation['junction'])
+            if args.calculate_pgen or args.pgen_threshold is not None:
+                pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
+                corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'])
 
             corrected_annotations.append(corrected_annotation)
             logger.info(f'{locus} locus has been processed.')

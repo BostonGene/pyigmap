@@ -7,7 +7,7 @@ ALLOWED_LOCUS_CHIMERAS = {'TRAV', 'TRDV', 'TRAJ', 'TRDJ'}
 
 
 def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float) -> pd.DataFrame:
-    annotation = filter_pgen(annotation, pgen_threshold) if pgen_threshold else annotation
+    annotation = filter_pgen(annotation, pgen_threshold) if pgen_threshold is not None else annotation
     annotation = remove_non_productive(annotation) if only_productive else annotation
     annotation = remove_out_of_frame(annotation)
     annotation = drop_duplicates_in_different_loci(annotation, use_pgen=True)
@@ -15,41 +15,40 @@ def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_thresho
 
 
 def _get_duplicates_in_different_loci(annotation: pd.DataFrame) -> list[pd.DataFrame]:
-    duplicated_loci_groups = annotation[annotation['junction'].duplicated(keep=False)].groupby(['junction'])
-    loci_duplicates = []
-
-    for _, duplicate_loci_df in duplicated_loci_groups:
-        loci_duplicates.append(duplicate_loci_df)
-    return loci_duplicates
+    """Returns list of cdr3 duplicates in different loci"""
+    duplicates_with_different_loci = (annotation[annotation.duplicated(subset=['junction'], keep=False)]
+                                      .groupby('junction'))
+    return [group for _, group in duplicates_with_different_loci]
 
 
 def drop_duplicates_in_different_loci(annotation: pd.DataFrame, use_pgen=False) -> pd.DataFrame:
+    """Drops cdr3 duplicates in different loci"""
     loci_duplicates = _get_duplicates_in_different_loci(annotation)
 
-    corrected_loci_duplicates = []
+    corrected_loci_duplicates = [_filter_cdr3_duplicates_by_metrics(loci_duplicate, use_pgen)
+                                 for loci_duplicate in loci_duplicates]
 
-    for loci_duplicate in loci_duplicates:
-        corrected_loci_duplicate = _filter_cdr3_by_metrics(loci_duplicate, use_pgen)
-        corrected_loci_duplicates.append(corrected_loci_duplicate)
-
-    annotation_without_duplicates = annotation.drop_duplicates(subset=['junction'], keep=False)
+    annotation_without_duplicates = annotation.drop(pd.concat(loci_duplicates).index) if loci_duplicates else annotation
     corrected_annotation = pd.concat([annotation_without_duplicates] + corrected_loci_duplicates)
 
-    corrected_annotation = corrected_annotation.sort_values(by=['locus', 'duplicate_count'],
-                                                            ascending=[True, False])
+    corrected_annotation = corrected_annotation.sort_values(by=['locus', 'duplicate_count'], ascending=[True, False])
 
     logger.info(f'Filtered out {annotation.shape[0] - corrected_annotation.shape[0]} duplicates in different loci.')
 
     return corrected_annotation
 
 
-def _filter_cdr3_by_metrics(annotation: pd.DataFrame, use_pgen: bool) -> pd.DataFrame:
-    if use_pgen and any(annotation['pgen'].isna()):
-        return annotation[annotation['pgen'] == annotation['pgen'].max()]
-    elif not any(annotation['j_support'].isna()):
-        return annotation[annotation['j_support'] == annotation['j_support'].min()]
-    elif not any(annotation['v_support'].isna()):
-        return annotation[annotation['v_support'] == annotation['v_support'].min()]
+def _filter_cdr3_duplicates_by_metrics(annotation: pd.DataFrame, use_pgen: bool) -> pd.DataFrame:
+    """Filters cdr3 duplicates by pgen, j_support, and v_support values"""
+    locus = ''
+    if use_pgen and not annotation['pgen'].isna().all():
+        locus = annotation[annotation['pgen'] == annotation['pgen'].max()]['locus'].iloc[0]
+    elif not annotation['j_support'].isna().all():
+        locus = annotation[annotation['j_support'] == annotation['j_support'].min()]['locus'].iloc[0]
+    elif not annotation['v_support'].isna().all():
+        locus = annotation[annotation['v_support'] == annotation['v_support'].min()]['locus'].iloc[0]
+    if locus:
+        return annotation[annotation['locus'] == locus]
     return annotation
 
 
