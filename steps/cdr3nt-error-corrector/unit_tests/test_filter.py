@@ -27,6 +27,13 @@ def annotation_with_duplicates_in_different_loci() -> pd.DataFrame:
                               'v_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002]})
 
 
+@fixture(scope='module')
+def annotation_with_chimeras() -> pd.DataFrame:
+    return pd.DataFrame(data={'locus': ['IGH', 'IGL'],
+                              'v_call': ['IGHV', 'IGLV'],
+                              'j_call': ['IGLJ', 'IGHJ']})
+
+
 def test_remove_non_functional(annotation_object):
     filtered_annotation = filter.remove_non_functional(annotation_object)
     assert len(filtered_annotation[filtered_annotation['junction'].isna() |
@@ -69,12 +76,16 @@ def test_remove_out_of_frame(annotation_object):
     assert len(filtered_annotation[filtered_annotation['junction'].str.len() % 3 != 0]) == 0
 
 
-def test_remove_chimeras(annotation_object):
-    filtered_annotation = filter.remove_chimeras(annotation_object)
-    v_flag = filtered_annotation.T.apply(lambda x: chimeras_check(x, segment='v')).sum()
-    j_flag = filtered_annotation.T.apply(lambda x: chimeras_check(x, segment='j')).sum()
+def test_remove_v_chimeras(annotation_with_chimeras):
+    filtered_annotation = filter.remove_chimeras(annotation_with_chimeras)
+    v_chimeras_count = filtered_annotation.T.apply(lambda x: chimeras_check(x, segment='v')).sum()
+    assert v_chimeras_count.empty
 
-    assert not v_flag or j_flag
+
+def test_remove_j_chimeras(annotation_with_chimeras):
+    filtered_annotation = filter.remove_chimeras(annotation_with_chimeras)
+    j_chimeras_count = filtered_annotation.T.apply(lambda x: chimeras_check(x, segment='j')).sum()
+    assert j_chimeras_count.empty
 
 
 def chimeras_check(clone, segment):
