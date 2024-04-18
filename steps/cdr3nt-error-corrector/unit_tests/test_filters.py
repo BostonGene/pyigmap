@@ -17,6 +17,16 @@ def annotation_object() -> pd.DataFrame:
                                 )[0]
 
 
+@fixture(scope='module')
+def annotation_with_duplicates_in_different_loci() -> pd.DataFrame:
+    return pd.DataFrame(data={'duplicate_count': [1, 1, 1, 1, 1],
+                              'junction': ['AAA', 'AAA', 'AAA', 'AAA', 'AAA'],
+                              'locus': ['TRA', 'TRA', 'IGH', 'IGH', 'IGL'],
+                              'pgen': [0.0001, 0.0001, 0.6, 0.6, 0.5],
+                              'j_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002],
+                              'v_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002]})
+
+
 def test_remove_non_functional(annotation_object):
     filtered_annotation = filter.remove_non_functional(annotation_object)
     assert len(filtered_annotation[filtered_annotation['junction'].isna() |
@@ -35,9 +45,23 @@ def test_remove_non_productive(annotation_object):
                                    (filtered_annotation['productive'] == 'F')]) == 0
 
 
-def test_drop_duplicates_in_different_loci(annotation_object):
-    filtered_annotation = filter.drop_duplicates_in_different_loci(annotation_object)
-    assert len(filtered_annotation[filtered_annotation['junction'].duplicated(keep=False)]) == 0
+def test_get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci):
+    assert filter._get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)[0].equals(
+        annotation_with_duplicates_in_different_loci
+    )
+
+
+def test_drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci):
+    filtered_annotation = filter.drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={'duplicate_count': [1, 1],
+                           'junction': ['AAA', 'AAA'],
+                           'locus': ['IGH', 'IGH'],
+                           'pgen': [0.6, 0.6],
+                           'j_support': [0.0001, 0.0001],
+                           'v_support': [0.0001, 0.0001]},
+                     index=[2, 3])
+    )
 
 
 def test_remove_out_of_frame(annotation_object):
