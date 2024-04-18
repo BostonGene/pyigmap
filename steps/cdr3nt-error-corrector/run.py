@@ -16,6 +16,13 @@ logger = set_logger(name=__file__)
 os.makedirs(OLGA_MODELS_DIR, exist_ok=True)
 
 
+def check_argument_consistency(args: argparse.Namespace) -> list[str]:
+    msg_list = []
+    if not args.olga_models and (args.calculate_pgen or args.pgen_threshold is not None):
+        msg_list += ["Pgen calculation is enabled, but no OLGA model is provided"]
+    return msg_list
+
+
 def parse_args() -> argparse.Namespace:
     """
     Parses arguments.
@@ -41,18 +48,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--out-corrected-annotation', type=str, help='Output corrected annotation', required=True)
     parser.add_argument('--out-json', type=str, help='Output json with metrics')
     parser.add_argument('--out-archive', type=str, help='Output archive with all results', required=True)
+
     args = parser.parse_args()
+
     error_message_list = check_argument_consistency(args)
     if error_message_list:
         parser.error("\n".join(error_message_list))
+
     return args
-
-
-def check_argument_consistency(args: argparse.Namespace) -> list[str]:
-    msg_list = []
-    if not args.olga_models and (args.calculate_pgen or args.pgen_threshold is not None):
-        msg_list += ["Pgen calculation is enabled, but no OLGA model is provided"]
-    return msg_list
 
 
 def run(args: argparse.Namespace) -> None:
