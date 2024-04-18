@@ -14,12 +14,6 @@ wget -q https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VER
 tar -xvzf ${OUTPUT_DIR}/ncbi-igblast.tar.gz --one-top-level=${IGBLAST_DIR} --strip-component 1 && \
 rm ${OUTPUT_DIR}/ncbi-igblast.tar.gz
 
-SEQKIT_PATH=${OUTPUT_DIR}/seqkit
-SEQKIT_VERSION=2.8.0
-wget https://github.com/shenwei356/seqkit/releases/download/v${SEQKIT_VERSION}/seqkit_linux_amd64.tar.gz -O ${OUTPUT_DIR}/seqkit.tar.gz && \
-tar -xvzf ${OUTPUT_DIR}/seqkit.tar.gz --one-top-level=${SEQKIT_PATH} --strip-component 1 && \
-rm ${OUTPUT_DIR}/seqkit.tar.gz
-
 get_organism_specie() {
   if [[ $1 == "human" ]]; then
     echo "Homo_sapiens"
@@ -52,15 +46,13 @@ do
     # convert imgt fasta -> igblast fasta
     ${IGBLAST_DIR}/bin/edit_imgt_file.pl ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt > ${OUTPUT_DIR}/${OUTPUT_NAME}.fasta
 
-    # remove duplicates
-    $SEQKIT_PATH rmdup ${OUTPUT_DIR}/${OUTPUT_NAME}.fasta --by-seq -o ${REF_DIR}/database/${OUTPUT_NAME}
-
     # make blast db index
     ${IGBLAST_DIR}/bin/makeblastdb -parse_seqids -dbtype nucl -in ${REF_DIR}/database/${OUTPUT_NAME}
 
     # remove unnecessary fasta files
     rm ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt
     rm ${OUTPUT_DIR}/${OUTPUT_NAME}.fasta
+    rm ${OUTPUT_DIR}/${OUTPUT_NAME}
   done
 done
 

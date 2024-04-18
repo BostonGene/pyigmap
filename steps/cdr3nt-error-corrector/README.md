@@ -59,6 +59,9 @@ docker run \
 ## Run tests
 
 ```bash
-pip install -r requirements.txt
-pytest unit-tests/ -v
+python3 -m venv venv
+. env/bin/activate
+pip3 install -r requirements.txt
+
+pytest unit_tests/ -v
 ```
