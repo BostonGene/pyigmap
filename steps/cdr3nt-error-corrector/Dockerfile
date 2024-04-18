@@ -1,18 +1,16 @@
 FROM python:3.9-bullseye
 
-ENV SOFT_DIR=/usr/local/bin
-
 RUN apt-get update
 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
-COPY run.py ${SOFT_DIR}/run.py
-COPY airr.py ${SOFT_DIR}/airr.py
-COPY pgen.py ${SOFT_DIR}/pgen.py
-COPY correct.py ${SOFT_DIR}/correct.py
-COPY logger.py ${SOFT_DIR}/logger.py
-COPY filter.py ${SOFT_DIR}/filter.py
+COPY utils.py .
+COPY run.py .
+COPY airr.py .
+COPY pgen.py .
+COPY correct.py .
+COPY logger.py .
+COPY filter.py .
 
-# Uncomment it if you need to run an executable container
-# ENTRYPOINT ["python3.9", "${SOFT_DIR}/run.py"]
+ENTRYPOINT ["python3.9", "run.py"]
