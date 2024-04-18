@@ -38,28 +38,35 @@ def annotation_out_of_frame() -> pd.DataFrame:
 
 
 @fixture(scope='module')
-def annotation_with_chimeras() -> pd.DataFrame:
-    return pd.DataFrame(data={'locus': ['IGH', 'IGL'],
-                              'v_call': ['IGHV', 'IGLV'],
-                              'j_call': ['IGLJ', 'IGHJ']})
+def annotation_with_v_chimeras() -> pd.DataFrame:
+    return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA'],
+                              'v_call': ['IGLV', 'IGHV', 'TRAV']})
+
+
+@fixture(scope='module')
+def annotation_with_j_chimeras() -> pd.DataFrame:
+    return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA'],
+                              'j_call': ['IGLJ', 'IGHJ', 'TRAJ']})
 
 
 def test_remove_non_functional(annotation_non_functional):
     filtered_annotation = filter.remove_non_functional(annotation_non_functional)
-    assert len(filtered_annotation[filtered_annotation['junction'].isna() |
-                                   filtered_annotation['junction_aa'].str.contains('_', na=False) |
-                                   filtered_annotation['junction_aa'].str.contains('\*', na=False) |
-                                   ~filtered_annotation['junction_aa'].str.startswith('C', na=False) |
-                                   ~(filtered_annotation['junction_aa'].str.endswith('F', na=False) |
-                                     filtered_annotation['junction_aa'].str.endswith('W', na=False))]) == 0
+    assert filtered_annotation.equals(
+            pd.DataFrame(data={'junction_aa': ['CAAAAAF'],
+                               'junction': ['AAAAAAA']},
+                         index=[2])
+    )
 
 
 def test_remove_non_productive(annotation_non_productive):
     filtered_annotation = filter.remove_non_productive(annotation_non_productive)
-    assert len(filtered_annotation[(filtered_annotation['stop_codon'] == 'T') |
-                                   (filtered_annotation['vj_in_frame'] == 'F') |
-                                   (filtered_annotation['v_frameshift'] == 'T') |
-                                   (filtered_annotation['productive'] == 'F')]) == 0
+    assert filtered_annotation.equals(
+            pd.DataFrame(data={'stop_codon': ['F', 'F'],
+                               'vj_in_frame': ['T', 'T'],
+                               'v_frameshift': ['F', 'F'],
+                               'productive': ['T', 'T'], },
+                         index=[0, 2])
+    )
 
 
 def test_get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci):
@@ -86,18 +93,19 @@ def test_remove_out_of_frame(annotation_out_of_frame):
     assert len(filtered_annotation[filtered_annotation['junction'].str.len() % 3 != 0]) == 0
 
 
-def test_remove_v_chimeras(annotation_with_chimeras):
-    filtered_annotation = filter.remove_chimeras(annotation_with_chimeras)
-    v_chimeras_count = filtered_annotation.T.apply(lambda x: chimeras_check(x, segment='v')).sum()
-    assert v_chimeras_count.empty
+def test_remove_v_chimeras(annotation_with_v_chimeras):
+    filtered_annotation = filter._remove_chimeras_by_segment(annotation_with_v_chimeras, 'v')
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={'locus': ['TRA'],
+                           'v_call': ['TRAV']},
+                     index=[2])
+    )
 
 
-def test_remove_j_chimeras(annotation_with_chimeras):
-    filtered_annotation = filter.remove_chimeras(annotation_with_chimeras)
-    j_chimeras_count = filtered_annotation.T.apply(lambda x: chimeras_check(x, segment='j')).sum()
-    assert j_chimeras_count.empty
-
-
-def chimeras_check(clone, segment):
-    return any([locus[:3].upper() != clone.locus and locus[:3].upper() not in filter.ALLOWED_LOCUS_CHIMERAS
-                for locus in clone[f'{segment}_call'].split(',')])
+def test_remove_j_chimeras(annotation_with_j_chimeras):
+    filtered_annotation = filter._remove_chimeras_by_segment(annotation_with_j_chimeras, 'j')
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={'locus': ['TRA'],
+                           'j_call': ['TRAJ']},
+                     index=[2])
+    )
