@@ -5,6 +5,7 @@ RUN apt-get update
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
+COPY utils.py .
 COPY run.py .
 COPY airr.py .
 COPY pgen.py .

@@ -13,7 +13,8 @@ def annotation_with_duplicates_in_different_loci() -> pd.DataFrame:
                               'locus': ['TRA', 'TRA', 'IGH', 'IGH', 'IGL'],
                               'pgen': [0.0001, 0.0001, 0.6, 0.6, 0.5],
                               'j_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002],
-                              'v_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002]})
+                              'v_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002]},
+                        index=[0, 1, 0, 1, 2])
 
 
 @fixture(scope='module')
@@ -76,7 +77,7 @@ def test_drop_duplicates_in_different_loci(annotation_with_duplicates_in_differe
                            'pgen': [0.6, 0.6],
                            'j_support': [0.0001, 0.0001],
                            'v_support': [0.0001, 0.0001]},
-                     index=[2, 3])
+                     index=[0, 1])
     )
 
 

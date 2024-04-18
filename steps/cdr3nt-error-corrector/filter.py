@@ -42,11 +42,11 @@ def _filter_cdr3_duplicates_by_metrics(annotation: pd.DataFrame, use_pgen: bool)
     """Filters cdr3 duplicates by pgen, j_support, and v_support values"""
     locus = ''
     if use_pgen and not annotation['pgen'].isna().all():
-        locus = annotation.loc[annotation['pgen'].idxmax(), 'locus']
+        locus = annotation[annotation['pgen'] == annotation['pgen'].max()]['locus'].iloc[0]
     elif not annotation['j_support'].isna().all():
-        locus = annotation.loc[annotation['j_support'].idxmin(), 'locus']
+        locus = annotation[annotation['j_support'] == annotation['j_support'].min()]['locus'].iloc[0]
     elif not annotation['v_support'].isna().all():
-        locus = annotation.loc[annotation['v_support'].idxmin(), 'locus']
+        locus = annotation[annotation['v_support'] == annotation['v_support'].min()]['locus'].iloc[0]
     if locus:
         return annotation[annotation['locus'] == locus]
     return annotation
