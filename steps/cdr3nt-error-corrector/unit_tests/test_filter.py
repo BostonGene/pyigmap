@@ -1,8 +1,6 @@
 from pytest import fixture
 import pandas as pd
-import os
 
-import airr
 import filter
 
 
