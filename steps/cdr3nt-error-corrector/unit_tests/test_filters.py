@@ -5,8 +5,8 @@ import os
 import airr
 import filter
 
-test_annotation_tcr_paths = os.path.join('unit-tests', 'test_data', 'test_annotation_tcr.tsv.gz')
-test_annotation_bcr_paths = os.path.join('unit-tests', 'test_data', 'test_annotation_bcr.tsv.gz')
+test_annotation_tcr_paths = os.path.join('unit_tests', 'test_data', 'test_annotation_tcr.tsv.gz')
+test_annotation_bcr_paths = os.path.join('unit_tests', 'test_data', 'test_annotation_bcr.tsv.gz')
 
 
 @fixture(scope='module')
