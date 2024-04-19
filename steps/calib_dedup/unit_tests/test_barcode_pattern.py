@@ -1,5 +1,5 @@
 from pytest import fixture
-from barcode import BarcodePattern, NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS
+from barcode_pattern import BarcodePattern, NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS
 
 
 @fixture(scope='module')
