@@ -1,5 +1,4 @@
 import argparse
-import sys
 import logging
 
 from logger import set_logger, TqdmToLogger
@@ -8,6 +7,13 @@ from utils import (get_prepared_pattern, check_error_tolerance_size, keep_only_p
 
 logger = set_logger(name=__file__)
 tqdm_out = TqdmToLogger(logger, level=logging.INFO)
+
+
+def check_argument_consistency(args: argparse.Namespace) -> list[str]:
+    msg_list = []
+    if not args.fq1_barcode_pattern and not args.fq2_barcode_pattern:
+        msg_list += ['One of the arguments --fq1-barcode-pattern or --fq2-barcode-pattern is required.']
+    return msg_list
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,6 +34,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--out-fq1', help='Output forward fastq without PCR duplicates', required=True)
     parser.add_argument('--out-fq2', help='Output reverse fastq without PCR duplicates', required=True)
     parser.add_argument('--out-json', help='Output json with some metrics', required=True)
+
+    args = parser.parse_args()
+
+    error_message_list = check_argument_consistency(args)
+    if error_message_list:
+        parser.error("\n".join(error_message_list))
+
+
     return parser.parse_args()
 
 
@@ -62,17 +76,9 @@ def run(args: argparse.Namespace):
     save_results(fq1_cons, fq2_cons, args.out_fq1, args.out_fq2)
 
 
-def check_args(args: argparse.Namespace):
-    if not args.fq1_barcode_pattern and not args.fq2_barcode_pattern:
-        logger.critical('One of the arguments --fq1-barcode-pattern or --fq2-barcode-pattern is required.')
-        sys.exit(1)
-
-
 if __name__ == '__main__':
     args = parse_args()
     logger.info(f"Starting program with the following arguments: {vars(args)}")
-
-    check_args(args)
 
     run(args)
     logger.info("Run is completed successfully.")
