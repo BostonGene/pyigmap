@@ -45,13 +45,11 @@ See [here](https://github.com/vpc-ccg/calib?tab=readme-ov-file#error-correction-
 ```bash
 docker build -t calib-dedup .
 
-FOLDER_WITH_DATA=path/to/your/folder # should contain: R1.fastq.gz and R2.fastq.gz
-
 docker run \
-   -v ${FOLDER_WITH_DATA}:/root/ \
+   -v ./unit_tests/test_data:/root/ \
    calib-dedup \
-   --in-fq1 /root/R1.fastq.gz \
-   --in-fq2 /root/R2.fastq.gz \
+   --in-fq1 /root/age_ig_s1_R1_umi.fastq.gz \
+   --in-fq2 /root/age_ig_s1_R2_rc_umi.fastq.gz \
    --out-fq1 /root/cR1.fastq.gz \
    --out-fq2 /root/cR2.fastq.gz \
    --out-json /root/calib.json \
@@ -59,12 +57,15 @@ docker run \
    --minimizer-count 7 \
    --minimizer-threshold 7 \
    --error-tolerance 2 \
-   --fq1-barcode-pattern "^UMI:N{12}" # UMI - the first 12 nucleotides
+   --fq1-barcode-pattern "^UMI:N{13}" # UMI - the first 13 nucleotides
 ```
 
 ## Run tests
 
 ```bash
-pip install -r requirements.txt
-pytest unit-tests/ -v
+python3 -m venv env
+. env/bin/activate
+pip3 install -r requirements.txt
+
+pytest unit_tests/ -v
 ```
