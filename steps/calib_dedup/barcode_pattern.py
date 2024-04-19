@@ -24,7 +24,7 @@ IUPAC_WILDCARDS = [
 
 
 class BarcodePattern:
-    def __init__(self, pattern: str, max_error=10, wildcard_cost=4, normal_cost=6):
+    def __init__(self, pattern: str, max_error=2, wildcard_cost=1, normal_cost=2):
         self.max_error = max_error
         self.pattern = pattern
         self.wildcard_cost = wildcard_cost
@@ -55,8 +55,8 @@ class BarcodePattern:
         Adds mismatch cost for fuzzy subpattern (lower-case letters)
 
         Example:
-        ^N{0:2}tggtatcaacgcagagt(UMI:N{14}) -> ^N{0:2}(tggtatcaacgcagagt){2s<=10}(UMI:N{14}),
-        where 2s<=10: s - single nucleotide substitution, 2 - cost of one substitution, 10 - max mismatches count
+        ^N{0:2}TGGTATCAACGCAGAGT(UMI:N{14}) -> ^N{0:2}(TGGTATCAACGCAGAGT){2s<=2}(UMI:N{14}),
+        where 2s<=2: s - single nucleotide substitution, 2 - cost of one substitution, 2 - max mismatches count
         """
         nucleotides = ''.join(nucleotides)
         return re.sub(rf'(?<![\w([])([{nucleotides}]+)(?![\w\])])', rf'(\1){{{mismatch_cost}s<={self.max_error}}}', pattern)
@@ -105,3 +105,9 @@ class BarcodePattern:
         if not umi_len and pattern:
             logger.critical(f'UMI length in the pattern {pattern} should be > 0, exiting...')
             sys.exit(1)
+
+    def __str__(self):
+        return self.get_prepared_pattern()
+
+    def __len__(self) -> int:
+        return self.umi_len
