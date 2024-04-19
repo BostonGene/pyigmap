@@ -22,7 +22,8 @@ RUN wget https://github.com/shenwei356/seqkit/releases/download/v${SEQKIT_VERSIO
 
 COPY utils.py ${SOFT_DIR}/utils.py
 COPY run.py ${SOFT_DIR}/run.py
-COPY barcode.py ${SOFT_DIR}/barcode.py
+COPY barcode_extractor.py ${SOFT_DIR}/barcode_extractor.py
+COPY barcode_pattern.py ${SOFT_DIR}/barcode_pattern.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
 # Uncomment it if you need to run an executable container

@@ -7,7 +7,8 @@ import shutil
 import subprocess
 import tempfile
 
-from barcode import BarcodeExtractor, BarcodePattern
+from barcode_pattern import BarcodePattern
+from barcode_extractor import BarcodeExtractor
 from logger import set_logger, TqdmToLogger
 
 logger = set_logger(name=__file__)
