@@ -1,6 +1,11 @@
+import pytest
 from pytest import fixture
 
-from barcode_pattern import BarcodePattern, NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS
+from barcode_pattern import (add_nucleotide_cost, replace_nucleotide_patterns,
+                             replace_barcode_type_to_regex_group, add_brackets_around_barcode,
+                             validate_pattern, parse_umi_length, add_nucleotide_cost,
+                             NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS, ValidationError,
+                             get_prepared_pattern_and_umi_len)
 
 
 @fixture(scope='module')
@@ -23,42 +28,67 @@ def pattern5() -> str:
     return "^N{0:2}TGGTATCAACGCAGAGT(UMI:TNNNTNNNTNNNN)"
 
 
+@fixture(scope='module')
+def pattern6() -> str:
+    return "^N{14}"
+
+@fixture(scope='module')
+def pattern7() -> str:
+    return "^[ATGCN]{0:2}TGGTATCAACGCAGAGT(?P<UMI>[ATGCN]{14})"
+
+
+@fixture(scope='module')
+def pattern8() -> str:
+    return "^?P<UMI>[ATGCN]{12}"
+
+
 def test_parse_barcode_length_when_present(pattern2):
-    assert len(BarcodePattern(pattern=pattern2)) == 14
+    assert parse_umi_length(pattern2) == 14
 
 
 def test_parse_barcode_length_when_missing(pattern3, pattern5):
-    assert len(BarcodePattern(pattern=pattern3)) == 9
-    assert len(BarcodePattern(pattern=pattern5)) == 10
+    assert parse_umi_length(pattern3)== 9
+    assert parse_umi_length(pattern5) == 10
 
 
 def test_validate_pattern_when_pass(pattern2):
-    BarcodePattern(pattern=pattern2)._validate_pattern(pattern=pattern2, umi_len=14)
+    validate_pattern(pattern2, 14)
+
+
+def test_validate_pattern_when_fail(pattern6):
+    with pytest.raises(ValidationError) as excinfo:
+        validate_pattern(pattern6, 0)
+    assert str(excinfo.value) == "UMI placeholder does not found in ^N{14}, exiting..."
 
 
 def test_add_brackets_around_barcode(pattern1):
-    pattern_with_brackets = BarcodePattern(pattern=pattern1)._add_brackets_around_barcode(pattern1, barcode_type='UMI')
-    assert pattern_with_brackets == "^(UMI:N{12})"
+    assert add_brackets_around_barcode(pattern1, barcode_type='UMI') == "^(UMI:N{12})"
 
 
 def test_replace_umi_barcode_to_regex_group(pattern2):
-    assert (BarcodePattern(pattern=pattern2)._replace_barcode_type_to_regex_group(pattern2, barcode_type='UMI')
+    assert (replace_barcode_type_to_regex_group(pattern2, barcode_type='UMI')
             == "^N{0:2}TGGTATCAACGCAGAGT(?P<UMI>N{14})")
 
 
 def test_replace_nucleotide_patterns(pattern2, pattern3):
-    assert (BarcodePattern(pattern=pattern2)._replace_nucleotide_patterns(pattern=pattern2)
+    assert (replace_nucleotide_patterns(pattern2)
             == "^[ATGCN]{0:2}TGGTATCAACGCAGAGT(UMI:[ATGCN]{14})")
 
-    assert (BarcodePattern(pattern=pattern3)._replace_nucleotide_patterns(pattern=pattern3)
+    assert (replace_nucleotide_patterns(pattern3)
             == "^[ATGCN]{0:2}TGGTATCAACGCAGAGT(UMI:[ATGCN][ATGCN][ATGCN]T[ATGCN][ATGCN][ATGCN]T[ATGCN][ATGCN][ATGCN])")
 
 
-def test_add_nucleotide_cost(pattern2):
-    pattern_with_cost = BarcodePattern(pattern=pattern2)._add_nucleotide_cost(pattern=pattern2, nucleotides=NORMAL_NUCLEOTIDES, mismatch_cost=2)
-    assert pattern_with_cost == "^N{0:2}(TGGTATCAACGCAGAGT){2s<=2}(UMI:N{14})"
+def test_add_nucleotide_cost(pattern7):
+    assert add_nucleotide_cost(pattern=pattern7) == "^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){2s<=2}(?P<UMI>[ATGCN]{14})"
 
 
-def test_without_add_nucleotide_cost(pattern1):
-    pattern_with_cost = BarcodePattern(pattern=pattern1)._add_nucleotide_cost(pattern=pattern1, nucleotides=NORMAL_NUCLEOTIDES, mismatch_cost=2)
-    assert pattern_with_cost == pattern1
+def test_without_add_nucleotide_cost(pattern8):
+    assert add_nucleotide_cost(pattern=pattern8) == pattern8
+
+def test_get_prepared_pattern_and_umi_len(pattern2):
+    assert (get_prepared_pattern_and_umi_len(pattern=pattern2)
+            == ("^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){2s<=2}(?P<UMI>[ATGCN]{14})", 14))
+
+    # TODO!
+    # assert (BarcodePattern(pattern='^N{13}').get_prepared_pattern()
+    #         == "^(?P<UMI>[ATGCN]{13})")
