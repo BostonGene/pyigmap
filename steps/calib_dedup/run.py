@@ -1,8 +1,9 @@
 import argparse
 
 from logger import set_logger
-from utils import (get_prepared_pattern_and_umi_len, keep_only_paired_reads, split_by_chunks,
-                   extract_umi, cluster_umi, generate_consensus, save_total_read_count, save_results)
+from utils import (check_error_tolerance_size, keep_only_paired_reads, split_by_chunks, extract_umi,
+                   cluster_umi, generate_consensus, save_total_read_count, save_results)
+from barcode_pattern import get_prepared_pattern_and_umi_len
 
 logger = set_logger(name=__file__)
 
@@ -45,11 +46,11 @@ def parse_args() -> argparse.Namespace:
 
 def run(args: argparse.Namespace):
     fq1_prepared_pattern, fq1_umi_length = get_prepared_pattern_and_umi_len(args.fq1_barcode_pattern,
-                                                                args.pattern_max_error_budget,
-                                                                args.error_tolerance)
+                                                                            max_error=args.pattern_max_error_budget)
     fq2_prepared_pattern, fq2_umi_length = get_prepared_pattern_and_umi_len(args.fq2_barcode_pattern,
-                                                                args.pattern_max_error_budget,
-                                                                args.error_tolerance)
+                                                                            max_error=args.pattern_max_error_budget)
+    check_error_tolerance_size(fq1_umi_length, args.error_tolerance)
+    check_error_tolerance_size(fq2_umi_length, args.error_tolerance)
 
     fq1_filtered, fq2_filtered = keep_only_paired_reads(args.in_fq1, args.in_fq2)
 

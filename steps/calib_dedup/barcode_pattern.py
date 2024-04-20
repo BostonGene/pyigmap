@@ -5,93 +5,77 @@ from logger import set_logger
 
 logger = set_logger(name=__file__)
 
-ALLOWED_LETTERS_IN_UMI = 'ATGCN'
-
-NORMAL_NUCLEOTIDES = ['A', 'T', 'G', 'C']
-IUPAC_WILDCARDS = [
-    'R',  # A or G
-    'Y',  # C or T
-    'S',  # G or C
-    'W',  # A or T
-    'K',  # G or T
-    'M',  # A or C
-    'B',  # C or G or T
-    'D',  # A or G or T
-    'H',  # A or C or T
-    'V',  # A or C or G
-    'N'   # any base
-]
+NORMAL_NUCLEOTIDES = 'ATGC'
+IUPAC_WILDCARDS = 'RYSWKMBDHVN'
+ALLOWED_LETTERS_IN_UMI = NORMAL_NUCLEOTIDES + 'N'
 
 
-class BarcodePattern:
-    def __init__(self, pattern: str, max_error=2, wildcard_cost=1, normal_cost=2):
-        self.max_error = max_error
-        self.pattern = pattern if pattern else ''
-        self.wildcard_cost = wildcard_cost
-        self.normal_cost = normal_cost
-        self.umi_len = self._parse_barcode_length()
+class ValidationError(Exception):
+    pass
 
-    def get_prepared_pattern(self) -> str:
-        """Returns prepared barcode pattern"""
-        if not self.pattern:
-            return ''
+def parse_umi_length(pattern: str, barcode_type='UMI') -> int:
+    """Parses the length of the specified barcode type from the pattern.
+    Example: ^(UMI:N{12}) -> 12
+    """
+    match = re.search(rf'{barcode_type}:(?:N{{(\d+)}}|([^)]+))', pattern)
+    if match:
+        barcode_body = match.group(1) or match.group(2)
+        return int(barcode_body) if barcode_body.isdigit() else barcode_body.count('N')
+    return 0
 
-        logger.info(f'Preparing pattern {self.pattern}...')
+def add_nucleotide_cost(pattern: str, wildcard_cost=1, normal_cost=2, max_error=2) -> str:
+    """Adds costs to nucleotide patterns in the given pattern to allow for a certain number of mismatches.
 
-        pattern = self.pattern.upper()
-        self._validate_pattern(pattern, self.umi_len)
-        pattern = self._add_brackets_around_barcode(pattern, barcode_type='UMI')
-        pattern = self._replace_barcode_type_to_regex_group(pattern, barcode_type='UMI')
-        pattern = self._replace_nucleotide_patterns(pattern)
-        pattern = self._add_nucleotide_cost(pattern, IUPAC_WILDCARDS, mismatch_cost=self.wildcard_cost)
-        pattern = self._add_nucleotide_cost(pattern, NORMAL_NUCLEOTIDES, mismatch_cost=self.normal_cost)
-        pattern = pattern.replace('{*}', '*')
+    Example:
+    ^[ATGCN]{0:2}TGGTATCAACGCAGAGT(?P<UMI>[ATGCN]{14}) -> ^N{0:2}(TGGTATCAACGCAGAGT){2s<=2}(?P<UMI>[ATGCN]{14}),
+    where 2s<=2: s - single nucleotide substitution, 2 - cost of one substitution, 2 - max mismatches count
+    """
+    pattern = re.sub(rf'(?<![\w([])([{IUPAC_WILDCARDS}]+)(?![\w\])])',
+                     rf'(\1){{{wildcard_cost}s<={max_error}}}', pattern)
+    pattern = re.sub(rf'(?<![\w([])([{NORMAL_NUCLEOTIDES}]+)(?![\w\])])',
+                     rf'(\1){{{normal_cost}s<={max_error}}}', pattern)
+    return pattern
 
-        logger.info(f'Pattern prepared and converted into {pattern}')
-        return pattern
+def replace_nucleotide_patterns(pattern: str) -> str:
+    """Replaces 'N' nucleotide patterns in the given pattern with a character class of allowed letters in the UMI.
+    Example: ^(UMI:N{12}) -> ^(UMI:[ATGCN]{12})
+    """
+    return pattern.replace('N', f'[{ALLOWED_LETTERS_IN_UMI}]')
 
-    def _add_nucleotide_cost(self, pattern: str, nucleotides: list[str], mismatch_cost: int) -> str:
-        """Adds mismatch cost for fuzzy match searching
+def replace_barcode_type_to_regex_group(pattern: str, barcode_type: str) -> str:
+    """Replaces barcode type to a named regex group in the given pattern.
+    Example: ^(UMI:N{12}) -> ^(?P<UMI>N{12})
+    """
+    return re.sub(rf'{barcode_type}(:)?', rf'?P<{barcode_type}>', pattern)
 
-        Example:
-        ^N{0:2}TGGTATCAACGCAGAGT(UMI:N{14}) -> ^N{0:2}(TGGTATCAACGCAGAGT){2s<=2}(UMI:N{14}),
-        where 2s<=2: s - single nucleotide substitution, 2 - cost of one substitution, 2 - max mismatches count
-        """
-        nucleotides = ''.join(nucleotides)
-        return re.sub(rf'(?<![\w([])([{nucleotides}]+)(?![\w\])])', rf'(\1){{{mismatch_cost}s<={self.max_error}}}', pattern)
+def add_brackets_around_barcode(pattern: str, barcode_type: str) -> str:
+    """Adds brackets around the specified barcode type in the pattern if not already present.
+    Example: ^UMI:N{12} -> ^(UMI:N{12})
+    """
+    if not re.search(rf'\({barcode_type}:[A-Z0-9{{}}]+\)', pattern):
+        pattern = re.sub(rf'({barcode_type}:[A-Z0-9{{}}]+)', r'(\1)', pattern)
+    return pattern
 
-    def _parse_barcode_length(self, barcode_type='UMI') -> int:
-        """Returns barcode length from pattern. Example: for the pattern ^(UMI:N{12}) returns 12"""
-        match = re.search(rf'{barcode_type}:(?:N{{(\d+)}}|([^)]+))', self.pattern)
-        if match:
-            barcode_body = match.group(1) or match.group(2)
-            return int(barcode_body) if barcode_body.isdigit() else barcode_body.count('N')
-        return 0
+def validate_pattern(pattern: str, umi_len: int):
+    """Validates the pattern to ensure it contains a UMI placeholder and has a valid length."""
+    if 'UMI' not in pattern:
+        raise ValidationError(f'UMI placeholder does not found in {pattern}, exiting...')
+    if not umi_len:
+        raise ValidationError(f'UMI length in the pattern {pattern} should be > 0, exiting...')
 
-    def _replace_barcode_type_to_regex_group(self, pattern: str, barcode_type: str) -> str:
-        """Replaces ^(UMI:N{12}) -> ^(?P<UMI>N{12})"""
-        return re.sub(rf'{barcode_type}(:)?', rf'?P<{barcode_type}>', pattern)
 
-    def _replace_nucleotide_patterns(self, pattern: str) -> str:
-        """Replaces N{} (or n{}) -> [ATGCN]{}"""
-        return re.sub(r'[Nn](?={?)', f'[{ALLOWED_LETTERS_IN_UMI}]', pattern)
+def get_prepared_pattern_and_umi_len(pattern: str, max_error=2, wildcard_cost=1, normal_cost=2) -> tuple[str, int]:
+    """Prepares a pattern for barcode matching by applying various transformations."""
+    if not pattern:
+        return '', 0
 
-    def _add_brackets_around_barcode(self, pattern: str, barcode_type: str) -> str:
-        """Replaces ^UMI:N{12} -> ^(UMI:N{12})"""
-        if re.search(rf'\({barcode_type}:[A-Z0-9{{}}]+\)', pattern):
-            return pattern
-        return re.sub(rf'({barcode_type}:[A-Z0-9{{}}]+)', r'(\1)', pattern)
+    umi_len = parse_umi_length(pattern)
+    pattern = pattern.upper()
+    validate_pattern(pattern, umi_len)
+    pattern = add_brackets_around_barcode(pattern, 'UMI')
+    pattern = replace_barcode_type_to_regex_group(pattern, 'UMI')
+    pattern = replace_nucleotide_patterns(pattern)
+    pattern = add_nucleotide_cost(pattern, wildcard_cost, normal_cost, max_error)
+    pattern = pattern.replace('{*}', '*')
 
-    def _validate_pattern(self, pattern: str, umi_len: int):
-        if pattern and 'UMI' not in pattern:
-            logger.critical(f'UMI placeholder does not found in {pattern}, exiting...')
-            sys.exit(1)
-        if not umi_len and pattern:
-            logger.critical(f'UMI length in the pattern {pattern} should be > 0, exiting...')
-            sys.exit(1)
-
-    def __str__(self) -> str:
-        return self.get_prepared_pattern()
-
-    def __len__(self) -> int:
-        return self.umi_len
+    return pattern, umi_len

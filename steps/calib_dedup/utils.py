@@ -7,7 +7,6 @@ import shutil
 import subprocess
 import tempfile
 
-from barcode_pattern import BarcodePattern
 from barcode_extractor import BarcodeExtractor
 from logger import set_logger
 
@@ -246,11 +245,3 @@ def check_error_tolerance_size(umi_len: int, error_tolerance: int):
             f'Error tolerance size (={error_tolerance}) should be no larger than the umi length (={umi_len}), exiting...'
         )
         sys.exit(1)
-
-
-def get_prepared_pattern_and_umi_len(pattern: str, max_error: int, error_tolerance: int) -> tuple[str, int]:
-    barcode_pattern = BarcodePattern(pattern, max_error=max_error)
-    umi_length = len(barcode_pattern)
-    check_error_tolerance_size(umi_length, error_tolerance)
-    prepared_pattern = str(barcode_pattern)
-    return prepared_pattern, umi_length
