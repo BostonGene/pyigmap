@@ -11,7 +11,7 @@ process CalibDedup {
         path "calib.json", emit: json
     script:
         """
-        python3.9 /usr/local/bin/run.py \
+        python3.9 /usr/local/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
             --out-fq1 cR1.fastq.gz \

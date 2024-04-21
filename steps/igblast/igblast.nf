@@ -10,7 +10,7 @@ process IgBlast {
         path "raw_annotation.${receptor}.tsv.gz", emit: annotation
     script:
         """
-        python3.9 /usr/local/bin/run.py \
+        python3.9 /usr/local/run.py \
             --in-fasta \${PWD}/$fasta \
             --in-ref \${PWD}/$ref \
             --receptor ${receptor} \

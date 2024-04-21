@@ -14,7 +14,7 @@ process Vidjil {
         path "vidjil.${receptor}.log", emit: logs
     script:
         """
-        python3.9 /usr/local/bin/run.py \
+        python3.9 /usr/local/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
             --in-fq12 $fq12 \

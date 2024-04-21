@@ -11,7 +11,7 @@ process CDR3ErrorCorrector {
         path "pyigmap.tar.gz", emit: archive
     script:
         """
-        python3.9 /usr/local/bin/run.py \
+        python3.9 /usr/local/run.py \
             --in-tcr-annotation $bcr_annotation \
             --in-bcr-annotation $tcr_annotation \
             --pgen-threshold 0 \

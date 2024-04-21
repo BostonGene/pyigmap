@@ -13,7 +13,7 @@ process Fastp {
         path "fastp.html", emit: html
     script:
         """
-        python3.9 /usr/local/bin/run.py \
+        python3.9 /usr/local/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
             --out-fq1 mR1.fastq.gz \
