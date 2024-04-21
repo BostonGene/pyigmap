@@ -3,7 +3,7 @@ import argparse
 from logger import set_logger
 from utils import (check_error_tolerance_size, keep_only_paired_reads, split_by_chunks, extract_umi,
                    cluster_umi, generate_consensus, save_total_read_count, save_results)
-from barcode_pattern import get_prepared_pattern_and_umi_len
+from barcode.pattern import get_prepared_pattern_and_umi_len
 
 logger = set_logger(name=__file__)
 
@@ -39,7 +39,6 @@ def parse_args() -> argparse.Namespace:
     error_message_list = check_argument_consistency(args)
     if error_message_list:
         parser.error("\n".join(error_message_list))
-
 
     return parser.parse_args()
 
