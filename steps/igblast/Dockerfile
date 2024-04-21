@@ -1,6 +1,6 @@
 FROM python:3.9-bullseye
 
-ENV SOFT_DIR=/usr/local/bin
+ENV SOFT_DIR=/usr/local
 
 RUN apt-get update && apt-get -y install wget pigz
 
@@ -15,13 +15,12 @@ RUN wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VE
 ENV SEQTK_VERSION=1.4
 RUN wget https://github.com/lh3/seqtk/archive/refs/tags/v${SEQTK_VERSION}.tar.gz -O seqtk.tar.gz && \
     tar -xvzf seqtk.tar.gz --one-top-level=seqtk --strip-component 1 && \
-    cd seqtk && make && mv seqtk ${SOFT_DIR}/ && \
+    cd seqtk && make && mv seqtk ${SOFT_DIR}/bin && \
     cd .. && rm -r seqtk seqtk.tar.gz
 
 ENV SEQKIT_VERSION=2.8.0
 RUN wget https://github.com/shenwei356/seqkit/releases/download/v${SEQKIT_VERSION}/seqkit_linux_amd64.tar.gz -O seqkit.tar.gz && \
-    tar -xvzf seqkit.tar.gz --one-top-level=seqkit --strip-component 1 && \
-    mv seqkit ${SOFT_DIR}/ && \
+    tar -xvzf seqkit.tar.gz --one-top-level=${SOFT_DIR}/bin/seqkit --strip-component 1 && \
     rm seqkit.tar.gz
 
 WORKDIR /
@@ -30,4 +29,4 @@ COPY run.py ${SOFT_DIR}/run.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
 # Uncomment it if you need to run an executable container
-# ENTRYPOINT ["python3.9", "${SOFT_DIR}/run.py"]
+# ENTRYPOINT ["python3.9", "/usr/local/run.py"]

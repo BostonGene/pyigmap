@@ -1,6 +1,6 @@
 FROM python:3.9-bullseye
 
-ENV SOFT_DIR=/usr/local/bin
+ENV SOFT_DIR=/usr/local
 
 RUN apt-get update
 
@@ -16,4 +16,4 @@ COPY logger.py ${SOFT_DIR}/logger.py
 COPY filter.py ${SOFT_DIR}/filter.py
 
 # Uncomment it if you need to run an executable container
-# ENTRYPOINT ["python3.9", "${SOFT_DIR}/run.py"]
+# ENTRYPOINT ["python3.9", "/usr/local/run.py"]
