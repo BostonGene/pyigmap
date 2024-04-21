@@ -1,7 +1,7 @@
 import pytest
 from pytest import fixture
 
-from barcode_pattern import (add_nucleotide_cost, replace_nucleotide_patterns,
+from barcode.pattern import (add_nucleotide_cost, replace_nucleotide_patterns,
                              replace_barcode_type_to_regex_group, add_brackets_around_barcode,
                              validate_pattern, parse_umi_length, add_nucleotide_cost,
                              NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS, ValidationError,
@@ -31,6 +31,7 @@ def pattern5() -> str:
 @fixture(scope='module')
 def pattern6() -> str:
     return "^N{14}"
+
 
 @fixture(scope='module')
 def pattern7() -> str:
@@ -84,6 +85,7 @@ def test_add_nucleotide_cost(pattern7):
 
 def test_without_add_nucleotide_cost(pattern8):
     assert add_nucleotide_cost(pattern=pattern8) == pattern8
+
 
 def test_get_prepared_pattern_and_umi_len(pattern2):
     assert (get_prepared_pattern_and_umi_len(pattern=pattern2)
