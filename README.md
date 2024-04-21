@@ -1,10 +1,10 @@
 # pyigmap
 
-
+`PyIgMap` is a [Nextflow](https://github.com/nextflow-io/trademark)-driven and Python-based workflow for mapping and annotating AIRR format of TCR/BCR repertoire sequencing data. 
 ## Quick start
 
 1. This pipeline requires Docker, Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
-2. Download repository
+2. Download repository:
 ```bash
 git clone https://github.com/BostonGene/pyigmap.git
 ```
