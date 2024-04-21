@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import tempfile
 
-from barcode_extractor import BarcodeExtractor
+from barcode.extract import get_processed_fastqs
 from logger import set_logger
 
 logger = set_logger(name=__file__)
@@ -179,17 +179,14 @@ def extract_umi(fq12_chunks: list[str], read1_pattern: str,
 
     logger.info(f'Extracting UMI...')
     for fq1_chunk, fq2_chunk in fq12_chunks:
-        umi_extractor = BarcodeExtractor(fq1_chunk, fq2_chunk, read1_pattern,
-                                         read2_pattern, find_umi_in_rc=find_umi_in_rc)
+        (processed_fq1_chunk_path, processed_fq2_chunk_path,
+         reads_num_before, reads_num_after) = get_processed_fastqs(fq1_chunk, fq2_chunk, read1_pattern,
+                                                                   read2_pattern, find_umi_in_rc)
+        processed_fq1_chunks.append(processed_fq1_chunk_path)
+        processed_fq2_chunks.append(processed_fq2_chunk_path)
 
-        chunk_reads1, chunk_reads2 = umi_extractor.get_fastq_reads()
-        processed_fq1_chunk, processed_fq2_chunk = umi_extractor.process_in_parallel(chunk_reads1, chunk_reads2)
-
-        processed_fq1_chunks.append(processed_fq1_chunk)
-        processed_fq2_chunks.append(processed_fq2_chunk)
-
-        total_reads_count += umi_extractor.get_initial_reads_count()
-        initial_reads_count += umi_extractor.get_final_reads_count()
+        initial_reads_count += reads_num_before
+        total_reads_count += reads_num_after
 
         remove(fq1_chunk, fq2_chunk)
 
