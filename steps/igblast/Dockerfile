@@ -9,7 +9,7 @@ RUN pip3 install -r requirements.txt
 
 ENV IGBLAST_VERSION=1.22.0
 RUN wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VERSION}/ncbi-igblast-${IGBLAST_VERSION}-x64-linux.tar.gz -O ncbi-igblast.tar.gz && \
-    tar -xvzf ncbi-igblast.tar.gz --one-top-level=ncbi-igblast --strip-component 1 && \
+    tar -xvzf ncbi-igblast.tar.gz --one-top-level=${SOFT_DIR}/bin/ncbi-igblast --strip-component 1 && \
     rm ncbi-igblast.tar.gz
 
 ENV SEQTK_VERSION=1.4
@@ -23,7 +23,8 @@ RUN wget https://github.com/shenwei356/seqkit/releases/download/v${SEQKIT_VERSIO
     tar -xvzf seqkit.tar.gz --one-top-level=${SOFT_DIR}/bin/seqkit --strip-component 1 && \
     rm seqkit.tar.gz
 
-WORKDIR /
+ENV IGBLAST_DIR=${SOFT_DIR}/bin/ncbi-igblast
+ENV PATH=${IGBLAST_DIR}:$PATH
 
 COPY run.py ${SOFT_DIR}/run.py
 COPY logger.py ${SOFT_DIR}/logger.py
