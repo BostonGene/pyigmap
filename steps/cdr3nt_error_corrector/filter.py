@@ -6,9 +6,12 @@ logger = set_logger(name=__file__)
 ALLOWED_LOCUS_CHIMERAS = {'TRAV', 'TRDV', 'TRAJ', 'TRDJ'}
 
 
-def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float) -> pd.DataFrame:
-    annotation = filter_pgen(annotation, pgen_threshold) if pgen_threshold is not None else annotation
-    annotation = remove_non_productive(annotation) if only_productive else annotation
+def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float,
+                   filter_pgen_singletons: bool) -> pd.DataFrame:
+    if pgen_threshold is not None:
+        annotation = filter_pgen(annotation, pgen_threshold, filter_pgen_singletons)
+    if only_productive:
+        annotation = remove_non_productive(annotation)
     annotation = remove_out_of_frame(annotation)
     annotation = drop_duplicates_in_different_loci(annotation, use_pgen=True)
     return annotation
@@ -70,9 +73,13 @@ def remove_chimeras(annotation: pd.DataFrame) -> pd.DataFrame:
     return annotation
 
 
-def filter_pgen(annotation: pd.DataFrame, pgen_threshold) -> pd.DataFrame:
-    filtered_annotation = annotation[(annotation['pgen'].isna()) | (annotation['pgen'].values > pgen_threshold)]
-    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} clones with pgen <= {pgen_threshold}.')
+def filter_pgen(annotation: pd.DataFrame, pgen_threshold: float, filter_pgen_singletons: bool) -> pd.DataFrame:
+    condition = (annotation['pgen'].isna()) | (annotation['pgen'] > pgen_threshold)
+    if filter_pgen_singletons:
+        condition |= annotation['duplicate_count'] != 1
+    filtered_annotation = annotation[condition]
+    diff_count = annotation.shape[0] - filtered_annotation.shape[0]
+    logger.info(f'Filtered out {diff_count} clones with pgen <= {pgen_threshold}.')
     return filtered_annotation
 
 
@@ -94,7 +101,7 @@ def remove_non_productive(annotation: pd.DataFrame) -> pd.DataFrame:
 def remove_non_functional(annotation: pd.DataFrame) -> pd.DataFrame:
     filtered_functional = annotation[~annotation['junction'].isna() &
                                      ~annotation['junction_aa'].str.contains('_', na=False) &
-                                     ~annotation['junction_aa'].str.contains('\*', na=False) &
+                                     ~annotation['junction_aa'].str.contains('\\*', na=False) &
                                      annotation['junction_aa'].str.startswith('C', na=False) &
                                      (annotation['junction_aa'].str.endswith('F', na=False) |
                                       annotation['junction_aa'].str.endswith('W', na=False))]
