@@ -21,10 +21,15 @@ mypy: venv ## >> running mypy type checker
 	$(PYTHON) -m mypy steps/igblast/
 	$(PYTHON) -m mypy steps/cdr3nt_error_corrector/
 
-check format: venv
+check: venv ## >> running ruff linter
 	@echo ""
-	@echo "$(ccso)--> Running ruff $@ $(ccend)"
-	$(PYTHON) -m ruff $@ steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
+	@echo "$(ccso)--> Running ruff check $(ccend)"
+	$(PYTHON) -m ruff check steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
+
+format: venv ## >> running ruff formatter
+	@echo ""
+	@echo "$(ccso)--> Running ruff format $(ccend)"
+	$(PYTHON) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
 test: venv ## >> running tests for all steps via pytest tool
 	@echo ""
