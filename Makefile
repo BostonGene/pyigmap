@@ -40,7 +40,7 @@ $(VIRTUAL_ENV):
 	python3 -m pip install virtualenv
 	virtualenv $(VIRTUAL_ENV)
 
-install: venv ./steps/cdr3nt_error_corrector/requirements.txt ##@main >> update requirements.txt inside the virtual environment
+install: venv ##@main >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(PYTHON) -m pip install -r ./steps/calib_dedup/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/igblast/requirements.txt
