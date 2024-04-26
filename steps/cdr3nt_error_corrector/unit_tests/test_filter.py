@@ -6,13 +6,13 @@ import filter
 
 @fixture(scope='module')
 def annotation_with_duplicates_in_different_loci() -> pd.DataFrame:
-    return pd.DataFrame(data={'duplicate_count': [1, 1, 1, 1, 1],
-                              'junction': ['AAA', 'AAA', 'AAA', 'AAA', 'AAA'],
-                              'locus': ['TRA', 'TRA', 'IGH', 'IGH', 'IGL'],
-                              'pgen': [0.0001, 0.0001, 0.6, 0.6, 0.5],
-                              'j_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002],
-                              'v_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002]},
-                        index=[0, 1, 0, 1, 2])
+    return pd.DataFrame(data={'duplicate_count': [1, 1, 1, 1, 1, 100],
+                              'junction': ['AAA', 'AAA', 'AAA', 'AAA', 'AAA', 'AAT'],
+                              'locus': ['TRA', 'TRA', 'IGH', 'IGH', 'IGL', 'IGK'],
+                              'pgen': [0.0001, 0.0001, 0.6, 0.6, 0.5, 0.9],
+                              'j_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002, 0.00001],
+                              'v_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002, 0.00001]},
+                        index=[0, 1, 0, 1, 2, 0])
 
 
 @fixture(scope='module')
@@ -69,20 +69,39 @@ def test_remove_non_productive(annotation_non_productive):
 
 def test_get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci):
     assert filter._get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)[0].equals(
-        annotation_with_duplicates_in_different_loci
+        pd.DataFrame(data={'duplicate_count': [1, 1, 1, 1, 1],
+                           'junction': ['AAA', 'AAA', 'AAA', 'AAA', 'AAA'],
+                           'locus': ['TRA', 'TRA', 'IGH', 'IGH', 'IGL'],
+                           'pgen': [0.0001, 0.0001, 0.6, 0.6, 0.5],
+                           'j_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002],
+                           'v_support': [0.12, 0.15, 0.0001, 0.0001, 0.0002]},
+                     index=[0, 1, 0, 1, 2])
     )
 
 
-def test_drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci):
+def test_drop_duplicates_in_different_loci_without_pgen(annotation_with_duplicates_in_different_loci):
     filtered_annotation = filter.drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={'duplicate_count': [1, 1],
-                           'junction': ['AAA', 'AAA'],
-                           'locus': ['IGH', 'IGH'],
-                           'pgen': [0.6, 0.6],
-                           'j_support': [0.0001, 0.0001],
-                           'v_support': [0.0001, 0.0001]},
-                     index=[0, 1])
+        pd.DataFrame(data={'duplicate_count': [1, 1, 100],
+                           'junction': ['AAA', 'AAA', 'AAT'],
+                           'locus': ['IGH', 'IGH', 'IGK'],
+                           'pgen': [0.6, 0.6, 0.9],
+                           'j_support': [0.0001, 0.0001, 0.00001],
+                           'v_support': [0.0001, 0.0001, 0.00001]},
+                     index=[2, 3, 5])
+    )
+
+
+def test_drop_duplicates_in_different_loci_with_pgen(annotation_with_duplicates_in_different_loci):
+    filtered_annotation = filter.drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci, use_pgen=True)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={'duplicate_count': [1, 1, 100],
+                           'junction': ['AAA', 'AAA', 'AAT'],
+                           'locus': ['IGH', 'IGH', 'IGK'],
+                           'pgen': [0.6, 0.6, 0.9],
+                           'j_support': [0.0001, 0.0001, 0.00001],
+                           'v_support': [0.0001, 0.0001, 0.00001]},
+                     index=[2, 3, 5])
     )
 
 

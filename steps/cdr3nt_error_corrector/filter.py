@@ -23,6 +23,7 @@ def _get_duplicates_in_different_loci(annotation: pd.DataFrame) -> list[pd.DataF
 
 def drop_duplicates_in_different_loci(annotation: pd.DataFrame, use_pgen=False) -> pd.DataFrame:
     """Drops cdr3 duplicates in different loci"""
+    annotation = annotation.reset_index(drop=True)
     loci_duplicates = _get_duplicates_in_different_loci(annotation)
 
     corrected_loci_duplicates = [_filter_cdr3_duplicates_by_metrics(loci_duplicate, use_pgen)
