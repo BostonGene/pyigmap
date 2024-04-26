@@ -4,7 +4,7 @@ PYTHON=${VIRTUAL_ENV}/bin/python3
 
 # .ONESHELL:
 DEFAULT_GOAL: help
-.PHONY: help run clean build test mypy check format update
+.PHONY: help run clean build test mypy check format update venv
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -51,9 +51,9 @@ build: ##@main >> build the virtual environment and install requirements
 	$(MAKE) clean
 	$(MAKE) update
 
-venv: $(VIRTUAL_ENV) ## >> install virtualenv and setup the virtual environment
+venv: $(VIRTUAL_ENV)
 
-$(VIRTUAL_ENV):
+$(VIRTUAL_ENV): ## >> install virtualenv and setup the virtual environment
 	@echo "$(ccso)--> Install and setup virtualenv $(ccend)"
 	python3 -m pip install --upgrade pip
 	python3 -m pip install virtualenv
