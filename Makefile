@@ -4,7 +4,7 @@ PYTHON=${VIRTUAL_ENV}/bin/python3
 
 # .ONESHELL:
 DEFAULT_GOAL: help
-.PHONY: help run clean build test
+.PHONY: help run clean build test mypy check format
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -12,21 +12,35 @@ ccbold = $(shell tput bold)
 ccgreen = $(shell tput setaf 2)
 ccso = $(shell tput smso)
 
-test: ## >> running tests for all steps via pytest tool
+mypy: venv ## >> running mypy type checker
+	@echo ""
+	@echo "$(ccso)--> Running mypy $(ccend)"
+	$(PYTHON) -m mypy steps/calib_dedup/
+	$(PYTHON) -m mypy steps/fastp/
+	$(PYTHON) -m mypy steps/vidjil/
+	$(PYTHON) -m mypy steps/igblast/
+	$(PYTHON) -m mypy steps/cdr3nt_error_corrector/
+
+check format: venv
+	@echo ""
+	@echo "$(ccso)--> Running ruff $@ $(ccend)"
+	$(PYTHON) -m ruff $@ steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
+
+test: venv ## >> running tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running tests $(ccend)"
-#	. $(VIRTUAL_ENV)/bin/activate; python3 -m pytest steps/calib_dedup/unit_tests -v
-#	. $(VIRTUAL_ENV)/bin/activate; python3 -m pytest steps/fastp/unit_tests -v
-#	. $(VIRTUAL_ENV)/bin/activate; python3 -m pytest steps/vidjil/unit_tests -v
-#	. $(VIRTUAL_ENV)/bin/activate; python3 -m pytest steps/igblast/unit_tests -v
-	. $(VIRTUAL_ENV)/bin/activate; python3 -m pytest steps/cdr3nt_error_corrector/unit_tests -v
+#	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -v
+#	$(PYTHON) -m pytest steps/fastp/unit_tests -v
+#	$(PYTHON) -m pytest steps/vidjil/unit_tests -v
+#	$(PYTHON) -m pytest steps/igblast/unit_tests -v
+	$(PYTHON) -m pytest steps/cdr3nt_error_corrector/unit_tests -v
 
 clean: ## >> remove all environment and build files
 	@echo ""
 	@echo "$(ccso)--> Removing virtual environment $(ccend)"
 	rm -rf $(VIRTUAL_ENV)
 
-build: ##@main >> build the virtual environment with an ipykernel for jupyter and install requirements
+build: ##@main >> build the virtual environment and install requirements
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
@@ -45,7 +59,7 @@ install: venv ##@main >> update requirements.txt inside the virtual environment
 	$(PYTHON) -m pip install -r ./steps/calib_dedup/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/igblast/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
-	$(PYTHON) -m pip install pytest==8.1.1
+	$(PYTHON) -m pip install pytest==8.1.1 ruff==0.4.2 mypy==1.10.0
 
 
 # And add help text after each target name starting with '\#\#'
