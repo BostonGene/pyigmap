@@ -4,7 +4,7 @@ PYTHON=${VIRTUAL_ENV}/bin/python3
 
 # .ONESHELL:
 DEFAULT_GOAL: help
-.PHONY: help run clean build test mypy check format
+.PHONY: help run clean build test mypy check format update
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -12,7 +12,7 @@ ccbold = $(shell tput bold)
 ccgreen = $(shell tput setaf 2)
 ccso = $(shell tput smso)
 
-mypy: venv ## >> running mypy type checker
+mypy: venv ## >> run mypy type checker
 	@echo ""
 	@echo "$(ccso)--> Running mypy $(ccend)"
 	$(PYTHON) -m mypy steps/calib_dedup/
@@ -21,17 +21,17 @@ mypy: venv ## >> running mypy type checker
 	$(PYTHON) -m mypy steps/igblast/
 	$(PYTHON) -m mypy steps/cdr3nt_error_corrector/
 
-check: venv ## >> running ruff linter
+check: venv ## >> run ruff linter
 	@echo ""
 	@echo "$(ccso)--> Running ruff check $(ccend)"
 	$(PYTHON) -m ruff check steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
-format: venv ## >> running ruff formatter
+format: venv ## >> run ruff formatter
 	@echo ""
 	@echo "$(ccso)--> Running ruff format $(ccend)"
 	$(PYTHON) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
-test: venv ## >> running tests for all steps via pytest tool
+test: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running tests $(ccend)"
 #	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -v
@@ -49,7 +49,7 @@ build: ##@main >> build the virtual environment and install requirements
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
-	$(MAKE) install
+	$(MAKE) update
 
 venv: $(VIRTUAL_ENV) ## >> install virtualenv and setup the virtual environment
 
@@ -59,7 +59,7 @@ $(VIRTUAL_ENV):
 	python3 -m pip install virtualenv
 	virtualenv $(VIRTUAL_ENV)
 
-install: venv ##@main >> update requirements.txt inside the virtual environment
+update: venv ##@main >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(PYTHON) -m pip install -r ./steps/calib_dedup/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/igblast/requirements.txt
