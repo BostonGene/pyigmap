@@ -2,3 +2,13 @@
 line-length = 120
 indent-width = 4
 target-version = "py39"
+
+[tool.mypy]
+mypy_path = "./steps"
+follow_imports = "silent"
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+check_untyped_defs = true
+no_implicit_reexport = true
