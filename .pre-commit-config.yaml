@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pytest_corrector
+        name: pytest
+        entry: pytest
+        language: python
+        args: ["-v", "steps/cdr3nt_error_corrector/unit_tests/"]
+        types: [python]
+        additional_dependencies:
+            - pytest==8.1.1
+            - pandas==2.1.4
+            - olga==1.2.4
+        files: steps/cdr3nt_error_corrector/unit_tests/
+        verbose: true
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.9.0
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [python]
+        exclude: ^venv/ ^.git/ ^.vscode/ ^.idea/ ^.nextflow/ ^.DS_Store
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.1
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format

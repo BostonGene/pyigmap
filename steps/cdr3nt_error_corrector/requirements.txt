@@ -4,21 +4,11 @@
 #
 #    pip-compile requirements.in
 #
-exceptiongroup==1.2.0
-    # via pytest
-iniconfig==2.0.0
-    # via pytest
 numpy==1.26.3
     # via pandas
 olga==1.2.4
     # via -r requirements.in
-packaging==24.0
-    # via pytest
 pandas==2.1.4
-    # via -r requirements.in
-pluggy==1.4.0
-    # via pytest
-pytest==8.1.1
     # via -r requirements.in
 python-dateutil==2.8.2
     # via pandas
@@ -26,7 +16,5 @@ pytz==2023.3.post1
     # via pandas
 six==1.16.0
     # via python-dateutil
-tomli==2.0.1
-    # via pytest
 tzdata==2023.4
     # via pandas
