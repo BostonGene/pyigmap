@@ -1,4 +1,4 @@
-# CDR3nt-error-corrector step
+# cdr3nt-error-corrector step
 
 This step removes spurious rearrangements via [OLGA](https://github.com/statbiophys/OLGA) tool, corrects and filters out bad clones.
 
@@ -7,6 +7,7 @@ This step removes spurious rearrangements via [OLGA](https://github.com/statbiop
 * `--calculate-pgen` (**optional**): calculate generation probability of clonotypes. Automatically on if `--pgen-threshold` is set and not 0
 * `--only-functional` (**optional**): filter out non-functional clonotypes
 * `--only-productive` (**optional**): filter out non-productive clonotypes
+* `--filter-pgen-singletons` (**optional**): Filter out singleton clones with duplicate_count=1 and pgen<=pgen_threshold
 * `--clonotype-collapse-factor` (**optional**): value, that involved in clonotypes collapsing
 * `--remove-chimeras` (**optional**): filter out chimeras, that have different locus in V-/J-segments
 
@@ -52,14 +53,4 @@ docker run \
    --in-json /root/test_fastp.json \
    --out-json /root/stat.json \
    --out-archive /root/pyigmap.tar.gz # archive with final results will be saved into ./unit_tests/test_data/
-```
-
-## Run tests
-
-```bash
-python3 -m venv env
-. env/bin/activate
-pip3 install -r requirements.txt
-
-pytest unit_tests/ -v
 ```

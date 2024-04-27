@@ -7,8 +7,7 @@ import filter
 from correct import ClonotypeCorrector
 from pgen import PgenModel
 
-from utils import (OLGA_MODELS_DIR, decompress, save_corrected_annotation,
-                   parse_total_reads, save_metrics, make_archive)
+from utils import OLGA_MODELS_DIR, decompress, save_corrected_annotation, parse_total_reads, save_metrics, make_archive
 from logger import set_logger
 
 logger = set_logger(name=__file__)
@@ -44,6 +43,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--remove-chimeras', action='store_true',
                         help='Remove chimeras clonotypes, that have different locus in v-/j-genes')
     parser.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
+    parser.add_argument("--filter-pgen-singletons", action="store_true",
+                        help="Filter out singleton clones with duplicate_count=1 and pgen<=pgen_threshold")
     parser.add_argument('--olga-models', type=str, help='Archive with OLGA models')
     parser.add_argument('--out-corrected-annotation', type=str, help='Output corrected annotation', required=True)
     parser.add_argument('--out-json', type=str, help='Output json with metrics')
@@ -83,7 +84,8 @@ def run(args: argparse.Namespace) -> None:
 
         concatenated_annotation = pd.concat(corrected_annotations)
 
-        filtered_annotation = filter.run_filtration(concatenated_annotation, args.only_productive, args.pgen_threshold)
+        filtered_annotation = filter.run_filtration(concatenated_annotation, args.only_productive,
+                                                    args.pgen_threshold, args.filter_pgen_singletons)
     else:
         filtered_annotation = annotation
 
