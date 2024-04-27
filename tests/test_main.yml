@@ -1,0 +1,5 @@
+- name: test_main
+  command: nextflow run main.nf --mode rnaseq --outdir ./results --sample SRR3743469 --reads 10000
+  files:
+    - path: "results/cdr3nt-error-corrector/pyigmap.tar.gz"
+#      md5sum: ...
