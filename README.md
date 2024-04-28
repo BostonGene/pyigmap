@@ -17,17 +17,18 @@ git clone https://github.com/BostonGene/pyigmap.git
 ```bash
 cd pyigmap
 make # sudo apt install make
+chmod +x pyigmap
 ```
 
 4. Start running your own analysis!
 
 ```bash
 # for amplicon data
-./nextflow run main.nf --mode amplicon --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+./pyigmap --mode amplicon --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
 
 # for RNASeq data
-./nextflow run main.nf --mode rnaseq --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+./pyigmap --mode rnaseq --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
 
 # for public data
-./nextflow run main.nf --mode rnaseq --outdir ./results --sample SRR3743469 --reads 10000
+./pyigmap --mode rnaseq --outdir ./results --sample SRR3743469 --reads 10000
 ```

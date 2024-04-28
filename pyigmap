@@ -1,0 +1,23 @@
+#!/bin/bash
+
+nextflow="./nextflow"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -jar|-V)
+            shift
+            ;;
+        *)
+            pyigmapArgs+=("$1")
+            ;;
+    esac
+    shift
+done
+
+if [[ -z "$nextflow" ]]; then
+    echo "No nextflow found."
+    exit 1
+fi
+
+${nextflow} run main.nf "${pyigmapArgs[@]}"
+exit $?
