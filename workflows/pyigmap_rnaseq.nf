@@ -1,6 +1,6 @@
 include { Fastp } from '../steps/fastp/fastp.nf'
-include { VDJ_MAPPING } from './vdj-mapping.nf'
-include { CDR3ErrorCorrector } from '../steps/cdr3nt_error_corrector/cdr3nt-error-corrector.nf'
+include { VDJ_MAPPING } from './vdj_mapping.nf'
+include { CDR3ErrorCorrector } from '../steps/cdr3nt_error_corrector/cdr3nt_error_corrector.nf'
 
 workflow PYIGMAP_RNASEQ {
     take:

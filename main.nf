@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 
-include { PYIGMAP_AMPLICON } from './workflows/pyigmap-amplicon.nf'
-include { PYIGMAP_RNASEQ } from './workflows/pyigmap-rnaseq.nf'
-include { DOWNLOAD_FASTQ } from './workflows/download-fastq.nf'
+include { PYIGMAP_AMPLICON } from './workflows/pyigmap_amplicon.nf'
+include { PYIGMAP_RNASEQ } from './workflows/pyigmap_rnaseq.nf'
+include { DOWNLOAD_FASTQ } from './workflows/download_fastq.nf'
 include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from './steps/downloader/downloader.nf'
 
 
