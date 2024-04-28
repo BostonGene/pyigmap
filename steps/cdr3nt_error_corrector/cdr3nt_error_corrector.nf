@@ -1,5 +1,5 @@
 process CDR3ErrorCorrector {
-    publishDir "${params.outdir}/cdr3nt-error-corrector", mode: 'copy', overwrite: false
+    publishDir "${params.outdir}", mode: 'copy', overwrite: false
     container 'cdr3nt-error-corrector'
 
     input:
