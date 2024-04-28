@@ -1,6 +1,6 @@
 # pyigmap
 
-`PyIgMap` is a [Nextflow](https://github.com/nextflow-io/trademark)-driven and Python-based workflow for mapping and annotating (in [AIRR](https://docs.airr-community.org/en/stable/datarep/rearrangements.html#fields) format) TCR/BCR repertoire sequencing data. 
+`PyIgMap` is a [Nextflow](https://github.com/nextflow-io/nextflow)-driven and Python-based workflow for mapping and annotating (in [AIRR](https://docs.airr-community.org/en/stable/datarep/rearrangements.html#fields) format) TCR/BCR repertoire sequencing data. 
 
 ## Quick start
 
