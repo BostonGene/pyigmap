@@ -25,7 +25,7 @@ process GetLinks {
 }
 
 process Download {
-    publishDir "${params.outdir}/downloaded", mode: 'copy', overwrite: false
+//     publishDir "${params.outdir}/downloaded", mode: 'copy', overwrite: false
     container 'downloader'
 
     input:
@@ -49,7 +49,7 @@ process Download {
 }
 
 process Downsample {
-    publishDir "${params.outdir}/downsampled", mode: 'copy', overwrite: false
+//     publishDir "${params.outdir}/downsampled", mode: 'copy', overwrite: false
     container 'downloader'
 
     input:
