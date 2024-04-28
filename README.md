@@ -4,16 +4,21 @@
 
 ## Quick start
 
-1. This pipeline requires Docker, Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
+1. This pipeline requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
+
 2. Download repository:
+
 ```bash
 git clone https://github.com/BostonGene/pyigmap.git
 ```
+
 3. Run this command to install nextflow and build container steps:
+
 ```bash
 cd pyigmap
 make # sudo apt install make
 ```
+
 4. Start running your own analysis!
 
 For amplicon data:
