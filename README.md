@@ -21,17 +21,13 @@ make # sudo apt install make
 
 4. Start running your own analysis!
 
-For amplicon data:
 ```bash
+# for amplicon data
 ./nextflow run main.nf --mode amplicon --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
-```
 
-For RNASeq data:
-```bash
+# for RNASeq data
 ./nextflow run main.nf --mode rnaseq --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
-```
 
-For public data:
-```bash
+# for public data
 ./nextflow run main.nf --mode rnaseq --outdir ./results --sample SRR3743469 --reads 10000
 ```
