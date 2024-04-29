@@ -21,11 +21,19 @@ This step is a wrapping of [IgBlast](https://ncbi.github.io/igblast/) V(D)J mapp
 
 ## Build archive with V(D)J reference in IgBLAST format:
 
-Run script:
+If you need to keep only *01 (major) alleles, execute:
 ```bash
 bash build_ref.sh
+```
 
-cp /tmp/igblast.reference.tar.gz .
+Or you can keep all (major and minor) alleles by adding `-a` flag:
+```bash
+bash build_ref.sh -a
+```
+
+Move generated archive with igblast reference to the current folder:
+```bash
+mv /tmp/igblast.reference.tar.gz .
 ``` 
 
 ## How to run
