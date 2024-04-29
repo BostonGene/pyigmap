@@ -1,10 +1,11 @@
 #!/bin/bash
 
 nextflow="./nextflow"
+pyigmapArgs=()
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -jar|-V)
+        -help)
             shift
             ;;
         *)
@@ -14,8 +15,13 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-if [[ -z "$nextflow" ]]; then
-    echo "No nextflow found."
+if [[ ! -f "$nextflow" ]]; then
+    echo "Error: ./nextflow binary not found."
+    exit 1
+fi
+
+if [[ ${#pyigmapArgs[@]} -eq 0 ]]; then
+    echo "Error: pyigmap args are not specified."
     exit 1
 fi
 
