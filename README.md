@@ -32,3 +32,7 @@ chmod +x pyigmap
 # for public data
 ./pyigmap --mode rnaseq --outdir ./results --sample SRR3743469 --reads 10000
 ```
+
+## Contributing
+
+Notes on contribution see at `CONTRIBUTING.md`
