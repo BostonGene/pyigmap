@@ -34,7 +34,7 @@ make mypy # runs mypy type checker
 
 ## Development
 
-After each minor/major change in pyigmap, make sure to add some notes to `CHANGELOG.md`.
+After each minor/major change in pyigmap, make sure to add some notes to [CHANGELOG.md](CHANGELOG.md).
 
 ## Help needed
 
