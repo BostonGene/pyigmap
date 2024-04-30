@@ -6,18 +6,26 @@ This script builds V(D)J reference in igblast format
 
 END_COMMENT
 
-VALID_ARGS=$(getopt -o a --long allow-minor-alleles -- "$@")
+VALID_ARGS=$(getopt -o ao: --long allow-minor-alleles,output: -- "$@")
+
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi
 
+REF_OUT_PATH=/tmp/igblast.reference.tar.gz
+
 eval set -- "$VALID_ARGS"
-while [ : ]; do
+while [[ $# -gt 0 ]]; do
   case "$1" in
     -a | --allow-minor-alleles)
-        echo "Enabled --allow-minor-alleles"
-        save_all_alleles=true
+        echo "INFO: Enabled minor allele saving (*01, *02, ..., *0n)"
+        SAVE_ALL_ALLELES=true
         shift
+        ;;
+    -o | --output)
+        REF_OUT_PATH="$2"
+        echo "INFO: Specified --output '$REF_OUT_PATH'"
+        shift 2
         ;;
     --) shift;
         break
@@ -71,7 +79,7 @@ do
     # convert imgt fasta -> igblast fasta
     ${IGBLAST_DIR}/bin/edit_imgt_file.pl ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt > ${OUTPUT_DIR}/${OUTPUT_NAME}.all.fasta
 
-    if [ $save_all_alleles ] ; then
+    if [ $SAVE_ALL_ALLELES ] ; then
       mv ${OUTPUT_DIR}/${OUTPUT_NAME}.all.fasta ${REF_DIR}/database/${OUTPUT_NAME}
     else
       # select only minor alleles *01
@@ -92,6 +100,6 @@ wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database/ncbi_hu
 tar -xvf ${OUTPUT_DIR}/ncbi_human_c_genes.tar -C ${REF_DIR}/database && \
 cp -r ${IGBLAST_DIR}/internal_data ${REF_DIR} && \
 cp -r ${IGBLAST_DIR}/optional_file ${REF_DIR} && \
-tar czf ${REF_DIR}.tar.gz -C ${REF_DIR} database internal_data optional_file  # create archive with V(D)J ref
+tar czf ${REF_OUT_PATH} -C ${REF_DIR} database internal_data optional_file  # create archive with V(D)J ref
 
-echo "Archive with IgBLAST reference here ${REF_DIR}.tar.gz"
+echo "INFO: Archive with IgBLAST reference here ${REF_OUT_PATH}"
