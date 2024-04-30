@@ -6,7 +6,7 @@ Thanks for being willing to contribute!
 
 1. Fork and clone the repo.
 2. Install a [Python 3.9](https://www.python.org/downloads/release/python-390/) (or later), [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
-3. Install `pip install pre-commit` and `sudo apt install make`.
+3. Execute `pip install pre-commit` and `sudo apt install make`.
 4. Create an [issue](https://github.com/BostonGene/pyigmap/issues) and branch from `main`.
 
 ## Building and Testing
@@ -31,6 +31,10 @@ make check # runs ruff linter
 make format # runs ruff formatter
 make mypy # runs mypy type checker
 ```
+
+## Development
+
+After each minor/major change in pyigmap, make sure to add some notes to `CHANGELOG.md`.
 
 ## Help needed
 
