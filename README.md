@@ -30,7 +30,7 @@ chmod +x pyigmap
 ./pyigmap --mode rnaseq --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
 
 # for public data
-./pyigmap --mode rnaseq --outdir ./results --sample SRR3743469 --reads 10000
+./pyigmap --mode rnaseq --outdir ./results --sample SRR3743469 --reads 200000
 ```
 
 ## Contributing
