@@ -74,18 +74,20 @@ do
     OUTPUT_NAME=${ORGANISM}.${RECEPTOR}.${LOCUS:3}
 
     # download reference from https://www.imgt.org/ database
-    wget https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/${SPECIE}/${LOCUS:0:2}/${LOCUS}.fasta -O ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt
-
-    # convert imgt fasta -> igblast fasta
-    ${IGBLAST_DIR}/bin/edit_imgt_file.pl ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt > ${OUTPUT_DIR}/${OUTPUT_NAME}.all.fasta
+    wget https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/${SPECIE}/${LOCUS:0:2}/${LOCUS}.fasta -O ${OUTPUT_DIR}/${OUTPUT_NAME}.all.imgt
 
     if [ $SAVE_ALL_ALLELES ] ; then
-      mv ${OUTPUT_DIR}/${OUTPUT_NAME}.all.fasta ${REF_DIR}/database/${OUTPUT_NAME}
+      mv ${OUTPUT_DIR}/${OUTPUT_NAME}.all.imgt ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt
     else
-      # select only minor alleles *01
-      $SEQKIT_PATH grep ${OUTPUT_DIR}/${OUTPUT_NAME}.all.fasta -r -p "\*01" -o ${REF_DIR}/database/${OUTPUT_NAME}
-      rm ${OUTPUT_DIR}/${OUTPUT_NAME}.all.fasta
+      # select only major alleles *01
+      $SEQKIT_PATH grep ${OUTPUT_DIR}/${OUTPUT_NAME}.all.imgt -r -p "\*01" -o ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt
+      rm ${OUTPUT_DIR}/${OUTPUT_NAME}.all.imgt
     fi
+
+    # convert imgt fasta -> igblast fasta
+    ${IGBLAST_DIR}/bin/edit_imgt_file.pl ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt > ${REF_DIR}/database/${OUTPUT_NAME}
+
+    cp ${REF_DIR}/database/${OUTPUT_NAME} /tmp/igblast_ref_major
 
     # make blast db index
     ${IGBLAST_DIR}/bin/makeblastdb -parse_seqids -dbtype nucl -in ${REF_DIR}/database/${OUTPUT_NAME}
