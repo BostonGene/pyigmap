@@ -35,4 +35,4 @@ chmod +x pyigmap
 
 ## Contributing
 
-Notes on contribution see at [CONTRIBUTING.md](CONTRIBUTING.md)
+Contributions are more than welcome. See the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
