@@ -3,8 +3,8 @@ VIRTUAL_ENV=env
 PYTHON=${VIRTUAL_ENV}/bin/python3
 
 # .ONESHELL:
-DEFAULT_GOAL: help
-.PHONY: help run clean build test mypy check format update venv
+DEFAULT_GOAL: install
+.PHONY: help run clean build test test_wf mypy check format update venv
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -31,24 +31,31 @@ format: venv ## >> run ruff formatter
 	@echo "$(ccso)--> Running ruff format $(ccend)"
 	$(PYTHON) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
+test_wf: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
+	@echo ""
+	@echo "$(ccso)--> Running workflow tests $(ccend)"
+	$(PYTHON) -m pytest tests/ -v
+
 test: venv ## >> run tests for all steps via pytest tool
 	@echo ""
-	@echo "$(ccso)--> Running tests $(ccend)"
+	@echo "$(ccso)--> Running steps tests $(ccend)"
 #	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -v
 #	$(PYTHON) -m pytest steps/fastp/unit_tests -v
 #	$(PYTHON) -m pytest steps/vidjil/unit_tests -v
 #	$(PYTHON) -m pytest steps/igblast/unit_tests -v
 	$(PYTHON) -m pytest steps/cdr3nt_error_corrector/unit_tests -v
 
-clean: ## >> remove all environment and build files
+clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
 	@echo "$(ccso)--> Removing virtual environment $(ccend)"
-	rm -rf $(VIRTUAL_ENV)
+	docker rmi -f downloader calib-dedup fastp vidjil igblast cdr3nt-error-corrector
+	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow
 
-build: ##@main >> build the virtual environment and install requirements
+build: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
+	$(MAKE)
 	$(MAKE) update
 
 venv: $(VIRTUAL_ENV)
@@ -64,8 +71,18 @@ update: venv ##@main >> update requirements.txt inside the virtual environment
 	$(PYTHON) -m pip install -r ./steps/calib_dedup/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/igblast/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
-	$(PYTHON) -m pip install pytest==8.1.1 ruff==0.4.2 mypy==1.10.0
+	$(PYTHON) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
+install: ## Install and check dependencies
+	@java --version
+	@docker version
+	curl -s https://get.nextflow.io | bash
+	docker build -t calib-dedup steps/calib_dedup
+	docker build -t fastp steps/fastp
+	docker build -t vidjil steps/vidjil
+	docker build -t igblast steps/igblast
+	docker build -t cdr3nt-error-corrector steps/cdr3nt_error_corrector
+	docker build -t downloader steps/downloader
 
 # And add help text after each target name starting with '\#\#'
 # A category can be added with @category
