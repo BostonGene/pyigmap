@@ -6,8 +6,14 @@ include { DOWNLOAD_FASTQ } from './workflows/download_fastq.nf'
 include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from './steps/downloader/downloader.nf'
 
 
+params.fq1 = null;
+params.fq2 = null;
 params.vidjil_ref = './steps/vidjil/vidjil.germline.tar.gz'
-params.igblast_ref = './steps/igblast/igblast.reference.tar.gz'
+if (params.allow_minor_alleles) {
+    params.igblast_ref = './steps/igblast/igblast.reference.all_alleles.tar.gz'
+} else {
+    params.igblast_ref = './steps/igblast/igblast.reference.minor_allele.tar.gz'
+}
 params.olga_models = './steps/cdr3nt_error_corrector/olga-models.tar.gz'
 params.outdir = './results'
 params.reads = 'all'
@@ -18,6 +24,7 @@ log.info "======================================================="
 log.info "Mode                 : ${params.mode}"
 log.info "Sample               : ${params.sample}"
 log.info "Reads to process     : ${params.reads}"
+log.info "Allow minor alleles: : ${params.allow_minor_alleles}"
 log.info "Fastq1               : ${params.fq1}"
 log.info "Fastq2               : ${params.fq2}"
 log.info "Output directory     : ${params.outdir}"
