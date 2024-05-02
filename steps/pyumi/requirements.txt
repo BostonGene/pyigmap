@@ -4,19 +4,7 @@
 #
 #    pip-compile requirements.in
 #
-exceptiongroup==1.2.0
-    # via pytest
-iniconfig==2.0.0
-    # via pytest
-packaging==24.0
-    # via pytest
-pluggy==1.4.0
-    # via pytest
 pyfastx==2.1.0
-    # via -r requirements.in
-pytest==8.1.1
     # via -r requirements.in
 regex==2023.12.25
     # via -r requirements.in
-tomli==2.0.1
-    # via pytest

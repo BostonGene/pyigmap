@@ -1,11 +1,11 @@
 import pytest
 from pytest import fixture
 
-from barcode.pattern import (add_nucleotide_cost, replace_nucleotide_patterns,
-                             replace_barcode_type_to_regex_group, add_brackets_around_barcode,
-                             validate_pattern, parse_umi_length, add_nucleotide_cost,
-                             NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS, ValidationError,
-                             get_prepared_pattern_and_umi_len)
+from pattern import (add_nucleotide_cost, replace_nucleotide_patterns,
+                     replace_barcode_type_to_regex_group, add_brackets_around_barcode,
+                     validate_pattern, parse_umi_length, add_nucleotide_cost,
+                     NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS, ValidationError,
+                     get_prepared_pattern_and_umi_len)
 
 
 @fixture(scope='module')

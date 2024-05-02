@@ -1,7 +1,7 @@
 from pytest import fixture
 
-from barcode.extract import (create_new_read, get_reverse_complement, PatternMarkup, BarcodeMarkup, remove_subseq,
-                             replace_umi_to_the_seq_start)
+from extract import (create_new_read, get_reverse_complement, PatternMarkup, BarcodeMarkup, remove_subseq,
+                     replace_umi_to_the_seq_start)
 
 
 @fixture(scope='module')
