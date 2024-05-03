@@ -35,7 +35,7 @@ chmod +x pyigmap
 
 ## Benchmark datasets
 
-[AIRR-seq data](https://zenodo.org/records/11103555) for benchmarking a `pyIgMap` pipeline.
+[Datasets](https://zenodo.org/records/11103555) for benchmarking a `pyIgMap` pipeline.
 
 ## Contributing
 
