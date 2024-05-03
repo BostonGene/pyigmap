@@ -2,14 +2,13 @@
 
 include { PYIGMAP_AMPLICON } from './workflows/pyigmap_amplicon.nf'
 include { PYIGMAP_RNASEQ } from './workflows/pyigmap_rnaseq.nf'
-include { DOWNLOAD_FASTQ } from './workflows/download_fastq.nf'
+include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK } from './workflows/download_fastq.nf'
 include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from './steps/downloader/downloader.nf'
 
-
+params.zenodo = false
 params.vidjil_ref = './steps/vidjil/vidjil.germline.tar.gz'
 params.igblast_ref = './steps/igblast/igblast.reference.tar.gz'
 params.olga_models = './steps/cdr3nt_error_corrector/olga-models.tar.gz'
-params.outdir = './results'
 params.reads = 'all'
 
 log.info ""
@@ -17,6 +16,7 @@ log.info "                     P Y I G M A P                     "
 log.info "======================================================="
 log.info "Mode                 : ${params.mode}"
 log.info "Sample               : ${params.sample}"
+log.info "Enable zenodo        : ${params.zenodo}"
 log.info "Reads to process     : ${params.reads}"
 log.info "Fastq1               : ${params.fq1}"
 log.info "Fastq2               : ${params.fq2}"
@@ -27,24 +27,32 @@ log.info "OLGA models          : ${params.olga_models}"
 log.info ""
 
 workflow {
+    reads_to_save = Channel.from(params.reads)
     if (params.sample) {
         if (params.fq1 || params.fq2) {
             error "Error: --sample cannot be used with --fq1 and --fq2 at the same time, exiting..."
         }
         ArrayList sample = params.sample.split(",")
         sample_ch = Channel.from(sample)
-        reads_to_save = Channel.from(params.reads)
-        DOWNLOAD_FASTQ(sample_ch, reads_to_save)
-        fq1 = DOWNLOAD_FASTQ.out.fq1
-        fq2 = DOWNLOAD_FASTQ.out.fq2
+        DOWNLOAD_FASTQ_BY_SAMPLE_ID(sample_ch, reads_to_save)
+        fq1 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq1
+        fq2 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq2
     } else {
         if (!params.fq1 || !params.fq2) {
             error "Error: single-end is not supported, exiting..."
         }
-        fq1 = Channel.fromPath(params.fq1)
-        fq2 = Channel.fromPath(params.fq2)
+        if (params.zenodo) {
+            fq1_link = params.zenodo_link + params.fq1
+            fq2_link = params.zenodo_link + params.fq2
+            sample = params.fq1.replace("_R1.fastq.gz", "").replace("_1.fastq.gz", "")
+            DOWNLOAD_FASTQ_BY_LINK(fq1_link, fq2_link, sample, reads_to_save)
+            fq1 = DOWNLOAD_FASTQ_BY_LINK.out.fq1
+            fq2 = DOWNLOAD_FASTQ_BY_LINK.out.fq2
+        } else {
+            fq1 = Channel.fromPath(params.fq1)
+            fq2 = Channel.fromPath(params.fq2)
+        }
         if (params.reads.toString().isInteger()) {
-            reads_to_save = Channel.from(params.reads)
             DownsampleRead1(fq1, reads_to_save, Channel.from("1"))
             DownsampleRead2(fq2, reads_to_save, Channel.from("2"))
             fq1 = DownsampleRead1.out.fq

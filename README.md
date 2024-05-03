@@ -24,13 +24,16 @@ chmod +x pyigmap
 
 ```bash
 # for amplicon data
-./pyigmap --mode amplicon --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+./pyigmap --mode amplicon --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
 
 # for RNASeq data
-./pyigmap --mode rnaseq --outdir ./results --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+./pyigmap --mode rnaseq --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
 
-# for public data
-./pyigmap --mode rnaseq --outdir ./results --sample SRR3743469 --reads 200000
+# for public data by sample id
+./pyigmap --mode rnaseq --sample SRR3743469 --reads 200000
+
+# for public data from ZENODO
+./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads 200000
 ```
 
 ## Benchmark datasets
