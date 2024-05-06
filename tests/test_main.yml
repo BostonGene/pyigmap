@@ -1,8 +1,16 @@
-- name: test_main_rnaseq
-  command: nextflow run main.nf --mode rnaseq --outdir ./results --sample SRR3743469 --reads 10000
+- name: test_main_rnaseq_sample_id
+  command: ./pyigmap --mode rnaseq --sample SRR3743469 --reads 10000
   files:
-    - path: "results/cdr3nt-error-corrector/pyigmap.tar.gz"
-- name: test_main_amplicon
-  command: nextflow run main.nf --mode amplicon --outdir ./results --sample SRR3743469 --reads 10000
+    - path: "pyigmap.tar.gz"
+- name: test_main_amplicon_sample_id
+  command: ./pyigmap --mode amplicon --sample SRR3743469 --reads 10000
   files:
-    - path: "results/cdr3nt-error-corrector/pyigmap.tar.gz"
+    - path: "pyigmap.tar.gz"
+- name: test_main_rnaseq_zenodo
+  command: ./pyigmap --mode rnaseq --zenodo --fq1 UHRR_full_R1.fastq.gz --fq2 UHRR_full_R1.fastq.gz --reads 500000
+  files:
+    - path: "pyigmap.tar.gz"
+- name: test_main_amplicon_zenodo
+  command: ./pyigmap --mode amplicon --zenodo --fq1 fmba_TRAB_R1.fastq.gz --fq2 fmba_TRAB_R2.fastq.gz --reads 500000
+  files:
+    - path: "pyigmap.tar.gz"
