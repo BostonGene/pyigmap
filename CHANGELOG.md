@@ -8,6 +8,7 @@
 * Add new flag `--calculate-pgen` to `igblast` step [#3](https://github.com/BostonGene/pyigmap/issues/3) ([eedf2b2](https://github.com/BostonGene/pyigmap/commit/eedf2b20487bbb68882b4e56631f72c664ec4167))
 * Support `pre-commit` hooks and `Makefile` shortcuts ([#27](https://github.com/BostonGene/pyigmap/issues/27)) ([c1ec4be](https://github.com/BostonGene/pyigmap/commit/c1ec4be848a875335f6aaa03535eeeca9ee734a1))
 * Add new `--filter-singleton` flag to `cdr3nt-error-corrector` step ([#30](https://github.com/BostonGene/pyigmap/issues/30)) ([40acf9e](https://github.com/BostonGene/pyigmap/commit/40acf9ee0ec29e0a6e901123c2be2b0c99a70654))
+* Support downloading test datasets from [zenodo](https://zenodo.org/records/11103555) by `--zenodo` flag ([#38](https://github.com/BostonGene/pyigmap/issues/38)) ([77bdf8c](https://github.com/BostonGene/pyigmap/commit/77bdf8c5381370a40daabaa09ff1760b1ea36770))
 
 ### Bug Fixes
 
