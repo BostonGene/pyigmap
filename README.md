@@ -1,12 +1,12 @@
 # pyigmap
 
-`pyIgMap` is a [Nextflow](https://github.com/nextflow-io/nextflow)-driven and Python-based workflow for mapping and annotating (in [AIRR](https://docs.airr-community.org/en/stable/datarep/rearrangements.html#fields) format) TCR/BCR repertoire sequencing data. 
+`pyIgMap` is a [Nextflow](https://github.com/nextflow-io/nextflow)-driven and Python-based workflow for extracting and summarizing antigen receptor gene rearrangements from sequencing data.
 
 ## Quick start
 
 1. This pipeline requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
 
-2. Download repository:
+2. Clone repository:
 
 ```bash
 git clone https://github.com/BostonGene/pyigmap.git
