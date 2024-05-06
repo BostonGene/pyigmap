@@ -40,10 +40,10 @@ process Download {
     script:
         """
         if [[ "${reads_to_save}" == "all" ]]; then
-            wget -q "${link}" -O "${sample_id}_R${read}.fastq.gz"
+            wget "${link}" -O "${sample_id}_R${read}.fastq.gz"
         else
             let lines_to_save=$reads_to_save*4
-            wget -qO- "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz"
+            wget -O - "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz"
         fi
         """
 }
