@@ -73,6 +73,7 @@ def help_message() {
     -with-timeline time.html    timeline (may cause errors)
     """
 }
+
 workflow {
     reads_to_save = Channel.from(params.reads)
 
