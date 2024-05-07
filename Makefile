@@ -34,16 +34,16 @@ format: venv ## >> run ruff formatter
 test_wf: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
 	@echo ""
 	@echo "$(ccso)--> Running workflow tests $(ccend)"
-	$(PYTHON) -m pytest tests/ -v
+	$(PYTHON) -m pytest tests/ -vv
 
 test: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
-#	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -v
-#	$(PYTHON) -m pytest steps/fastp/unit_tests -v
-#	$(PYTHON) -m pytest steps/vidjil/unit_tests -v
-#	$(PYTHON) -m pytest steps/igblast/unit_tests -v
-	$(PYTHON) -m pytest steps/cdr3nt_error_corrector/unit_tests -v
+#	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -vv
+#	$(PYTHON) -m pytest steps/fastp/unit_tests -vv
+#	$(PYTHON) -m pytest steps/vidjil/unit_tests -vv
+	$(PYTHON) -m pytest steps/igblast/unit_tests -vv
+	$(PYTHON) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv
 
 clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""

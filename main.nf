@@ -5,9 +5,17 @@ include { PYIGMAP_RNASEQ } from './workflows/pyigmap_rnaseq.nf'
 include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK } from './workflows/download_fastq.nf'
 include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from './steps/downloader/downloader.nf'
 
+
+params.fq1 = null
+params.fq2 = null
 params.zenodo = false
 params.vidjil_ref = './steps/vidjil/vidjil.germline.tar.gz'
-params.igblast_ref = './steps/igblast/igblast.reference.tar.gz'
+params.allow_minor_alleles = false
+if (params.allow_minor_alleles) {
+    params.igblast_ref = './steps/igblast/igblast.reference.all_alleles.tar.gz'
+} else {
+    params.igblast_ref = './steps/igblast/igblast.reference.major_allele.tar.gz'
+}
 params.olga_models = './steps/cdr3nt_error_corrector/olga-models.tar.gz'
 params.reads = 'all'
 if (params.help) { exit 0, help_message() }
@@ -19,6 +27,7 @@ log.info "Mode                 : ${params.mode}"
 log.info "Sample               : ${params.sample}"
 log.info "Enable zenodo        : ${params.zenodo}"
 log.info "Reads to process     : ${params.reads}"
+log.info "Allow minor alleles: : ${params.allow_minor_alleles}"
 log.info "Fastq1               : ${params.fq1}"
 log.info "Fastq2               : ${params.fq2}"
 log.info "Output directory     : ${params.outdir}"
@@ -65,6 +74,7 @@ def help_message() {
 
         Workflow Options:
     --mode                      the mode of pipeline "rnaseq" (without umi-preprocessing) or "amplicon" (with umi-preprocessing)
+    --allow_minor_alleles       allow alignment of reads to minor alleles (*02, *03, *04, etc) (default: false)
 
         Nextflow options:
     -resume                     resume the workflow where it stopped

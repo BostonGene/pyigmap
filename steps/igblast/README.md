@@ -17,30 +17,53 @@ This step is a wrapping of [IgBlast](https://ncbi.github.io/igblast/) V(D)J mapp
 
 ## Output
 
-* `out_annotation`: path to the output IgBLAST annotation (`path/to/igblast_annotation.tsv.gz`)
+* `--out-annotation`: path to the output IgBLAST annotation (`path/to/igblast_annotation.tsv.gz`)
 
 ## Build archive with V(D)J reference in IgBLAST format:
 
-Run script:
-```bash
-bash build_ref.sh
+### Only major alleles
 
-cp /tmp/igblast.reference.tar.gz .
-``` 
+If you need to keep only *01 (major) alleles, execute:
+```bash
+bash build_ref.sh -o ./igblast.reference.tar.gz
+```
+
+Reference will contain sequences with only major allele (*01):
+```
+>IGHD2-2*01
+aggatattgtagtagtaccagctgctatgcc
+```
+
+### All alleles
+
+Or you can keep all (major and minor) alleles by adding `--allow-minor-alleles` flag:
+```bash
+bash build_ref.sh --allow-minor-alleles -o ./igblast.reference.tar.gz
+```
+
+Reference will contain sequences with all alleles (*01, *02, *03, etc.):
+```
+>IGHD2-2*01
+aggatattgtagtagtaccagctgctatgcc
+>IGHD2-2*02
+aggatattgtagtagtaccagctgctatacc
+>IGHD2-2*03
+tggatattgtagtagtaccagctgctatgcc
+```
 
 ## How to run
 
 ```bash
 docker build -t igblast .
 
-# should contain: vidjil.TCR.fasta.gz, vidjil.BCR.fasta.gz and igblast.reference.tar.gz
+# should contain: vidjil.TCR.fasta.gz, vidjil.BCR.fasta.gz and igblast.reference.major_allele.tar.gz
 FOLDER_WITH_DATA=path/to/your/folder
 
 docker run \
     -v ${FOLDER_WITH_DATA}:/root/ \
     igblast \
     --in-fasta /root/vidjil.TCR.fasta.gz \
-    --in-ref /root/igblast.reference.tar.gz \
+    --in-ref /root/igblast.reference.major_allele.tar.gz \
     --receptor 'TCR' \
     --organism human \
     --out-annotation /root/raw_annotation.TCR.tsv.gz
@@ -49,7 +72,7 @@ docker run \
     -v ${FOLDER_WITH_DATA}:/root/ \
     igblast \
     --in-fasta /root/vidjil.BCR.fasta.gz \
-    --in-ref /root/igblast.reference.tar.gz \
+    --in-ref /root/igblast.reference.major_allele.tar.gz \
     --receptor 'BCR' \
     --organism human \
     --out-annotation /root/raw_annotation.BCR.tsv.gz
