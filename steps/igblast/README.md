@@ -28,7 +28,7 @@ If you need to keep only *01 (major) alleles, execute:
 bash build_ref.sh -o ./igblast.reference.tar.gz
 ```
 
-Reference fasta example:
+Reference will contain sequences with only major allele (*01):
 ```
 >IGHD2-2*01
 aggatattgtagtagtaccagctgctatgcc
@@ -41,7 +41,7 @@ Or you can keep all (major and minor) alleles by adding `--allow-minor-alleles` 
 bash build_ref.sh --allow-minor-alleles -o ./igblast.reference.tar.gz
 ```
 
-Reference fasta example:
+Reference will contain sequences with all alleles (*01, *02, *03, etc.):
 ```
 >IGHD2-2*01
 aggatattgtagtagtaccagctgctatgcc
