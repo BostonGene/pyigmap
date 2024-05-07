@@ -74,6 +74,7 @@ def help_message() {
 
         Workflow Options:
     --mode                      the mode of pipeline "rnaseq" (without umi-preprocessing) or "amplicon" (with umi-preprocessing)
+    --allow_minor_alleles       allow alignment reads on minor alleles (*02, *03, *04, etc) (default: false)
 
         Nextflow options:
     -resume                     resume the workflow where it stopped
