@@ -87,8 +87,6 @@ do
     # convert imgt fasta -> igblast fasta
     ${IGBLAST_DIR}/bin/edit_imgt_file.pl ${OUTPUT_DIR}/${OUTPUT_NAME}.imgt > ${REF_DIR}/database/${OUTPUT_NAME}
 
-    cp ${REF_DIR}/database/${OUTPUT_NAME} /tmp/igblast_ref_major
-
     # make blast db index
     ${IGBLAST_DIR}/bin/makeblastdb -parse_seqids -dbtype nucl -in ${REF_DIR}/database/${OUTPUT_NAME}
 
