@@ -15,25 +15,24 @@ IGBLAST_STEP_DIR = pathlib.Path(__file__).parents[1]
 
 @fixture(scope="module")
 def fasta_bcr_with_all_alleles():
-    fastq_file = tempfile.NamedTemporaryFile().name
-    with gzip.open(fastq_file, "wt") as f:
+    fasta_file = tempfile.NamedTemporaryFile().name
+    with gzip.open(fasta_file, "wt") as f:
         f.write(
             ">IGLV1-40*01\n"
-            "CAGTCTGTGCTGACGCAGCCGCCCTCAGTGTCTGGGGCCCCAGGGCAGAGGGTCACC\n"
-            ">IGLV1-40*02\n"
             "CAGTCTGTGCTGACGCAGCCGCCCTCAGTGTCTGGGGCCCCAGGGCAGAGGGTCACC\n"
             ">IGLV1-40*03\n"
             "GATTATTACTGCCAGTCCTATGACAGCAGCCTGAGTGGT"
         )
-    return fastq_file
+    return fasta_file
 
 
 @fixture(scope="module")
 def fasta_bcr_with_only_major_allele():
-    fastq_file = tempfile.NamedTemporaryFile().name
-    with gzip.open(fastq_file, "wt") as f:
-        f.write(">IGLV1-40*01\n" "CAGTCTGTGCTGACGCAGCCGCCCTCAGTGTCTGGGGCCCCAGGGCAGAGGGTCACC")
-    return fastq_file
+    fasta_file = tempfile.NamedTemporaryFile().name
+    with gzip.open(fasta_file, "wt") as f:
+        f.write(">IGLV1-40*01\n"
+                "CAGTCTGTGCTGACGCAGCCGCCCTCAGTGTCTGGGGCCCCAGGGCAGAGGGTCACC")
+    return fasta_file
 
 
 @fixture(scope="module")
@@ -102,9 +101,8 @@ def test_run_with_all_alleles(ref_with_all_alleles, fasta_bcr_with_all_alleles, 
     run_command(cmd)
     annotation = read_annotation(output_annotation_path)
     logger.info(f'Output annotation path: {output_annotation_path}')
-    assert annotation["sequence_id"].to_list() == ["IGLV1-40*01", "IGLV1-40*02", "IGLV1-40*03"]
+    assert annotation["sequence_id"].to_list() == ["IGLV1-40*01", "IGLV1-40*03"]
     assert annotation["v_call"].to_list() == [
-        "IGLV1-40*01,IGLV1-50*01",
         "IGLV1-40*01,IGLV1-50*01",
         "IGLV1-40*01,IGLV1-40*02,IGLV1-40*03",
     ]
