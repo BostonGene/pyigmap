@@ -23,7 +23,17 @@ This step removes spurious rearrangements via [OLGA](https://github.com/statbiop
 * `--out-archive`: path to the output archive with corrected annotation and json with total reads count (`path/to/pyigmap.tar.gz`)
   * `pyigmap.tar.gz`:
     * `corrected_annotation.tsv`
-    * `stat.json` (structure: `{total_reads: 100000}`, where `100000` -- total reads count parsed from `--in-json`)
+    * `stat.json`:
+      ```json5
+        {
+           "total_reads": 100000, // total reads count in the input fastq
+           "IGH_aligned_reads": 100, // reads that aligned to IGH locus
+           ..., // reads that aligned to ... locus
+           "TRB_aligned_reads": 20, // reads that aligned to TRB locus
+           "no_v_call": 10, // reads with v_call = None
+           "no_j_call": 100 // reads with j_call = None
+        }
+      ```
 
 
 ## Build archive with OLGA models:
