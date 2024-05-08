@@ -10,28 +10,28 @@ Thanks for being willing to contribute!
 
 ## Building and Testing
 
-### Steps unit tests
+### Unit (step) tests
 
 1. To build an **EXECUTABLE** docker images, python virtual environment and installs requirements execute:
 ```bash
 make build
 ```
 
-2. Run tests:
+2. Run unit tests:
 ```
 make test
 ```
 
 ### Integration (workflow) tests
+
+1. To build a NOT EXECUTABLE docker images, nextflow, execute:
 ```bash
-make # installs nextflow and builds NOT EXECUTABLE docker images
-make test_wf
+make
 ```
 
-Additionally, you can activate [pre-commit](https://pre-commit.com/) hooks. Execute:
-
+2. Run integration tests
 ```bash
-pre-commit install # set up the git hook scripts
+make test_wf
 ```
 
 ## Committing and Pushing changes
@@ -45,10 +45,18 @@ make format # runs ruff formatter
 make mypy # runs mypy type checker
 ```
 
+### Pre-commit hooks
+
+Additionally, you can activate [pre-commit](https://pre-commit.com/) hooks. Execute:
+
+```bash
+pre-commit install # set up the git hook scripts
+```
+
 ## Development
 
-* Create an [issue](https://github.com/BostonGene/pyigmap/issues), branch from `main` and then a pull request.
-* After each minor/major change in pyigmap, make sure to add some notes to [CHANGELOG.md](CHANGELOG.md).
+* Create an [issue](https://github.com/BostonGene/pyigmap/issues), a branch from `main` (from the task), and then create a pull request from this branch.
+* After each minor/major change in pyigmap, make sure to add some notes to [CHANGELOG](CHANGELOG.md).
 
 ## Help needed
 
