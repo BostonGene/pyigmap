@@ -1,5 +1,5 @@
 process IgBlast {
-//     publishDir "${params.outdir}/igblast", mode: 'copy', overwrite: false
+//     publishDir "${params.outdir}/igblast", mode: 'copy'
     container 'igblast'
 
     input:

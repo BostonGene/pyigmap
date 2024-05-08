@@ -1,5 +1,5 @@
 process CalibDedup {
-//     publishDir "${params.outdir}/calib", mode: 'copy', overwrite: false
+//     publishDir "${params.outdir}/calib", mode: 'copy'
     container 'calib-dedup'
 
     input:
