@@ -7,12 +7,25 @@ Thanks for being willing to contribute!
 1. Fork and clone the repo.
 2. Install a [Python 3.9](https://www.python.org/downloads/release/python-390/) (or later), [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
 3. Execute `pip install pre-commit` and `sudo apt install make`.
-4. Create an [issue](https://github.com/BostonGene/pyigmap/issues) and branch from `main`.
 
 ## Building and Testing
 
+### Steps unit tests
+
+1. To build an **EXECUTABLE** docker images, python virtual environment and installs requirements execute:
 ```bash
-make build # builds docker images, python virtual environment and installs requirements
+make build
+```
+
+2. Run tests:
+```
+make test
+```
+
+### Integration (workflow) tests
+```bash
+make # installs nextflow and builds NOT EXECUTABLE docker images
+make test_wf
 ```
 
 Additionally, you can activate [pre-commit](https://pre-commit.com/) hooks. Execute:
@@ -34,7 +47,8 @@ make mypy # runs mypy type checker
 
 ## Development
 
-After each minor/major change in pyigmap, make sure to add some notes to [CHANGELOG.md](CHANGELOG.md).
+* Create an [issue](https://github.com/BostonGene/pyigmap/issues), branch from `main` and then a pull request.
+* After each minor/major change in pyigmap, make sure to add some notes to [CHANGELOG.md](CHANGELOG.md).
 
 ## Help needed
 
