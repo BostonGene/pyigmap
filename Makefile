@@ -3,9 +3,12 @@ VIRTUAL_ENV=env
 PYTHON=${VIRTUAL_ENV}/bin/python3
 STAGE=not_exec
 
+Command := $(firstword $(MAKECMDGOALS))
+Arguments := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help run clean build test test_wf mypy check format update venv
+.PHONY: help run clean build test-step test-wf mypy check format update venv
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -32,12 +35,12 @@ format: venv ## >> run ruff formatter
 	@echo "$(ccso)--> Running ruff format $(ccend)"
 	$(PYTHON) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
-test_wf: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
+test-wf: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
 	@echo ""
 	@echo "$(ccso)--> Running workflow tests $(ccend)"
 	$(PYTHON) -m pytest tests/ -vv
 
-test: venv ## >> run tests for all steps via pytest tool
+test-step: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
 #	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -vv
@@ -56,7 +59,7 @@ build: ##@main >> build docker images, the virtual environment and install requi
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
-	$(MAKE) STAGE=exec
+	$(MAKE) STAGE=$(Arguments)
 	$(MAKE) update
 
 venv: $(VIRTUAL_ENV)

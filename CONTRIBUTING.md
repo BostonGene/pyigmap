@@ -14,24 +14,24 @@ Thanks for being willing to contribute!
 
 1. To build an **EXECUTABLE** docker images, python virtual environment and installs requirements execute:
 ```bash
-make build
+make build exec
 ```
 
-2. Run unit tests:
+2. Run step tests:
 ```
-make test
+make test-step
 ```
 
 ### Integration (workflow) tests
 
-1. To build a **NOT EXECUTABLE** docker images, nextflow, execute:
+1. To build a **NOT EXECUTABLE** docker images and install nextflow, execute:
 ```bash
-make
+make build not_exec
 ```
 
-2. Run integration tests
+2. Run workflow tests
 ```bash
-make test_wf
+make test-wf
 ```
 
 ## Committing and Pushing changes
