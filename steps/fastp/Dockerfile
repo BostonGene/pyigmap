@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.9-bullseye as not_exec
 
 ENV SOFT_DIR=/usr/local
 
@@ -8,5 +8,6 @@ RUN wget -q http://opengene.org/fastp/fastp.${FASTP_VERSION} -O ${SOFT_DIR}/bin/
 
 COPY run.py ${SOFT_DIR}/run.py
 
+FROM not_exec as exec
 # Uncomment it if you need to run an executable container
-# ENTRYPOINT ["python3.9", "/usr/local/run.py"]
+ENTRYPOINT ["python3.9", "/usr/local/run.py"]

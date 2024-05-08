@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.9-bullseye as not_exec
 
 ENV SOFT_DIR=/usr/local
 
@@ -24,5 +24,6 @@ COPY run.py ${SOFT_DIR}/run.py
 COPY barcode.py ${SOFT_DIR}/barcode.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
+FROM not_exec as exec
 # Uncomment it if you need to run an executable container
-# ENTRYPOINT ["python3.9", "/usr/local/run.py"]
+ENTRYPOINT ["python3.9", "/usr/local/run.py"]
