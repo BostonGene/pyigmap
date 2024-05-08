@@ -82,13 +82,13 @@ def read_annotation(*annotation_paths: str, only_functional: bool, remove_chimer
     annotation = filter.remove_non_functional(annotation) if only_functional else annotation
     annotation = filter.drop_duplicates_in_different_loci(annotation, use_pgen=False)
 
-    statistics_dict = {}
-    statistics_dict.update(no_call_count)
-    statistics_dict.update(loci_count)
+    metrics_dict = {}
+    metrics_dict.update(no_call_count)
+    metrics_dict.update(loci_count)
 
     logger.info('Annotation has been read.')
 
-    return annotation, statistics_dict
+    return annotation, metrics_dict
 
 
 def _prepare_duplicate_count_column(annotation: pd.DataFrame):
