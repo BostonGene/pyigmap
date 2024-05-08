@@ -1,5 +1,5 @@
 process Fastp {
-//     publishDir "${params.outdir}/fastp", mode: 'copy', overwrite: false
+//     publishDir "${params.outdir}/fastp", mode: 'copy'
     container 'fastp'
 
     input:
