@@ -24,7 +24,7 @@ make test
 
 ### Integration (workflow) tests
 
-1. To build a NOT EXECUTABLE docker images, nextflow, execute:
+1. To build a **NOT EXECUTABLE** docker images, nextflow, execute:
 ```bash
 make
 ```
