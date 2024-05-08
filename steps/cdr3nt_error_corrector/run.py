@@ -63,9 +63,9 @@ def run(args: argparse.Namespace) -> None:
     if args.calculate_pgen or args.pgen_threshold is not None:
         decompress(args.olga_models)
 
-    annotation, loci_count = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
-                                                  only_functional=args.only_functional,
-                                                  remove_chimeras=args.remove_chimeras)
+    annotation, metrics_dict = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
+                                                       only_functional=args.only_functional,
+                                                       remove_chimeras=args.remove_chimeras)
 
     if len(annotation):
         corrected_annotations = []
@@ -92,7 +92,9 @@ def run(args: argparse.Namespace) -> None:
     save_corrected_annotation(filtered_annotation, args.out_corrected_annotation)
 
     total_reads_count = parse_total_reads(args.in_json)
-    save_metrics(total_reads_count, loci_count, output_json=args.out_json)
+    metrics_dict.update(total_reads_count)
+
+    save_metrics(metrics_dict, output_json=args.out_json)
 
     make_archive(args.out_json, args.out_corrected_annotation, archive_path=args.out_archive)
 
