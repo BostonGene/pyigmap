@@ -1,6 +1,7 @@
 SHELL:=/bin/bash
 VIRTUAL_ENV=env
 PYTHON=${VIRTUAL_ENV}/bin/python3
+STAGE=not_exec
 
 # .ONESHELL:
 DEFAULT_GOAL: install
@@ -55,7 +56,7 @@ build: ##@main >> build docker images, the virtual environment and install requi
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
-	$(MAKE)
+	$(MAKE) STAGE=exec
 	$(MAKE) update
 
 venv: $(VIRTUAL_ENV)
@@ -77,11 +78,11 @@ install: ## Install and check dependencies
 	@java --version
 	@docker version
 	curl -s https://get.nextflow.io | bash
-	docker build -t calib-dedup steps/calib_dedup
-	docker build -t fastp steps/fastp
-	docker build -t vidjil steps/vidjil
-	docker build -t igblast steps/igblast
-	docker build -t cdr3nt-error-corrector steps/cdr3nt_error_corrector
+	docker build --target $(STAGE) -t calib-dedup steps/calib_dedup
+	docker build --target $(STAGE) -t fastp steps/fastp
+	docker build --target $(STAGE) -t vidjil steps/vidjil
+	docker build --target $(STAGE) -t igblast steps/igblast
+	docker build --target $(STAGE) -t cdr3nt-error-corrector steps/cdr3nt_error_corrector
 	docker build -t downloader steps/downloader
 
 # And add help text after each target name starting with '\#\#'
