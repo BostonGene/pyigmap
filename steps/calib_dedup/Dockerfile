@@ -25,5 +25,5 @@ COPY barcode.py ${SOFT_DIR}/barcode.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
 FROM image AS tool
-# Uncomment it if you need to run an executable container
+
 ENTRYPOINT ["python3.9", "/usr/local/run.py"]

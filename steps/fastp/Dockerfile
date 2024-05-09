@@ -9,5 +9,5 @@ RUN wget -q http://opengene.org/fastp/fastp.${FASTP_VERSION} -O ${SOFT_DIR}/bin/
 COPY run.py ${SOFT_DIR}/run.py
 
 FROM image AS tool
-# Uncomment it if you need to run an executable container
+
 ENTRYPOINT ["python3.9", "/usr/local/run.py"]

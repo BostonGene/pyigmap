@@ -16,5 +16,5 @@ COPY logger.py ${SOFT_DIR}/logger.py
 COPY filter.py ${SOFT_DIR}/filter.py
 
 FROM image AS tool
-# Uncomment it if you need to run an executable container
+
 ENTRYPOINT ["python3.9", "/usr/local/run.py"]
