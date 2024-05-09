@@ -57,7 +57,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 	@echo "$(ccso)--> Removing virtual environment $(ccend)"
 	docker rmi -f downloader-image calib-dedup-image fastp-image vidjil-image igblast-image cdr3nt-error-corrector-image
 	docker rmi -f downloader-tool calib-dedup-tool fastp-tool vidjil-tool igblast-tool cdr3nt-error-corrector-tool
-	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow
+	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow /tmp/pytest_workflow_*
 
 build: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
