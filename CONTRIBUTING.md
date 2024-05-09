@@ -10,33 +10,26 @@ Thanks for being willing to contribute!
 
 ## Building and Testing
 
+To build an executable and not executable docker images, python virtual environment and installs requirements execute:
+```bash
+make build
+```
+
 ### Unit (step) tests
 
-1. To build an **EXECUTABLE** docker images, python virtual environment and installs requirements execute:
 ```bash
-make build exec
-```
-
-2. Run step tests:
-```
-make test-step
+make tests-unit
 ```
 
 ### Integration (workflow) tests
 
-1. To build a **NOT EXECUTABLE** docker images and install nextflow, execute:
 ```bash
-make build not_exec
-```
-
-2. Run workflow tests
-```bash
-make test-wf
+make tests-integration
 ```
 
 ## Committing and Pushing changes
 
-Please make sure to run the tests before you commit your changes (if you didn't configure `pre-commit`). You can run for it `make test` (for steps) and `make test_wf` (for workflows).  
+Please make sure to run the tests before you commit your changes (if you didn't configure `pre-commit`). You can run for it `make tests-unit` (for steps) and `make tests-integration` (for workflows).  
 
 Also, check that your code meet [PEP8](https://peps.python.org/pep-0008/) requirements (by [ruff](https://github.com/astral-sh/ruff)), dynamic and static typing (by [mypy](https://github.com/python/mypy)). You can automate it using:
 ```bash
