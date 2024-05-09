@@ -5,7 +5,7 @@ STAGE=image
 
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help run clean build tests-integration tests-unit mypy check format update venv
+.PHONY: help run clean build integration-tests unit-tests mypy check format update venv
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -32,12 +32,12 @@ format: venv ## >> run ruff formatter
 	@echo "$(ccso)--> Running ruff format $(ccend)"
 	$(PYTHON) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
-tests-integration: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
+integration-tests: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
 	@echo ""
 	@echo "$(ccso)--> Running workflow tests $(ccend)"
 	$(PYTHON) -m pytest tests/ -vv
 
-tests-unit: venv ## >> run tests for all steps via pytest tool
+unit-tests: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
 #	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -vv
@@ -45,6 +45,12 @@ tests-unit: venv ## >> run tests for all steps via pytest tool
 #	$(PYTHON) -m pytest steps/vidjil/unit_tests -vv
 	$(PYTHON) -m pytest steps/igblast/unit_tests -vv
 	$(PYTHON) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv
+
+tests: venv ##@main >> run integration and unit tests
+	@echo ""
+	@echo "$(ccso)--> Running integration and unit tests $(ccend)"
+	$(MAKE) unit-tests
+	$(MAKE) integration-tests
 
 clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
@@ -70,7 +76,7 @@ $(VIRTUAL_ENV): ## >> install virtualenv and setup the virtual environment
 	python3 -m pip install virtualenv
 	virtualenv $(VIRTUAL_ENV)
 
-update: venv ##@main >> update requirements.txt inside the virtual environment
+update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(PYTHON) -m pip install -r ./steps/calib_dedup/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/igblast/requirements.txt
