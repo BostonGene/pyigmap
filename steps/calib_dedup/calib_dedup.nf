@@ -1,6 +1,5 @@
 process CalibDedup {
 //     publishDir "${params.outdir}/calib", mode: 'copy'
-    container 'calib-dedup'
 
     input:
         path fq1

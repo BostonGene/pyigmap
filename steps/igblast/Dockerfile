@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye as not_exec
+FROM python:3.9-bullseye AS image
 
 ENV SOFT_DIR=/usr/local
 
@@ -29,6 +29,6 @@ ENV PATH=${IGBLAST_DIR}:$PATH
 COPY run.py ${SOFT_DIR}/run.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
-FROM not_exec as exec
+FROM image AS tool
 # Uncomment it if you need to run an executable container
 ENTRYPOINT ["python3.9", "/usr/local/run.py"]

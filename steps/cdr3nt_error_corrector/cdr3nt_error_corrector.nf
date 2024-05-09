@@ -1,6 +1,5 @@
 process CDR3ErrorCorrector {
     publishDir "${params.outdir}", mode: 'copy'
-    container 'cdr3nt-error-corrector'
 
     input:
         path bcr_annotation

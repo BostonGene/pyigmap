@@ -34,7 +34,7 @@ bash build_ref.sh
 ## How to run
 
 ```bash
-docker build -t vidjil .
+docker build --target tool -t vidjil .
 
 # should contain: mR1.fastq.gz, mR2.fastq.gz, mR12.fastq.gz and vidjil.germline.tar.gz
 FOLDER_WITH_DATA=path/to/your/folder

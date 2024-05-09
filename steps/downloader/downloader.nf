@@ -1,5 +1,4 @@
 process GetLinks {
-    container 'downloader'
 
     input:
         val sample_id
@@ -26,7 +25,6 @@ process GetLinks {
 
 process Download {
 //     publishDir "${params.outdir}/downloaded", mode: 'copy'
-    container 'downloader'
 
     input:
         val sample_id
@@ -50,7 +48,6 @@ process Download {
 
 process Downsample {
 //     publishDir "${params.outdir}/downsampled", mode: 'copy'
-    container 'downloader'
 
     input:
         path fastq

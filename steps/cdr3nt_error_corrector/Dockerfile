@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye as not_exec
+FROM python:3.9-bullseye AS image
 
 ENV SOFT_DIR=/usr/local
 
@@ -15,6 +15,6 @@ COPY correct.py ${SOFT_DIR}/correct.py
 COPY logger.py ${SOFT_DIR}/logger.py
 COPY filter.py ${SOFT_DIR}/filter.py
 
-FROM not_exec as exec
+FROM image AS tool
 # Uncomment it if you need to run an executable container
 ENTRYPOINT ["python3.9", "/usr/local/run.py"]

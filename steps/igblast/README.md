@@ -54,7 +54,7 @@ tggatattgtagtagtaccagctgctatgcc
 ## How to run
 
 ```bash
-docker build -t igblast .
+docker build --target tool -t igblast .
 
 # should contain: vidjil.TCR.fasta.gz, vidjil.BCR.fasta.gz and igblast.reference.major_allele.tar.gz
 FOLDER_WITH_DATA=path/to/your/folder
