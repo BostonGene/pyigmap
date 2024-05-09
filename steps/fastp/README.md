@@ -37,7 +37,7 @@ By default:
 ## How to run
 
 ```bash
-docker build -t fastp .
+docker build --target tool -t fastp .
 
 FOLDER_WITH_DATA=path/to/your/folder # should contain: R1.fastq.gz (or cR1.fastq.gz) and R2.fastq.gz (or cR2.fastq.gz)
 

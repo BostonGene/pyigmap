@@ -47,7 +47,7 @@ bash build_ref.sh
 
 1. Build an image
 ```bash
-docker build -t cdr3nt-error-corrector .
+docker build --target tool -t cdr3nt-error-corrector .
 ```
 
 2. Be sure, that you have all input files

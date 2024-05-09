@@ -1,10 +1,11 @@
 SHELL:=/bin/bash
 VIRTUAL_ENV=env
 PYTHON=${VIRTUAL_ENV}/bin/python3
+STAGE=image
 
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help run clean build test test_wf mypy check format update venv
+.PHONY: help run clean build integration-tests unit-tests mypy check format update venv
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -31,12 +32,12 @@ format: venv ## >> run ruff formatter
 	@echo "$(ccso)--> Running ruff format $(ccend)"
 	$(PYTHON) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
-test_wf: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
+integration-tests: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
 	@echo ""
 	@echo "$(ccso)--> Running workflow tests $(ccend)"
 	$(PYTHON) -m pytest tests/ -vv
 
-test: venv ## >> run tests for all steps via pytest tool
+unit-tests: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
 #	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -vv
@@ -45,17 +46,30 @@ test: venv ## >> run tests for all steps via pytest tool
 	$(PYTHON) -m pytest steps/igblast/unit_tests -vv
 	$(PYTHON) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv
 
+tests: venv ##@main >> run integration and unit tests
+	@echo ""
+	@echo "$(ccso)--> Running integration and unit tests $(ccend)"
+	$(MAKE) unit-tests
+	$(MAKE) integration-tests
+
 clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
 	@echo "$(ccso)--> Removing virtual environment $(ccend)"
-	docker rmi -f downloader calib-dedup fastp vidjil igblast cdr3nt-error-corrector
-	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow
+	docker rmi -f downloader \
+				  calib-dedup-tool calib-dedup-image \
+				  fastp-tool fastp-image \
+				  vidjil-tool vidjil-image \
+				  igblast-tool igblast-image \
+				  cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
+	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow /tmp/pytest_workflow_*
 
 build: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
-	$(MAKE)
+	$(MAKE) nextflow
+	$(MAKE) image STAGE=image
+	$(MAKE) image STAGE=tool
 	$(MAKE) update
 
 venv: $(VIRTUAL_ENV)
@@ -66,23 +80,29 @@ $(VIRTUAL_ENV): ## >> install virtualenv and setup the virtual environment
 	python3 -m pip install virtualenv
 	virtualenv $(VIRTUAL_ENV)
 
-update: venv ##@main >> update requirements.txt inside the virtual environment
+update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(PYTHON) -m pip install -r ./steps/calib_dedup/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/igblast/requirements.txt
 	$(PYTHON) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
-install: ## Install and check dependencies
+nextflow:
 	@java --version
-	@docker version
 	curl -s https://get.nextflow.io | bash
-	docker build -t calib-dedup steps/calib_dedup
-	docker build -t fastp steps/fastp
-	docker build -t vidjil steps/vidjil
-	docker build -t igblast steps/igblast
-	docker build -t cdr3nt-error-corrector steps/cdr3nt_error_corrector
+
+image:
+	@docker version
 	docker build -t downloader steps/downloader
+	docker build --target $(STAGE) -t calib-dedup-$(STAGE) steps/calib_dedup
+	docker build --target $(STAGE) -t fastp-$(STAGE) steps/fastp
+	docker build --target $(STAGE) -t vidjil-$(STAGE) steps/vidjil
+	docker build --target $(STAGE) -t igblast-$(STAGE) steps/igblast
+	docker build --target $(STAGE) -t cdr3nt-error-corrector-$(STAGE) steps/cdr3nt_error_corrector
+
+install: ## Install and check dependencies
+	$(MAKE) nextflow
+	$(MAKE) image STAGE=image
 
 # And add help text after each target name starting with '\#\#'
 # A category can be added with @category

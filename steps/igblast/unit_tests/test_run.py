@@ -73,7 +73,7 @@ def docker_cmd(ref_with_major_allele, fasta_bcr_with_only_major_allele, output_a
         "-v", f"{ref_with_major_allele}:/root/{ref_basename}",
         "-v", f"{fasta_bcr_with_only_major_allele}:/root/{input_fasta_basename}",
         "-v", f"{output_annotation_path}:/root/{output_annotation_basename}",
-        "igblast",
+        "igblast-tool",
         "--in-ref", f"/root/{ref_basename}",
         "--in-fasta", f"/root/{input_fasta_basename}",
         "--receptor", "BCR",
