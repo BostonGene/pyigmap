@@ -1,7 +1,9 @@
 from pytest import fixture
 import pandas as pd
 
-import filter
+from filter import (remove_non_canonical, remove_non_functional, remove_non_productive, filter_pgen,
+                    _get_duplicates_in_different_loci, drop_duplicates_in_different_loci, remove_out_of_frame,
+                    _remove_chimeras_by_segment)
 
 
 @fixture(scope='module')
@@ -32,9 +34,14 @@ def annotation_non_productive() -> pd.DataFrame:
 
 @fixture(scope='module')
 def annotation_non_functional() -> pd.DataFrame:
-    return pd.DataFrame(data={'junction_aa': ['CAAAAW', 'CAA*W', 'CAAAAAF', 'CAA_W', 'AAAAAAA'],
-                              'junction': [None, 'AAAAAA', 'AAAAAAA', 'AAAAA', None]
+    return pd.DataFrame(data={'junction_aa': ['AAAA', 'AAAA', 'AA*A', 'AA_A'],
+                              'junction': [None, 'AAAA', 'AAAA', 'AAAA']
                               })
+
+
+@fixture(scope='module')
+def annotation_non_canonical() -> pd.DataFrame:
+    return pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF', 'CAAA', 'AAAF', 'AAAW']})
 
 
 @fixture(scope='module')
@@ -55,16 +62,16 @@ def annotation_with_j_chimeras() -> pd.DataFrame:
 
 
 def test_remove_non_functional(annotation_non_functional):
-    filtered_annotation = filter.remove_non_functional(annotation_non_functional)
+    filtered_annotation = remove_non_functional(annotation_non_functional)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={'junction_aa': ['CAAAAAF'],
-                           'junction': ['AAAAAAA']},
-                     index=[2])
+        pd.DataFrame(data={'junction_aa': ['AAAA'],
+                           'junction': ['AAAA']},
+                     index=[1])
     )
 
 
 def test_remove_non_productive(annotation_non_productive):
-    filtered_annotation = filter.remove_non_productive(annotation_non_productive)
+    filtered_annotation = remove_non_productive(annotation_non_productive)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'stop_codon': ['F', 'F'],
                            'vj_in_frame': ['T', 'T'],
@@ -73,9 +80,16 @@ def test_remove_non_productive(annotation_non_productive):
                      index=[0, 2])
     )
 
+def test_remove_non_canonical(annotation_non_canonical):
+    filtered_annotation = remove_non_canonical(annotation_non_canonical)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF']},
+                     index=[0, 1])
+    )
+
 
 def test_get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci):
-    assert filter._get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)[0].equals(
+    assert _get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)[0].equals(
         pd.DataFrame(data={'duplicate_count': [1, 1, 1, 1, 1],
                            'junction': ['AAA', 'AAA', 'AAA', 'AAA', 'AAA'],
                            'locus': ['TRA', 'TRA', 'IGH', 'IGH', 'IGL'],
@@ -87,7 +101,7 @@ def test_get_duplicates_in_different_loci(annotation_with_duplicates_in_differen
 
 
 def test_drop_duplicates_in_different_loci_without_pgen(annotation_with_duplicates_in_different_loci):
-    filtered_annotation = filter.drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)
+    filtered_annotation = drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'duplicate_count': [1, 1, 100],
                            'junction': ['AAA', 'AAA', 'AAT'],
@@ -100,7 +114,7 @@ def test_drop_duplicates_in_different_loci_without_pgen(annotation_with_duplicat
 
 
 def test_drop_duplicates_in_different_loci_with_pgen(annotation_with_duplicates_in_different_loci):
-    filtered_annotation = filter.drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci, use_pgen=True)
+    filtered_annotation = drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci, use_pgen=True)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'duplicate_count': [1, 1, 100],
                            'junction': ['AAA', 'AAA', 'AAT'],
@@ -113,12 +127,12 @@ def test_drop_duplicates_in_different_loci_with_pgen(annotation_with_duplicates_
 
 
 def test_remove_out_of_frame(annotation_out_of_frame):
-    filtered_annotation = filter.remove_out_of_frame(annotation_out_of_frame)
+    filtered_annotation = remove_out_of_frame(annotation_out_of_frame)
     assert len(filtered_annotation[filtered_annotation['junction'].str.len() % 3 != 0]) == 0
 
 
 def test_remove_v_chimeras(annotation_with_v_chimeras):
-    filtered_annotation = filter._remove_chimeras_by_segment(annotation_with_v_chimeras, 'v')
+    filtered_annotation = _remove_chimeras_by_segment(annotation_with_v_chimeras, 'v')
     assert filtered_annotation.equals(
         pd.DataFrame(data={'locus': ['TRA'],
                            'v_call': ['TRAV']},
@@ -127,7 +141,7 @@ def test_remove_v_chimeras(annotation_with_v_chimeras):
 
 
 def test_remove_j_chimeras(annotation_with_j_chimeras):
-    filtered_annotation = filter._remove_chimeras_by_segment(annotation_with_j_chimeras, 'j')
+    filtered_annotation = _remove_chimeras_by_segment(annotation_with_j_chimeras, 'j')
     assert filtered_annotation.equals(
         pd.DataFrame(data={'locus': ['TRA'],
                            'j_call': ['TRAJ']},
@@ -136,7 +150,7 @@ def test_remove_j_chimeras(annotation_with_j_chimeras):
 
 
 def test_filter_pgen_singletons(annotation_pgen):
-    filtered_annotation = filter.filter_pgen(annotation_pgen, pgen_threshold=0, filter_pgen_singletons=True)
+    filtered_annotation = filter_pgen(annotation_pgen, pgen_threshold=0, filter_pgen_singletons=True)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'duplicate_count': [2, 100, 2, 100, 2],
                            'pgen': [None, 0, 0, 0.9, 0.9]},
@@ -145,7 +159,7 @@ def test_filter_pgen_singletons(annotation_pgen):
 
 
 def test_filter_pgen_default(annotation_pgen):
-    filtered_annotation = filter.filter_pgen(annotation_pgen, pgen_threshold=0, filter_pgen_singletons=False)
+    filtered_annotation = filter_pgen(annotation_pgen, pgen_threshold=0, filter_pgen_singletons=False)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'duplicate_count': [2, 100, 2],
                            'pgen': [None, 0.9, 0.9]},

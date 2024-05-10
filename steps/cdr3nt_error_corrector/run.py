@@ -43,6 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--remove-chimeras', action='store_true',
                         help='Remove chimeras clonotypes, that have different locus in v-/j-genes')
     parser.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
+    parser.add_argument('--only-canonical', help='Filter out non-canonical clonotypes', action='store_true')
     parser.add_argument("--filter-pgen-singletons", action="store_true",
                         help="Filter out singleton clones with duplicate_count=1 and pgen<=pgen_threshold")
     parser.add_argument('--olga-models', type=str, help='Archive with OLGA models')
@@ -64,8 +65,9 @@ def run(args: argparse.Namespace) -> None:
         decompress(args.olga_models)
 
     annotation, metrics_dict = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
-                                                       only_functional=args.only_functional,
-                                                       remove_chimeras=args.remove_chimeras)
+                                                    only_functional=args.only_functional,
+                                                    only_canonical=args.only_canonical,
+                                                    remove_chimeras=args.remove_chimeras)
 
     if len(annotation):
         corrected_annotations = []

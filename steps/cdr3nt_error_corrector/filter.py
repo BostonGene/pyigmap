@@ -99,12 +99,17 @@ def remove_non_productive(annotation: pd.DataFrame) -> pd.DataFrame:
     return filtered_productive
 
 
+def remove_non_canonical(annotation: pd.DataFrame) -> pd.DataFrame:
+    filtered_canonical = annotation[annotation['junction_aa'].str.startswith('C', na=False) &
+                                     (annotation['junction_aa'].str.endswith('F', na=False) |
+                                     annotation['junction_aa'].str.endswith('W', na=False))]
+    logger.info(f'Filtered out {annotation.shape[0] - filtered_canonical.shape[0]} non canonical clones.')
+    return filtered_canonical
+
+
 def remove_non_functional(annotation: pd.DataFrame) -> pd.DataFrame:
     filtered_functional = annotation[~annotation['junction'].isna() &
                                      ~annotation['junction_aa'].str.contains('_', na=False) &
-                                     ~annotation['junction_aa'].str.contains('\\*', na=False) &
-                                     annotation['junction_aa'].str.startswith('C', na=False) &
-                                     (annotation['junction_aa'].str.endswith('F', na=False) |
-                                      annotation['junction_aa'].str.endswith('W', na=False))]
+                                     ~annotation['junction_aa'].str.contains('\\*', na=False)]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_functional.shape[0]} non functional clones.')
     return filtered_functional

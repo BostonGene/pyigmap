@@ -15,6 +15,7 @@ process CDR3ErrorCorrector {
             --in-bcr-annotation $tcr_annotation \
             --pgen-threshold 0 \
             --only-functional \
+            --only-canonical \
             --remove-chimeras \
             --clonotype-collapse-factor 0.05 \
             --olga-models $olga_models \
