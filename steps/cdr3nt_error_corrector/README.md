@@ -14,8 +14,8 @@ By default, all the rules for filtering out spurious sequences are defined in th
 * among all chains where a given well-defined ``junction`` is present, only the ``chain`` having lowest ``v_support`` (checked first) or ``j_support`` is selected to prevent miss-mappings (N.B. lowest is due to the fact that support is a proxy for match P-value in igblast)
 * chimeras defined as mapping of V and J to different loci are dropped, except for TRA and TRD chains (due to presence of TRAV-X/DV-Y genes)
 * V(D)J junction is ``functional``:
-* * well-defined (non-empty entry for ``junction``)
-* * does not contain ``*`` or ``_``
+  * well-defined (non-empty entry for ``junction``)
+  * does not contain ``*`` or ``_``
 * junction is canonical, starting with ``C`` and ending with either ``F`` or ``W``
 * either supported by several reads (``duplicate_count > 1``), or having ``Pgen > 0``
 * the entire sequence is productive: V and J genes are not pseudogenes (currently not checked), ``junction`` is ``functional`` for Vidjil and ``productive`` for IgBlast
