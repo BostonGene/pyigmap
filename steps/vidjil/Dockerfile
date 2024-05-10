@@ -9,6 +9,7 @@ RUN wget https://www.vidjil.org/releases/vidjil-algo-${VIDJIL_VERSION}_x86_64 -O
     chmod 755 ${SOFT_DIR}/bin/vidjil-algo
 
 COPY run.py ${SOFT_DIR}/run.py
+COPY utils.py ${SOFT_DIR}/utils.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
 FROM image AS tool

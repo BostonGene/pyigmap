@@ -27,6 +27,7 @@ ENV IGBLAST_DIR=${SOFT_DIR}/bin/ncbi-igblast
 ENV PATH=${IGBLAST_DIR}:$PATH
 
 COPY run.py ${SOFT_DIR}/run.py
+COPY utils.py ${SOFT_DIR}/utils.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
 FROM image AS tool

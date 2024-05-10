@@ -21,6 +21,7 @@ RUN wget https://github.com/shenwei356/seqkit/releases/download/v${SEQKIT_VERSIO
     rm seqkit.tar.gz
 
 COPY run.py ${SOFT_DIR}/run.py
+COPY utils.py ${SOFT_DIR}/utils.py
 COPY barcode.py ${SOFT_DIR}/barcode.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
