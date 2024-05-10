@@ -1,15 +1,36 @@
 # cdr3nt-error-corrector step
 
-This step removes spurious rearrangements via [OLGA](https://github.com/statbiophys/OLGA) tool, corrects and filters out bad clones.
+This step removes spurious rearrangements via [OLGA](https://github.com/statbiophys/OLGA) tool and/or by means of comparing igblast alignment scores. The script here operates on clonotype abundance tables by filtering out bad records and assigning erroneous records ('artificial diversity' produced by PCR and sequencing errors) to their parent records based on a certain parent-to-child ratio.
+
+## Definition of erroneous and spurious records
+
+In case only Vidjil tool was used to extract clonotypes, they are defined based on V-J mapping and junction sequence (here it is an alias for CDR3 sequence with bounding Cys and Phe/Trp codons included). Junction sequences not containing stop codons ``*`` and frameshifts ``_`` are defined as ``functional`` as otherwise they give rise to mRNA molecules that could not be ``productive`` and translated to proteins.
+Additionally, junction sequences are required to start with a Cys codon and end with a Phe/Trp codon (actually ``[FW]G.G`` [motif](https://www.pnas.org/doi/10.1073/pnas.121101598)) to form a proper structure called [omega-loop](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5753249/). These junction sequences are called ``canonical``.
+
+In case IgBlast is used following Vidjil, more detailed V/J mappings are provided, including ``stop_codon``, ``vj_in_frame``, ``v_frameshift`` and ``productive``. The ``stop_codon``, ``vj_in_frame`` fields are the same as ``*`` and ``_`` in Vidjil junction, i.e. ``functional = !stop_codon || vj_in_frame``. The ``v_frameshift`` and ``productive`` are defined in terms of entire sequence, including checking that V/J genes are not pseudogenes and give rise to a productive TCR or antibody protein (e.g. human TRBV21-1 is a pseudogene).
+
+By default, all the rules for filtering out spurious sequences are defined in the following way:
+
+* among all chains where a given well-defined ``junction`` is present, only the ``chain`` having lowest ``v_support`` (checked first) or ``j_support`` is selected to prevent miss-mappings (N.B. lowest is due to the fact that support is a proxy for match P-value in igblast)
+* chimeras defined as mapping of V and J to different loci are dropped, except for TRA and TRD chains (due to presence of TRAV-X/DV-Y genes)
+* V(D)J junction is ``functional``:
+* * well-defined (non-empty entry for ``junction``)
+* * does not contain ``*`` or ``_``
+* junction is canonical, starting with ``C`` and ending with either ``F`` or ``W``
+* either supported by several reads (``duplicate_count > 1``), or having ``Pgen > 0``
+* the entire sequence is productive: V and J genes are not pseudogenes (currently not checked), ``junction`` is ``functional`` for Vidjil and ``productive`` for IgBlast
+* additional filtering involves ``pgen_threshold`` calculated using OLGA software that estimates the theoretical likelihood of a given V(D)J rearrangements, can be used for filtering spurious rearrangements that are likely to be replicate artefacts
+
 
 ## Parameters
-* `--pgen-threshold` (**optional**): probability generation (pgen) threshold; all clones with `pgen <= pgen_threshold` will be removed. If you need disable this filtration, remove **pgen_threshold** from your `values.yml`.
-* `--calculate-pgen` (**optional**): calculate generation probability of clonotypes. Automatically on if `--pgen-threshold` is set and not 0
+
+* `--filter-pgen-all pgen_threshold` (**optional**): calculates generation probability of junctions, all clonotypes with `pgen <= pgen_threshold` will be removed
+* `--filter-pgen-singletons pgen_threshold` (**optional**): calculate generation probability of junctions, all clonotypes with `duplicate_cound == 1 && pgen <= pgen_threshold` will be removed
+* `--clonotype-collapse-factor` (**optional**): value, that specifies the parent-to-child ratio in order to define erroneous (based on Levenstein distance of 1 and read count ratio) records that should be clustered to their parent clonotypes. Defaults to ``0.05``
+* `--remove-chimeras` (**optional**): filter out chimeras, that have different locus in V-/J-segments (except for TRA and TRD)
 * `--only-functional` (**optional**): filter out non-functional clonotypes
-* `--only-productive` (**optional**): filter out non-productive clonotypes
-* `--filter-pgen-singletons` (**optional**): Filter out singleton clones with duplicate_count=1 and pgen<=pgen_threshold
-* `--clonotype-collapse-factor` (**optional**): value, that involved in clonotypes collapsing
-* `--remove-chimeras` (**optional**): filter out chimeras, that have different locus in V-/J-segments
+* `--only-canonical` (**optional**): filter out non-canonical clonotypes
+* `--only-productive` (**optional**): filter out non-productive clonotypes (if IgBlast fields are present, for Vidjil same as ``--only-functional``)
 
 ## Input
 
@@ -46,6 +67,7 @@ bash build_ref.sh
 ## How to run
 
 1. Build an image
+
 ```bash
 docker build --target tool -t cdr3nt-error-corrector .
 ```
@@ -60,6 +82,7 @@ raw_annotation.BCR.tsv.gz
 ```
 
 3. Run container
+
 ```bash
 docker run \
    -v ${FOLDER_WITH_DATA}:/root/ \
@@ -79,6 +102,7 @@ docker run \
 ```
 
 4. Outputs will be here
+
 ```bash
 $ ls $FOLDER_WITH_DATA
 raw_annotation.TCR.tsv.gz
