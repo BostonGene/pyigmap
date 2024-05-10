@@ -9,9 +9,6 @@ from logger import set_logger, TqdmToLogger
 logger = set_logger(name=__file__)
 tqdm_out = TqdmToLogger(logger, level=logging.INFO)
 
-TMP_DIR = '/tmp'
-FASTQ_CHUNK_SIZE = 2_000_000  # reads count in one fastq chunk
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
