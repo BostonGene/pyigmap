@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
-* Fix bug with dataframe index in `drop_duplicates_in_different_loci` ([#29](https://github.com/BostonGene/pyigmap/issues/29)) ([dda232c](https://github.com/BostonGene/pyigmap/commit/dda232c20c28c72403cc3a08db90d6fe33620c85))
-* Fix bug with `total_reads` calculation for fastp.json in `cdr3nt-error-corrector` step ([#16](https://github.com/BostonGene/pyigmap/issues/16)) ([16fb28b](https://github.com/BostonGene/pyigmap/commit/16fb28b81477545fb392d96b05d431b85bd2a0d4))
-* Fix `igblast` reference ([#11](https://github.com/BostonGene/pyigmap/pull/11)) ([d3511d5](https://github.com/BostonGene/pyigmap/commit/d3511d57d9856f88a49e4c884b9d1650bc091d18))
+* Fix a bug with chimeras removing ([#49](https://github.com/BostonGene/pyigmap/issues/49))
+* Fix a bug with dataframe index in `drop_duplicates_in_different_loci` ([#29](https://github.com/BostonGene/pyigmap/issues/29)) ([dda232c](https://github.com/BostonGene/pyigmap/commit/dda232c20c28c72403cc3a08db90d6fe33620c85))
+* Fix a bug with `total_reads` calculation for fastp.json in `cdr3nt-error-corrector` step ([#16](https://github.com/BostonGene/pyigmap/issues/16)) ([16fb28b](https://github.com/BostonGene/pyigmap/commit/16fb28b81477545fb392d96b05d431b85bd2a0d4))
+* Fix an `igblast` reference ([#11](https://github.com/BostonGene/pyigmap/pull/11)) ([d3511d5](https://github.com/BostonGene/pyigmap/commit/d3511d57d9856f88a49e4c884b9d1650bc091d18))
