@@ -1,7 +1,9 @@
 SHELL:=/bin/bash
+
+PYTHON_VERSION=3.10.14
+PYTHON_SYS=python3.10
 VIRTUAL_ENV=env
-PYTHON=${VIRTUAL_ENV}/bin/python3
-PYTHON_VERSION=3.9.19
+PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
 JAVA_VERSION=22
 CPU_ARCHITECTURE=amd64
 STAGE=image
@@ -19,35 +21,35 @@ ccso = $(shell tput smso)
 mypy: venv ## >> run mypy type checker
 	@echo ""
 	@echo "$(ccso)--> Running mypy $(ccend)"
-	$(PYTHON) -m mypy steps/calib_dedup/
-	$(PYTHON) -m mypy steps/fastp/
-	$(PYTHON) -m mypy steps/vidjil/
-	$(PYTHON) -m mypy steps/igblast/
-	$(PYTHON) -m mypy steps/cdr3nt_error_corrector/
+	$(PYTHON_ENV) -m mypy steps/calib_dedup/
+	$(PYTHON_ENV) -m mypy steps/fastp/
+	$(PYTHON_ENV) -m mypy steps/vidjil/
+	$(PYTHON_ENV) -m mypy steps/igblast/
+	$(PYTHON_ENV) -m mypy steps/cdr3nt_error_corrector/
 
 check: venv ## >> run ruff linter
 	@echo ""
 	@echo "$(ccso)--> Running ruff check $(ccend)"
-	$(PYTHON) -m ruff check steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
+	$(PYTHON_ENV) -m ruff check steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
 format: venv ## >> run ruff formatter
 	@echo ""
 	@echo "$(ccso)--> Running ruff format $(ccend)"
-	$(PYTHON) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
+	$(PYTHON_ENV) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
 
 integration-tests: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
 	@echo ""
 	@echo "$(ccso)--> Running workflow tests $(ccend)"
-	$(PYTHON) -m pytest tests/ -vv
+	$(PYTHON_ENV) -m pytest tests/ -vv
 
 unit-tests: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
-#	$(PYTHON) -m pytest steps/calib_dedup/unit_tests -vv
-#	$(PYTHON) -m pytest steps/fastp/unit_tests -vv
-#	$(PYTHON) -m pytest steps/vidjil/unit_tests -vv
-	$(PYTHON) -m pytest steps/igblast/unit_tests -vv
-	$(PYTHON) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv
+#	$(PYTHON_ENV) -m pytest steps/calib_dedup/unit_tests -vv
+#	$(PYTHON_ENV) -m pytest steps/fastp/unit_tests -vv
+#	$(PYTHON_ENV) -m pytest steps/vidjil/unit_tests -vv
+	$(PYTHON_ENV) -m pytest steps/igblast/unit_tests -vv
+	$(PYTHON_ENV) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv
 
 tests: venv ##@main >> run integration and unit tests
 	@echo ""
@@ -80,16 +82,16 @@ venv: $(VIRTUAL_ENV)
 
 $(VIRTUAL_ENV): ## >> install a virtualenv tool and setup the virtual environment
 	@echo "$(ccso)--> Install and setup virtualenv $(ccend)"
-	python3 -m pip install --upgrade pip
-	python3 -m pip install virtualenv
+	$(PYTHON_SYS) -m pip install --upgrade pip
+	$(PYTHON_SYS) -m pip install virtualenv
 	virtualenv $(VIRTUAL_ENV)
 
 update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
-	$(PYTHON) -m pip install -r ./steps/calib_dedup/requirements.txt
-	$(PYTHON) -m pip install -r ./steps/igblast/requirements.txt
-	$(PYTHON) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
-	$(PYTHON) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
+	$(PYTHON_ENV) -m pip install -r ./steps/calib_dedup/requirements.txt
+	$(PYTHON_ENV) -m pip install -r ./steps/igblast/requirements.txt
+	$(PYTHON_ENV) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
+	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
 python: ## >> install a python
 	wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz -O /tmp/python.tgz
