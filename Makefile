@@ -1,7 +1,7 @@
 SHELL:=/bin/bash
 
 PYTHON_VERSION=3.10.14
-PYTHON_SYS=python3.10
+PYTHON_SYS=python3.9
 VIRTUAL_ENV=env
 PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
 JAVA_VERSION=22
@@ -100,6 +100,7 @@ python: ## >> install a python
 	cd /tmp/python && \
 		./configure --enable-optimizations && \
 		make -j 8 && sudo make altinstall
+	sudo apt install ${PYTHON_SYS}-distutils
 	rm /tmp/python.tgz
 
 docker: ## >> install a docker
