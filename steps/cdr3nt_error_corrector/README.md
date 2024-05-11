@@ -3,13 +3,14 @@
 This step removes spurious rearrangements via [OLGA](https://github.com/statbiophys/OLGA) tool, corrects and filters out bad clones.
 
 ## Parameters
-* `--pgen-threshold` (**optional**): probability generation (pgen) threshold; all clones with `pgen <= pgen_threshold` will be removed. If you need disable this filtration, remove **pgen_threshold** from your `values.yml`.
-* `--calculate-pgen` (**optional**): calculate generation probability of clonotypes. Automatically on if `--pgen-threshold` is set and not 0
+* `--filter-pgen-all <pgen_threshold>` (**optional**): calculates generation probability of junctions, all clonotypes with `pgen <= pgen_threshold` will be removed
+* `--filter-pgen-singletons <pgen_threshold>` (**optional**): calculate generation probability of junctions, all clonotypes with `duplicate_cound == 1 && pgen <= pgen_threshold` will be removed
+* `--keep-pgen-calculation` (**optional**): keep calculation of generation probability of junctions
+* `--clonotype-collapse-factor` (**optional**): value, that specifies the parent-to-child ratio in order to define erroneous (based on Levenstein distance of 1 and read count ratio) records that should be clustered to their parent clonotypes. Defaults to ``0.05``
+* `--remove-chimeras` (**optional**): filter out chimeras, that have different locus in V-/J-segments (except for TRA and TRD)
 * `--only-functional` (**optional**): filter out non-functional clonotypes
-* `--only-productive` (**optional**): filter out non-productive clonotypes
-* `--filter-pgen-singletons` (**optional**): Filter out singleton clones with duplicate_count=1 and pgen<=pgen_threshold
-* `--clonotype-collapse-factor` (**optional**): value, that involved in clonotypes collapsing
-* `--remove-chimeras` (**optional**): filter out chimeras, that have different locus in V-/J-segments
+* `--only-canonical` (**optional**): filter out non-canonical clonotypes
+* `--only-productive` (**optional**): filter out non-productive clonotypes (if IgBlast fields are present, for Vidjil same as ``--only-functional``)
 
 ## Input
 
@@ -67,7 +68,7 @@ docker run \
    cdr3nt-error-corrector \
    --in-tcr-annotation /root/raw_annotation.TCR.tsv.gz \
    --in-bcr-annotation /root/raw_annotation.BCR.tsv.gz \
-   --pgen-threshold 0 \
+   --filter-pgen-all 0 \
    --only-functional \
    --remove-chimeras \
    --clonotype-collapse-factor 0.05 \
