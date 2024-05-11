@@ -57,9 +57,10 @@ def _filter_cdr3_duplicates_by_metrics(annotation: pd.DataFrame, use_pgen: bool)
 
 
 def _remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str):
+    """Removes chimeras: sequences, that have different locus in 'locus' and 'v_call' or 'j_call' columns"""
     not_chimera_mask = []
     for locus, segment_call in zip(annotation['locus'].values, annotation[f'{segment}_call'].values):
-        if all(call[:3].upper() == locus or call[:3].upper() in ALLOWED_LOCUS_CHIMERAS for call in segment_call.split()):
+        if all(call[:3].upper() == locus or call.upper() in ALLOWED_LOCUS_CHIMERAS for call in segment_call.split(',')):
             not_chimera_mask.append(True)
         else:
             not_chimera_mask.append(False)

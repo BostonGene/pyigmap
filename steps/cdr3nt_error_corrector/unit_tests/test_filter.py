@@ -2,6 +2,9 @@ from pytest import fixture
 import pandas as pd
 
 import filter
+from logger import set_logger
+
+logger = set_logger(name=__file__)
 
 
 @fixture(scope='module')
@@ -44,14 +47,14 @@ def annotation_out_of_frame() -> pd.DataFrame:
 
 @fixture(scope='module')
 def annotation_with_v_chimeras() -> pd.DataFrame:
-    return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA'],
-                              'v_call': ['IGLV', 'IGHV', 'TRAV']})
+    return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
+                              'v_call': ['IGLV', 'IGHV', 'TRAV', 'IGLV,IGHV', 'TRAV,TRDV']})
 
 
 @fixture(scope='module')
 def annotation_with_j_chimeras() -> pd.DataFrame:
-    return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA'],
-                              'j_call': ['IGLJ', 'IGHJ', 'TRAJ']})
+    return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
+                              'j_call': ['IGLJ', 'IGHJ', 'TRAJ', 'IGLJ,IGHJ', 'TRAJ,TRDJ']})
 
 
 def test_remove_non_functional(annotation_non_functional):
@@ -119,19 +122,21 @@ def test_remove_out_of_frame(annotation_out_of_frame):
 
 def test_remove_v_chimeras(annotation_with_v_chimeras):
     filtered_annotation = filter._remove_chimeras_by_segment(annotation_with_v_chimeras, 'v')
+    logger.info(filtered_annotation)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={'locus': ['TRA'],
-                           'v_call': ['TRAV']},
-                     index=[2])
+        pd.DataFrame(data={'locus': ['TRA', 'TRA'],
+                           'v_call': ['TRAV', 'TRAV,TRDV']},
+                     index=[2, 4])
     )
 
 
 def test_remove_j_chimeras(annotation_with_j_chimeras):
     filtered_annotation = filter._remove_chimeras_by_segment(annotation_with_j_chimeras, 'j')
+    logger.info(filtered_annotation)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={'locus': ['TRA'],
-                           'j_call': ['TRAJ']},
-                     index=[2])
+        pd.DataFrame(data={'locus': ['TRA', 'TRA'],
+                           'j_call': ['TRAJ', 'TRAJ,TRDJ']},
+                     index=[2, 4])
     )
 
 
