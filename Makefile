@@ -1,11 +1,14 @@
 SHELL:=/bin/bash
 VIRTUAL_ENV=env
 PYTHON=${VIRTUAL_ENV}/bin/python3
+PYTHON_VERSION=3.9.19
+JAVA_VERSION=22
+CPU_ARCHITECTURE=amd64
 STAGE=image
 
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help run clean build integration-tests unit-tests mypy check format update venv
+.PHONY: help run clean build integration-tests unit-tests mypy python docker java nextflow check format update venv
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -56,12 +59,13 @@ clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
 	@echo "$(ccso)--> Removing virtual environment $(ccend)"
 	docker rmi -f downloader \
-				  calib-dedup-tool calib-dedup-image \
-				  fastp-tool fastp-image \
-				  vidjil-tool vidjil-image \
-				  igblast-tool igblast-image \
-				  cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
-	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow /tmp/pytest_workflow_*
+		calib-dedup-tool calib-dedup-image \
+		fastp-tool fastp-image \
+		vidjil-tool vidjil-image \
+		igblast-tool igblast-image \
+		cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
+	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow /tmp/pytest_workflow_* /tmp/java.tar.gz \
+		/tmp/python.tgz /tmp/python
 
 build: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
@@ -74,7 +78,7 @@ build: ##@main >> build docker images, the virtual environment and install requi
 
 venv: $(VIRTUAL_ENV)
 
-$(VIRTUAL_ENV): ## >> install virtualenv and setup the virtual environment
+$(VIRTUAL_ENV): ## >> install a virtualenv tool and setup the virtual environment
 	@echo "$(ccso)--> Install and setup virtualenv $(ccend)"
 	python3 -m pip install --upgrade pip
 	python3 -m pip install virtualenv
@@ -87,7 +91,31 @@ update: venv ## >> update requirements.txt inside the virtual environment
 	$(PYTHON) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
-nextflow:
+python: ## >> install a python
+	wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz -O /tmp/python.tgz
+	mkdir /tmp/python
+	tar xzvf /tmp/python.tgz --one-top-level=/tmp/python --strip-component 1
+	cd /tmp/python && \
+		./configure --enable-optimizations && \
+		make -j 8 && sudo make altinstall
+	rm /tmp/python.tgz
+
+docker: ## >> install a docker
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+	sudo add-apt-repository "deb [arch=${CPU_ARCHITECTURE}] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable"
+	sudo apt-get update
+	sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+
+java: ## >> install a JVM
+	wget https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz -O /tmp/java.tar.gz
+	mkdir /tmp/java-${JAVA_VERSION}
+	tar xzvf /tmp/java.tar.gz --one-top-level=/tmp/java-${JAVA_VERSION} --strip-component 1
+	mv /tmp/java-${JAVA_VERSION} /usr/local/bin/
+	echo 'export "PATH=/usr/local/bin/java-${JAVA_VERSION}/bin:$PATH"' >> ~/.bashrc
+	java -version
+	rm /tmp/java.tar.gz
+
+nextflow: ## >> install a NextFlow
 	@java --version
 	curl -s https://get.nextflow.io | bash
 
