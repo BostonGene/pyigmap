@@ -48,13 +48,13 @@ def annotation_out_of_frame() -> pd.DataFrame:
 @fixture(scope='module')
 def annotation_with_v_chimeras() -> pd.DataFrame:
     return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
-                              'v_call': ['IGLV', 'IGHV', 'TRAV', 'IGLV,IGHV', 'TRAV,TRDV']})
+                              'v_call': ['IGLV3-25*03', 'IGHV2-26*03', 'TRAV4-2*01', 'IGLV2-34*01,IGHV4-34*02', 'TRAV7-6*01,TRDV7-6*02']})
 
 
 @fixture(scope='module')
 def annotation_with_j_chimeras() -> pd.DataFrame:
     return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
-                              'j_call': ['IGLJ', 'IGHJ', 'TRAJ', 'IGLJ,IGHJ', 'TRAJ,TRDJ']})
+                              'j_call': ['IGLJ3-25*03', 'IGHJ2-26*03', 'TRAJ4-2*01', 'IGLJ2-34*01,IGHJ4-34*02', 'TRAJ7-6*01,TRDJ7-6*02']})
 
 
 def test_remove_non_functional(annotation_non_functional):
@@ -125,7 +125,7 @@ def test_remove_v_chimeras(annotation_with_v_chimeras):
     logger.info(filtered_annotation)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'locus': ['TRA', 'TRA'],
-                           'v_call': ['TRAV', 'TRAV,TRDV']},
+                           'v_call': ['TRAV4-2*01', 'TRAV7-6*01,TRDV7-6*02']},
                      index=[2, 4])
     )
 
@@ -135,7 +135,7 @@ def test_remove_j_chimeras(annotation_with_j_chimeras):
     logger.info(filtered_annotation)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'locus': ['TRA', 'TRA'],
-                           'j_call': ['TRAJ', 'TRAJ,TRDJ']},
+                           'j_call': ['TRAJ4-2*01', 'TRAJ7-6*01,TRDJ7-6*02']},
                      index=[2, 4])
     )
 
