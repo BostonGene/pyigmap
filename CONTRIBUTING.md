@@ -13,8 +13,8 @@ git clone https://github.com/BostonGene/pyigmap.git
 2. Install a [Python 3.9](https://www.python.org/downloads/release/python-390/) (or later), [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
 ```bash
-make python
-make docker
+sudo make python
+sudo make docker
 sudo make java
 ```
 
