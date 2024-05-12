@@ -5,8 +5,18 @@ Thanks for being willing to contribute!
 ## Project setup
 
 1. Fork and clone the repo.
-2. Install a [Python 3.9](https://www.python.org/downloads/release/python-390/) (or later), [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
-3. Execute `pip install pre-commit` and `sudo apt install make`.
+
+```bash
+git clone https://github.com/BostonGene/pyigmap.git
+```
+
+2. Install a [Python 3.9](https://www.python.org/downloads/release/python-390/) (or later), [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+
+```bash
+make install-python
+make install-docker # requirements: ubuntu x64
+make install-java # requirements: linux x64
+```
 
 ## Building and Testing
 
@@ -35,7 +45,7 @@ make tests
 
 ## Committing and Pushing changes
 
-Please make sure to run the tests before you commit your changes (if you didn't configure `pre-commit`). You can run for it `make unit-tests` (for steps) and `make integration-tests` (for workflows).  
+Please make sure to run the tests before you commit your changes (if you didn't configure `pre-commit`). You can run for it `make unit-tests` (for steps) and `make integration-tests` (for workflows).
 
 Also, check that your code meet [PEP8](https://peps.python.org/pep-0008/) requirements (by [ruff](https://github.com/astral-sh/ruff)), dynamic and static typing (by [mypy](https://github.com/python/mypy)). You can automate it using:
 ```bash
@@ -49,7 +59,7 @@ make mypy # runs mypy type checker
 Additionally, you can activate [pre-commit](https://pre-commit.com/) hooks. Execute:
 
 ```bash
-pre-commit install # set up the git hook scripts
+pre-commit install # pip install pre-commit
 ```
 
 ## Development
