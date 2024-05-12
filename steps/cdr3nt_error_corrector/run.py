@@ -20,9 +20,9 @@ def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     if not args.olga_models and not args.keep_pgen_calculation:
         msg_list += ["Pgen calculation is enabled, but no OLGA model is provided"]
     if args.keep_pgen_calculation and (args.filter_pgen_all or args.filter_pgen_singletons):
-        msg_list += ["Pgen calculation is disabled, but --filter-pgen-all / --filter-pgen-singletons is provided"]
+        msg_list += ["Pgen calculation is disabled, but '--filter-pgen-all' or '--filter-pgen-singletons' is provided"]
     if args.filter_pgen_all and args.filter_pgen_singletons:
-        msg_list += ["Flags--filter-pgen-all and --filter-pgen-singletons cannot be provided at the same time"]
+        msg_list += ["Flags '--filter-pgen-all' and '--filter-pgen-singletons' cannot be provided at the same time"]
     return msg_list
 
 
