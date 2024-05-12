@@ -70,7 +70,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		.nextflow.log* work .nextflow nextflow \
 		/tmp/pytest_workflow_* \
 		steps/igblast/igblast.reference.major_allele.tar.gz steps/igblast/igblast.reference.all_alleles.tar.gz \
-		steps/igblast/vidjil.germline.tar.gz \
+		steps/vidjil/vidjil.germline.tar.gz \
 		steps/cdr3nt_error_corrector/olga-models.tar.gz
 
 build-igblast-ref: ## >> build igblast references
