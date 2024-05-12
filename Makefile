@@ -99,22 +99,23 @@ install-python: ## >> install a python
 	cd /tmp/python && \
 		./configure --enable-optimizations && \
 		make -j 8 && sudo make altinstall
-	apt install ${PYTHON_SYS}-distutils
-	rm -rf /tmp/python.tgz /tmp/python
+	sudo apt install ${PYTHON_SYS}-distutils
+	sudo rm -rf /tmp/python.tgz /tmp/python
 
 install-docker: ## >> install a docker
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-	add-apt-repository "deb [arch=${ARCHITECTURE}] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable"
-	apt-get update
-	apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+	sudo add-apt-repository "deb [arch=${ARCHITECTURE}] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable"
+	sudo apt-get update
+	sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
-install-java: ## >> install a JVM
+install-java: ## >> install a java
 	curl -fL https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz > /tmp/java.tar.gz
 	mkdir -p /tmp/java-${JAVA_VERSION}
 	tar xzvf /tmp/java.tar.gz --one-top-level=/tmp/java-${JAVA_VERSION} --strip-component 1
-	mv /tmp/java-${JAVA_VERSION} /usr/local/bin/
-	echo 'export "PATH=/usr/local/bin/java-${JAVA_VERSION}/bin:$PATH"' >> ~/.bashrc
-	java -version
+	sudo mv /tmp/java-${JAVA_VERSION} /usr/local/bin/
+	@echo "export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}/bin" >> ~/.bashrc
+	@echo 'export PATH=$$JAVA_HOME:$$PATH' >> ~/.bashrc
+	@java -version
 	rm /tmp/java.tar.gz
 
 install-nextflow: ## >> install a NextFlow
