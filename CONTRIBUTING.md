@@ -18,17 +18,17 @@ make install-docker # requirements: ubuntu x64
 make install-java # requirements: linux x64
 ```
 
+3. Build all reference archives:
+
+```bash
+make build-ref
+```
+
 ## Building and Testing
 
 To build an executable and not executable docker images, python virtual environment and installs requirements execute:
 ```bash
 make build
-```
-
-To build all references execute:
-
-```bash
-make build-ref
 ```
 
 ### Unit (step) tests
