@@ -4,7 +4,7 @@
 
 ## Quick start
 
-1. This pipeline requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 22)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can do it manually or execute:
+1. This pipeline requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can do it manually or execute:
 
 ```bash
 make install-docker # requirements: ubuntu x64
