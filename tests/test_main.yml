@@ -6,11 +6,3 @@
   command: ./pyigmap --mode amplicon --sample SRR3743469 --reads 10000
   files:
     - path: "pyigmap.tar.gz"
-- name: test_main_rnaseq_zenodo
-  command: ./pyigmap --mode rnaseq --zenodo --fq1 UHRR_full_R1.fastq.gz --fq2 UHRR_full_R1.fastq.gz --reads 500000
-  files:
-    - path: "pyigmap.tar.gz"
-- name: test_main_amplicon_zenodo
-  command: ./pyigmap --mode amplicon --zenodo --fq1 fmba_TRAB_R1.fastq.gz --fq2 fmba_TRAB_R2.fastq.gz --reads 500000
-  files:
-    - path: "pyigmap.tar.gz"

@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-* Add new flag `--only-canonical` to `cdr3nt-error-corrector` step ([#41](https://github.com/BostonGene/pyigmap/issues/41))
+* Add a new flag `--only-canonical` to `cdr3nt-error-corrector` step ([#41](https://github.com/BostonGene/pyigmap/issues/41))
+* Automate python, java and docker installation ([#53](https://github.com/BostonGene/pyigmap/issues/53)) ([25c8bf8](https://github.com/BostonGene/pyigmap/commit/25c8bf8e0dd68a872acd77f1648d2bc92ad15ec7))
 * New metrics: `no_v_call` and `no_j_call` in `stat.json` (`cdr3nt-error-corrector` step) ([#40](https://github.com/BostonGene/pyigmap/issues/40)) ([c064525](https://github.com/BostonGene/pyigmap/commit/c0645254485e62a26f6d17aa913d632bc751a8d7))
 * Use `nextflow` to build pipeline ([#2](https://github.com/BostonGene/pyigmap/issues/2)) ([b575887](https://github.com/BostonGene/pyigmap/commit/b57588781ea7cd4aaaaac869d6fe4df041159da1))
 * Add new flag `--calculate-pgen` to `igblast` step [#3](https://github.com/BostonGene/pyigmap/issues/3) ([eedf2b2](https://github.com/BostonGene/pyigmap/commit/eedf2b20487bbb68882b4e56631f72c664ec4167))
