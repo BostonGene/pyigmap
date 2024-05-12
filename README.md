@@ -1,5 +1,7 @@
 # pyigmap
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11103554.svg)](https://doi.org/10.5281/zenodo.11103554)
+
 `pyIgMap` is a [Nextflow](https://github.com/nextflow-io/nextflow)-driven and Python-based workflow for extracting and summarizing antigen receptor gene rearrangements from sequencing data.
 
 ## Quick start
@@ -40,10 +42,6 @@ chmod +x pyigmap
 # for public data from ZENODO
 ./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads 200000
 ```
-
-## Benchmark datasets
-
-[Datasets](https://zenodo.org/records/11103555) for benchmarking a `pyIgMap` pipeline.
 
 ## Contributing
 
