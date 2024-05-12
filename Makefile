@@ -73,25 +73,25 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		steps/vidjil/vidjil.germline.tar.gz \
 		steps/cdr3nt_error_corrector/olga-models.tar.gz
 
-build-igblast-ref: ## >> build igblast references
+build-igblast-ref: ## >> build an archive with igblast references
 	@echo ""
 	@echo "$(ccso)--> Build igblast reference $(ccend)"
 	bash steps/igblast/build_ref.sh -o steps/igblast/igblast.reference.major_allele.tar.gz
 	bash steps/igblast/build_ref.sh -a -o steps/igblast/igblast.reference.all_alleles.tar.gz
 
-build-vidjil-ref: ## >> build vidjil references
+build-vidjil-ref: ## >> build an archive with vidjil references
 	@echo ""
 	@echo "$(ccso)--> Build vidjil reference $(ccend)"
 	bash steps/vidjil/build_ref.sh
 	mv /tmp/vidjil.germline.tar.gz steps/vidjil/
 
-build-olga-models: ## >> build olga models
+build-olga-models: ## >> build an archive with olga models
 	@echo ""
 	@echo "$(ccso)--> Build olga models (OLGA tool dependency) $(ccend)"
 	bash steps/cdr3nt_error_corrector/build_ref.sh
 	mv /tmp/olga-models.tar.gz steps/cdr3nt_error_corrector/
 
-build-ref: ##@main >> build references
+build-ref: ##@main >> build all references
 	@echo ""
 	@echo "$(ccso)--> Build all references $(ccend)"
 	$(MAKE) build-igblast-ref
