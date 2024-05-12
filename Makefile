@@ -105,9 +105,9 @@ install-python: ## >> install a python
 
 install-docker: ## >> install a docker
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-	sudo add-apt-repository "deb [arch=${ARCHITECTURE}] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable"
-	sudo apt-get update
-	sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+	add-apt-repository "deb [arch=${ARCHITECTURE}] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable"
+	apt-get update
+	apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
 install-java: ## >> install a JVM
 	curl -fL https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz > /tmp/java.tar.gz
