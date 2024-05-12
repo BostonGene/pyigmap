@@ -4,13 +4,13 @@ PYTHON_VERSION=3.9.19
 PYTHON_SYS=python3.9
 VIRTUAL_ENV=env
 PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
-JAVA_VERSION=22
+JAVA_VERSION=21
 ARCHITECTURE=amd64
 STAGE=image
 
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help clean build integration-tests unit-tests mypy check format install-nextflow install-python install-docker install-java
+.PHONY: help clean build build-ref integration-tests unit-tests mypy check format install-nextflow install-python install-docker install-java
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -66,7 +66,37 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		vidjil-tool vidjil-image \
 		igblast-tool igblast-image \
 		cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
-	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow /tmp/pytest_workflow_*
+	rm -rf $(VIRTUAL_ENV) \
+		.nextflow.log* work .nextflow nextflow \
+		/tmp/pytest_workflow_* \
+		steps/igblast/igblast.reference.major_allele.tar.gz steps/igblast/igblast.reference.all_alleles.tar.gz \
+		steps/igblast/vidjil.germline.tar.gz \
+		steps/cdr3nt_error_corrector/olga-models.tar.gz
+
+build-igblast-ref: ## >> build igblast references
+	@echo ""
+	@echo "$(ccso)--> Build igblast reference $(ccend)"
+	bash steps/igblast/build_ref.sh -o steps/igblast/igblast.reference.major_allele.tar.gz
+	bash steps/igblast/build_ref.sh -a -o steps/igblast/igblast.reference.all_alleles.tar.gz
+
+build-vidjil-ref: ## >> build vidjil references
+	@echo ""
+	@echo "$(ccso)--> Build vidjil reference $(ccend)"
+	bash steps/vidjil/build_ref.sh
+	mv /tmp/vidjil.germline.tar.gz steps/vidjil/
+
+build-olga-models: ## >> build olga models
+	@echo ""
+	@echo "$(ccso)--> Build olga models (OLGA tool dependency) $(ccend)"
+	bash steps/cdr3nt_error_corrector/build_ref.sh
+	mv /tmp/olga-models.tar.gz steps/cdr3nt_error_corrector/
+
+build-ref: ##@main >> build references
+	@echo ""
+	@echo "$(ccso)--> Build all references $(ccend)"
+	$(MAKE) build-igblast-ref
+	$(MAKE) build-vidjil-ref
+	$(MAKE) build-olga-models
 
 build: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
@@ -113,8 +143,8 @@ install-java: ## >> install a java
 	mkdir -p /tmp/java-${JAVA_VERSION}
 	tar xzvf /tmp/java.tar.gz --one-top-level=/tmp/java-${JAVA_VERSION} --strip-component 1
 	sudo mv /tmp/java-${JAVA_VERSION} /usr/local/bin/
-	@echo "export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}/bin" >> ~/.bashrc
-	@echo 'export PATH=$$JAVA_HOME:$$PATH' >> ~/.bashrc
+	@echo "export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}" >> ~/.bashrc
+	@echo 'export PATH=$$JAVA_HOME/bin:$$PATH' >> ~/.bashrc
 	@java -version
 	rm /tmp/java.tar.gz
 
@@ -133,6 +163,7 @@ build-images:
 
 install: ## Install and check dependencies
 	$(MAKE) install-nextflow
+	$(MAKE) build-ref
 	$(MAKE) build-images STAGE=image
 
 # And add help text after each target name starting with '\#\#'
