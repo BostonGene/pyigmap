@@ -14,8 +14,8 @@ git clone https://github.com/BostonGene/pyigmap.git
 
 ```bash
 sudo make install-python
-sudo make install-docker
-sudo make install-java
+sudo make install-docker # requirements: ubuntu x64
+sudo make install-java # requirements: linux x64
 ```
 
 ## Building and Testing
