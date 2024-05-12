@@ -68,10 +68,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
 	rm -rf $(VIRTUAL_ENV) \
 		.nextflow.log* work .nextflow nextflow \
-		/tmp/pytest_workflow_* \
-		steps/igblast/igblast.reference.major_allele.tar.gz steps/igblast/igblast.reference.all_alleles.tar.gz \
-		steps/vidjil/vidjil.germline.tar.gz \
-		steps/cdr3nt_error_corrector/olga-models.tar.gz
+		/tmp/pytest_workflow_*
 
 build-igblast-ref: ## >> build an archive with igblast vdj reference
 	@echo ""
