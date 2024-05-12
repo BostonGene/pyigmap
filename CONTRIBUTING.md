@@ -25,7 +25,7 @@ To build an executable and not executable docker images, python virtual environm
 make build
 ```
 
-To build all reference execute:
+To build all references execute:
 
 ```bash
 make build-ref
