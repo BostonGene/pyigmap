@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-* Reference generation via Makefile ([#55](https://github.com/BostonGene/pyigmap/issues/55))
+* Reference generation via Makefile ([#55](https://github.com/BostonGene/pyigmap/issues/55)) ([03824c](https://github.com/BostonGene/pyigmap/commit/803824ca3479fd121802281bea4071cd719230c0))
 * Move most of the functions from `run.py` to `utils.py` (for compatibility with internal bitbucket repository) ([#28](https://github.com/BostonGene/pyigmap/issues/28)) ([d3fdfd7](https://github.com/BostonGene/pyigmap/commit/d3fdfd71e33f2995bb349c7880bd9d5af06c4d7a))
 * Make Dockerfiles [multi-staged](https://docs.docker.com/build/building/multi-stage/) to build an executable and not executable images ([#44](https://github.com/BostonGene/pyigmap/issues/44)) ([c602688](https://github.com/BostonGene/pyigmap/commit/c602688ac17bc1259f52394eebaac7e83167d459))
 * Select *01 (major) allele as a default in the igblast ref ([#26](https://github.com/BostonGene/pyigmap/issues/26)) ([db50abe](https://github.com/BostonGene/pyigmap/commit/db50abedf31e47d2b9f0791e6c653dd9a6e0f732))
