@@ -101,7 +101,7 @@ install-python: ## >> install a python
 		./configure --enable-optimizations && \
 		make -j 8 && sudo make altinstall
 	apt install ${PYTHON_SYS}-distutils
-	rm /tmp/python.tgz /tmp/python
+	rm -rf /tmp/python.tgz /tmp/python
 
 install-docker: ## >> install a docker
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
