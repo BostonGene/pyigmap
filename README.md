@@ -6,24 +6,24 @@
 
 ## Quick start
 
-1. This pipeline requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can do it manually or execute:
+1. Clone a repository:
+
+```bash
+git clone https://github.com/BostonGene/pyigmap.git
+cd pyigmap
+```
+
+2. This workflow requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can do it manually or execute:
 
 ```bash
 make install-docker # requirements: ubuntu x64
 make install-java # requirements: linux x64
 ```
 
-2. Clone repository:
+3. Run this command to install all dependencies:
 
 ```bash
-git clone https://github.com/BostonGene/pyigmap.git
-```
-
-3. Run this command to install nextflow and build container steps:
-
-```bash
-cd pyigmap
-make # sudo apt install make
+make
 chmod +x pyigmap
 ```
 
@@ -45,4 +45,4 @@ chmod +x pyigmap
 
 ## Contributing
 
-Contributions are more than welcome. See the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
+Contributions are more than welcome. See the [`CONTRIBUTING`](CONTRIBUTING.md) for details.
