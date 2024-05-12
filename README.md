@@ -7,8 +7,8 @@
 1. This pipeline requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 22)](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
 
 ```bash
-sudo make docker
-sudo make java
+sudo make install-docker # requires linux ubuntu x64
+sudo make install-java # requires linux x64
 ```
 
 2. Clone repository:

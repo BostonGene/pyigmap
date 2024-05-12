@@ -1,16 +1,16 @@
 SHELL:=/bin/bash
 
-PYTHON_VERSION=3.10.14
+PYTHON_VERSION=3.9.19
 PYTHON_SYS=python3.9
 VIRTUAL_ENV=env
 PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
 JAVA_VERSION=22
-CPU_ARCHITECTURE=amd64
+ARCHITECTURE=amd64
 STAGE=image
 
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help run clean build integration-tests unit-tests mypy python docker java nextflow check format update venv
+.PHONY: help clean build integration-tests unit-tests mypy check format install-nextflow install-python install-docker install-java
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -73,14 +73,14 @@ build: ##@main >> build docker images, the virtual environment and install requi
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
-	$(MAKE) nextflow
-	$(MAKE) image STAGE=image
-	$(MAKE) image STAGE=tool
+	$(MAKE) install-nextflow
+	$(MAKE) build-images STAGE=image
+	$(MAKE) build-images STAGE=tool
 	$(MAKE) update
 
 venv: $(VIRTUAL_ENV)
 
-$(VIRTUAL_ENV): ## >> install a virtualenv tool and setup the virtual environment
+$(VIRTUAL_ENV): ## >> setup the virtual environment
 	@echo "$(ccso)--> Install and setup virtualenv $(ccend)"
 	$(PYTHON_SYS) -m pip install --upgrade pip
 	$(PYTHON_SYS) -m pip install virtualenv
@@ -93,7 +93,7 @@ update: venv ## >> update requirements.txt inside the virtual environment
 	$(PYTHON_ENV) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
-python: ## >> install a python
+install-python: ## >> install a python
 	wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz -O /tmp/python.tgz
 	mkdir /tmp/python
 	tar xzvf /tmp/python.tgz --one-top-level=/tmp/python --strip-component 1
@@ -103,13 +103,13 @@ python: ## >> install a python
 	apt install ${PYTHON_SYS}-distutils
 	rm /tmp/python.tgz
 
-docker: ## >> install a docker
+install-docker: ## >> install a docker
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-	sudo add-apt-repository "deb [arch=${CPU_ARCHITECTURE}] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable"
+	sudo add-apt-repository "deb [arch=${ARCHITECTURE}] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable"
 	sudo apt-get update
 	sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
-java: ## >> install a JVM
+install-java: ## >> install a JVM
 	wget https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz -O /tmp/java.tar.gz
 	mkdir /tmp/java-${JAVA_VERSION}
 	tar xzvf /tmp/java.tar.gz --one-top-level=/tmp/java-${JAVA_VERSION} --strip-component 1
@@ -118,11 +118,11 @@ java: ## >> install a JVM
 	java -version
 	rm /tmp/java.tar.gz
 
-nextflow: ## >> install a NextFlow
+install-nextflow: ## >> install a NextFlow
 	@java --version
 	curl -s https://get.nextflow.io | bash
 
-image:
+build-images:
 	@docker version
 	docker build -t downloader steps/downloader
 	docker build --target $(STAGE) -t calib-dedup-$(STAGE) steps/calib_dedup
@@ -132,8 +132,8 @@ image:
 	docker build --target $(STAGE) -t cdr3nt-error-corrector-$(STAGE) steps/cdr3nt_error_corrector
 
 install: ## Install and check dependencies
-	$(MAKE) nextflow
-	$(MAKE) image STAGE=image
+	$(MAKE) install-nextflow
+	$(MAKE) build-images STAGE=image
 
 # And add help text after each target name starting with '\#\#'
 # A category can be added with @category
