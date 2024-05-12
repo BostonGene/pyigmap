@@ -66,8 +66,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		vidjil-tool vidjil-image \
 		igblast-tool igblast-image \
 		cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
-	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow /tmp/pytest_workflow_* /tmp/java.tar.gz \
-		/tmp/python.tgz /tmp/python
+	rm -rf $(VIRTUAL_ENV) .nextflow.log* work .nextflow nextflow /tmp/pytest_workflow_*
 
 build: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
