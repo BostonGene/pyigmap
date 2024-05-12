@@ -94,8 +94,8 @@ update: venv ## >> update requirements.txt inside the virtual environment
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
 install-python: ## >> install a python
-	wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz -O /tmp/python.tgz
-	mkdir /tmp/python
+	curl -fL http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz > /tmp/python.tgz
+	mkdir -p /tmp/python
 	tar xzvf /tmp/python.tgz --one-top-level=/tmp/python --strip-component 1
 	cd /tmp/python && \
 		./configure --enable-optimizations && \
@@ -110,8 +110,8 @@ install-docker: ## >> install a docker
 	sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
 install-java: ## >> install a JVM
-	wget https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz -O /tmp/java.tar.gz
-	mkdir /tmp/java-${JAVA_VERSION}
+	curl -fL https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz > /tmp/java.tar.gz
+	mkdir -p /tmp/java-${JAVA_VERSION}
 	tar xzvf /tmp/java.tar.gz --one-top-level=/tmp/java-${JAVA_VERSION} --strip-component 1
 	mv /tmp/java-${JAVA_VERSION} /usr/local/bin/
 	echo 'export "PATH=/usr/local/bin/java-${JAVA_VERSION}/bin:$PATH"' >> ~/.bashrc
