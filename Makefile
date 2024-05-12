@@ -59,7 +59,7 @@ tests: venv ##@main >> run integration and unit tests
 
 clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
-	@echo "$(ccso)--> Removing virtual environment $(ccend)"
+	@echo "$(ccso)--> Removing temporary files and images $(ccend)"
 	docker rmi -f downloader \
 		calib-dedup-tool calib-dedup-image \
 		fastp-tool fastp-image \
@@ -73,21 +73,21 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		steps/vidjil/vidjil.germline.tar.gz \
 		steps/cdr3nt_error_corrector/olga-models.tar.gz
 
-build-igblast-ref: ## >> build an archive with igblast references
+build-igblast-ref: ## >> build an archive with igblast vdj reference
 	@echo ""
-	@echo "$(ccso)--> Build igblast reference $(ccend)"
+	@echo "$(ccso)--> Build a vdj reference for igblast $(ccend)"
 	bash steps/igblast/build_ref.sh -o steps/igblast/igblast.reference.major_allele.tar.gz
 	bash steps/igblast/build_ref.sh -a -o steps/igblast/igblast.reference.all_alleles.tar.gz
 
-build-vidjil-ref: ## >> build an archive with vidjil references
+build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
-	@echo "$(ccso)--> Build vidjil reference $(ccend)"
+	@echo "$(ccso)--> Build a vdj reference for vidjil $(ccend)"
 	bash steps/vidjil/build_ref.sh
 	mv /tmp/vidjil.germline.tar.gz steps/vidjil/
 
 build-olga-models: ## >> build an archive with olga models
 	@echo ""
-	@echo "$(ccso)--> Build olga models (OLGA tool dependency) $(ccend)"
+	@echo "$(ccso)--> Build olga models for OLGA tool $(ccend)"
 	bash steps/cdr3nt_error_corrector/build_ref.sh
 	mv /tmp/olga-models.tar.gz steps/cdr3nt_error_corrector/
 
