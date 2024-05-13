@@ -1,27 +1,29 @@
 # pyigmap
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11103554.svg)](https://doi.org/10.5281/zenodo.11103554)
+
 `pyIgMap` is a [Nextflow](https://github.com/nextflow-io/nextflow)-driven and Python-based workflow for extracting and summarizing antigen receptor gene rearrangements from sequencing data.
 
 ## Quick start
 
-1. This pipeline requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can do it manually or execute:
+1. Clone a repository:
+
+```bash
+git clone https://github.com/BostonGene/pyigmap.git
+cd pyigmap
+```
+
+2. This workflow requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can do it manually or execute:
 
 ```bash
 make install-docker # requirements: ubuntu x64
 make install-java # requirements: linux x64
 ```
 
-2. Clone repository:
+3. Run this command to install all dependencies:
 
 ```bash
-git clone https://github.com/BostonGene/pyigmap.git
-```
-
-3. Run this command to install nextflow and build container steps:
-
-```bash
-cd pyigmap
-make # sudo apt install make
+make
 chmod +x pyigmap
 ```
 
@@ -41,10 +43,6 @@ chmod +x pyigmap
 ./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads 200000
 ```
 
-## Benchmark datasets
-
-[Datasets](https://zenodo.org/records/11103555) for benchmarking a `pyIgMap` pipeline.
-
 ## Contributing
 
-Contributions are more than welcome. See the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
+Contributions are more than welcome. See the [`CONTRIBUTING`](CONTRIBUTING.md) for details.

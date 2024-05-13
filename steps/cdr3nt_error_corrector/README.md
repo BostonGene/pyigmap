@@ -24,8 +24,9 @@ By default, all the rules for filtering out spurious sequences are defined in th
 
 ## Parameters
 
-* `--filter-pgen-all pgen_threshold` (**optional**): calculates generation probability of junctions, all clonotypes with `pgen <= pgen_threshold` will be removed
-* `--filter-pgen-singletons pgen_threshold` (**optional**): calculate generation probability of junctions, all clonotypes with `duplicate_cound == 1 && pgen <= pgen_threshold` will be removed
+* `--filter-pgen-all <pgen_threshold>` (**optional**): calculates generation probability of junctions, all clonotypes with `pgen <= pgen_threshold` will be removed
+* `--filter-pgen-singletons <pgen_threshold>` (**optional**): calculate generation probability of junctions, all clonotypes with `duplicate_cound == 1 && pgen <= pgen_threshold` will be removed
+* `--keep-pgen-calculation` (**optional**): keep calculation of generation probability of junctions
 * `--clonotype-collapse-factor` (**optional**): value, that specifies the parent-to-child ratio in order to define erroneous (based on Levenstein distance of 1 and read count ratio) records that should be clustered to their parent clonotypes. Defaults to ``0.05``
 * `--remove-chimeras` (**optional**): filter out chimeras, that have different locus in V-/J-segments (except for TRA and TRD)
 * `--only-functional` (**optional**): filter out non-functional clonotypes
@@ -90,7 +91,7 @@ docker run \
    cdr3nt-error-corrector \
    --in-tcr-annotation /root/raw_annotation.TCR.tsv.gz \
    --in-bcr-annotation /root/raw_annotation.BCR.tsv.gz \
-   --pgen-threshold 0 \
+   --filter-pgen-all 0 \
    --only-functional \
    --remove-chimeras \
    --clonotype-collapse-factor 0.05 \
