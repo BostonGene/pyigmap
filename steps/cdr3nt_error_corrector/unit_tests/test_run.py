@@ -125,7 +125,7 @@ def docker_cmd(olga_models, annotation_bcr, annotation_tcr, input_json, output_a
         "cdr3nt-error-corrector-tool",
         "--in-tcr-annotation", f"/root/{tcr_annotation_basename}",
         "--in-bcr-annotation", f"/root/{bcr_annotation_basename}",
-        "--pgen-threshold", str(0),
+        "--filter-pgen-singletons", str(0),
         "--only-productive",
         "--only-functional",
         "--remove-chimeras",

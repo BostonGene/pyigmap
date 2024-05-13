@@ -17,9 +17,9 @@ os.makedirs(OLGA_MODELS_DIR, exist_ok=True)
 
 def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     msg_list = []
-    if not args.olga_models and not args.keep_pgen_calculation:
+    if not args.olga_models and not args.skip_pgen_calculation:
         msg_list += ["Pgen calculation is enabled, but no OLGA model is provided"]
-    if args.keep_pgen_calculation and (args.filter_pgen_all or args.filter_pgen_singletons):
+    if args.skip_pgen_calculation and (args.filter_pgen_all or args.filter_pgen_singletons):
         msg_list += ["Pgen calculation is disabled, but '--filter-pgen-all' or '--filter-pgen-singletons' is provided"]
     if args.filter_pgen_all and args.filter_pgen_singletons:
         msg_list += ["Flags '--filter-pgen-all' and '--filter-pgen-singletons' cannot be provided at the same time"]
@@ -39,7 +39,7 @@ def parse_args() -> argparse.Namespace:
                         action='extend', required=True, type=str)
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
-    parser.add_argument('--keep-pgen-calculation', action='store_false', help='Keep pgen calculation via OLGA tool')
+    parser.add_argument('--skip-pgen-calculation', action='store_true', help='Skip pgen calculation via OLGA tool')
     parser.add_argument('--clonotype-collapse-factor', type=float, default=0.05,
                         help='Factor value, that involved in collapsing of clonotype duplicates')
     parser.add_argument('--only-productive', help='Filter out non-productive clonotypes', action='store_true')
@@ -66,7 +66,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> None:
-    if not args.keep_pgen_calculation:
+    if not args.skip_pgen_calculation:
         decompress(args.olga_models)
 
     annotation, metrics_dict = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
@@ -84,7 +84,7 @@ def run(args: argparse.Namespace) -> None:
             corrector = ClonotypeCorrector(args.clonotype_collapse_factor)
             corrected_annotation = corrector.correct_full(annotation_by_locus)
 
-            if not args.keep_pgen_calculation:
+            if not args.skip_pgen_calculation:
                 pgen_model = PgenModel(OLGA_MODELS_DIR, locus)
                 corrected_annotation['pgen'] = pgen_model.get_pgen(corrected_annotation['junction_aa'])
 
