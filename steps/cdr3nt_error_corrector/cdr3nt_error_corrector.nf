@@ -13,7 +13,7 @@ process CDR3ErrorCorrector {
         python3.9 /usr/local/run.py \
             --in-tcr-annotation $bcr_annotation \
             --in-bcr-annotation $tcr_annotation \
-            --pgen-threshold 0 \
+            --filter-pgen-all 0 \
             --only-functional \
             --remove-chimeras \
             --clonotype-collapse-factor 0.05 \
