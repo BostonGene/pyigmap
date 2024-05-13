@@ -60,12 +60,14 @@ def _remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str):
     """Removes chimeras: sequences, that have different locus in 'locus' and 'v_call' or 'j_call' columns"""
     not_chimera_mask = []
     for locus, segment_call in zip(annotation['locus'].values, annotation[f'{segment}_call'].values):
-        if all(call[:3].upper() == locus or call[:3].upper() in ALLOWED_LOCUS_CHIMERAS for call in segment_call.split(',')):
+        if all(call[:3].upper() == locus or call[:3].upper() in ALLOWED_LOCUS_CHIMERAS for call in
+               segment_call.split(',')):
             not_chimera_mask.append(True)
         else:
             not_chimera_mask.append(False)
     filtered_annotation = annotation[not_chimera_mask]
-    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} chimeras in {segment.upper()} segment.')
+    logger.info(
+        f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} chimeras in {segment.upper()} segment.')
     return filtered_annotation
 
 
@@ -100,12 +102,17 @@ def remove_non_productive(annotation: pd.DataFrame) -> pd.DataFrame:
     return filtered_productive
 
 
+def remove_non_canonical(annotation: pd.DataFrame) -> pd.DataFrame:
+    filtered_canonical = annotation[annotation['junction_aa'].str.startswith('C', na=False) &
+                                    (annotation['junction_aa'].str.endswith('F', na=False) |
+                                     annotation['junction_aa'].str.endswith('W', na=False))]
+    logger.info(f'Filtered out {annotation.shape[0] - filtered_canonical.shape[0]} non canonical clones.')
+    return filtered_canonical
+
+
 def remove_non_functional(annotation: pd.DataFrame) -> pd.DataFrame:
     filtered_functional = annotation[~annotation['junction'].isna() &
                                      ~annotation['junction_aa'].str.contains('_', na=False) &
-                                     ~annotation['junction_aa'].str.contains('\\*', na=False) &
-                                     annotation['junction_aa'].str.startswith('C', na=False) &
-                                     (annotation['junction_aa'].str.endswith('F', na=False) |
-                                      annotation['junction_aa'].str.endswith('W', na=False))]
+                                     ~annotation['junction_aa'].str.contains('\\*', na=False)]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_functional.shape[0]} non functional clones.')
     return filtered_functional

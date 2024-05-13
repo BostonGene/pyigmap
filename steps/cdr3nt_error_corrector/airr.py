@@ -63,7 +63,8 @@ def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     return concatenated_annotation
 
 
-def read_annotation(*annotation_paths: str, only_functional: bool, remove_chimeras: bool) -> tuple[pd.DataFrame, dict]:
+def read_annotation(*annotation_paths: str, only_functional: bool,
+                    only_canonical: bool, remove_chimeras: bool) -> tuple[pd.DataFrame, dict]:
     logger.info('Reading annotation...')
 
     annotation = _concat_annotations(*annotation_paths)
@@ -79,6 +80,7 @@ def read_annotation(*annotation_paths: str, only_functional: bool, remove_chimer
 
     annotation = filter.remove_chimeras(annotation) if remove_chimeras else annotation
     loci_count = get_loci_count(annotation)
+    annotation = filter.remove_non_canonical(annotation) if only_canonical else annotation
     annotation = filter.remove_non_functional(annotation) if only_functional else annotation
     annotation = filter.drop_duplicates_in_different_loci(annotation, use_pgen=False)
 
