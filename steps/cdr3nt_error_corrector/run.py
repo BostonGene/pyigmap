@@ -49,7 +49,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--filter-pgen-all", type=float,
                         help="All clonotypes with 'pgen <= pgen_threshold' will be removed")
     parser.add_argument("--filter-pgen-singletons", type=float,
-                        help="All clonotypes with 'duplicate_cound == 1 && pgen <= pgen_threshold' will be removed")
+                        help="All clonotypes with 'duplicate_count == 1 && pgen <= pgen_threshold' will be removed")
     parser.add_argument('--olga-models', type=str, help='Archive with OLGA models')
     parser.add_argument('--out-corrected-annotation', type=str, help='Output corrected annotation', required=True)
     parser.add_argument('--out-json', type=str, help='Output json with metrics')
