@@ -2,7 +2,7 @@ from pytest import fixture
 import pandas as pd
 
 from filter import (remove_non_canonical, remove_non_functional, remove_non_productive, filter_pgen,
-                    _get_duplicates_in_different_loci, drop_duplicates_in_different_loci, remove_out_of_frame,
+                    _get_duplicates_in_different_loci, drop_duplicates_in_different_loci,
                     _remove_chimeras_by_segment)
 
 from logger import set_logger
@@ -118,7 +118,7 @@ def test_drop_duplicates_in_different_loci_without_pgen(annotation_with_duplicat
 
 
 def test_drop_duplicates_in_different_loci_with_pgen(annotation_with_duplicates_in_different_loci):
-    filtered_annotation = drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci, use_pgen=True)
+    filtered_annotation = drop_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci)
     assert filtered_annotation.equals(
         pd.DataFrame(data={'duplicate_count': [1, 1, 100],
                            'junction': ['AAA', 'AAA', 'AAT'],
@@ -128,11 +128,6 @@ def test_drop_duplicates_in_different_loci_with_pgen(annotation_with_duplicates_
                            'v_support': [0.0001, 0.0001, 0.00001]},
                      index=[2, 3, 5])
     )
-
-
-def test_remove_out_of_frame(annotation_out_of_frame):
-    filtered_annotation = remove_out_of_frame(annotation_out_of_frame)
-    assert len(filtered_annotation[filtered_annotation['junction'].str.len() % 3 != 0]) == 0
 
 
 def test_remove_v_chimeras(annotation_with_v_chimeras):
