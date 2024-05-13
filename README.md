@@ -13,7 +13,7 @@ git clone https://github.com/BostonGene/pyigmap.git
 cd pyigmap
 ```
 
-2. This workflow requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can do it manually or execute:
+2. This workflow requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can install it manually or execute:
 
 ```bash
 make install-docker # requirements: ubuntu x64
