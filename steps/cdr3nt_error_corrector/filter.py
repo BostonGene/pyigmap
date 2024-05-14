@@ -12,8 +12,6 @@ def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_thresho
         annotation = filter_pgen(annotation, pgen_threshold, filter_pgen_singletons)
     if only_productive:
         annotation = remove_non_productive(annotation)
-    annotation = remove_out_of_frame(annotation)
-    annotation = drop_duplicates_in_different_loci(annotation, use_pgen=True)
     return annotation
 
 
@@ -24,12 +22,12 @@ def _get_duplicates_in_different_loci(annotation: pd.DataFrame) -> list[pd.DataF
     return [group for _, group in duplicates_with_different_loci]
 
 
-def drop_duplicates_in_different_loci(annotation: pd.DataFrame, use_pgen=False) -> pd.DataFrame:
+def drop_duplicates_in_different_loci(annotation: pd.DataFrame) -> pd.DataFrame:
     """Drops cdr3 duplicates in different loci"""
     annotation = annotation.reset_index(drop=True)
     loci_duplicates = _get_duplicates_in_different_loci(annotation)
 
-    corrected_loci_duplicates = [_filter_cdr3_duplicates_by_metrics(loci_duplicate, use_pgen)
+    corrected_loci_duplicates = [_filter_cdr3_duplicates_by_metrics(loci_duplicate)
                                  for loci_duplicate in loci_duplicates]
 
     annotation_without_duplicates = annotation.drop(pd.concat(loci_duplicates).index) if loci_duplicates else annotation
@@ -42,12 +40,10 @@ def drop_duplicates_in_different_loci(annotation: pd.DataFrame, use_pgen=False) 
     return corrected_annotation
 
 
-def _filter_cdr3_duplicates_by_metrics(annotation: pd.DataFrame, use_pgen: bool) -> pd.DataFrame:
+def _filter_cdr3_duplicates_by_metrics(annotation: pd.DataFrame) -> pd.DataFrame:
     """Filters cdr3 duplicates by pgen, j_support, and v_support values"""
     locus = ''
-    if use_pgen and not annotation['pgen'].isna().all():
-        locus = annotation[annotation['pgen'] == annotation['pgen'].max()]['locus'].iloc[0]
-    elif not annotation['j_support'].isna().all():
+    if not annotation['j_support'].isna().all():
         locus = annotation[annotation['j_support'] == annotation['j_support'].min()]['locus'].iloc[0]
     elif not annotation['v_support'].isna().all():
         locus = annotation[annotation['v_support'] == annotation['v_support'].min()]['locus'].iloc[0]
@@ -84,12 +80,6 @@ def filter_pgen(annotation: pd.DataFrame, pgen_threshold: float, filter_pgen_sin
     filtered_annotation = annotation[condition]
     diff_count = annotation.shape[0] - filtered_annotation.shape[0]
     logger.info(f'Filtered out {diff_count} clones with pgen <= {pgen_threshold}.')
-    return filtered_annotation
-
-
-def remove_out_of_frame(annotation: pd.DataFrame) -> pd.DataFrame:
-    filtered_annotation = annotation[annotation['junction'].str.len() % 3 == 0]
-    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} clones out of frame.')
     return filtered_annotation
 
 
