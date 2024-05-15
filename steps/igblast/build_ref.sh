@@ -64,6 +64,7 @@ get_receptor_name() {
 }
 
 REF_DIR=${OUTPUT_DIR}/igblast.reference
+mkdir $REF_DIR
 
 for ORGANISM in human mouse
 do
