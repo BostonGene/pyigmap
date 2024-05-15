@@ -6,7 +6,7 @@ VIRTUAL_ENV=env
 PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
 JAVA_VERSION=21
 ARCHITECTURE=amd64
-STAGE=image
+BUILD_REF_STAGE=build-ref
 
 # .ONESHELL:
 DEFAULT_GOAL: install
@@ -73,8 +73,9 @@ clean: ## >> remove docker images, python environment and nextflow build files
 build-igblast-ref: ## >> build an archive with igblast vdj reference
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference for igblast $(ccend)"
-	bash steps/igblast/build_ref.sh -o steps/igblast/igblast.reference.major_allele.tar.gz
-	bash steps/igblast/build_ref.sh -a -o steps/igblast/igblast.reference.all_alleles.tar.gz
+	docker build --target build-ref -t igblast-$(BUILD_REF_STAGE) steps/igblast/
+	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/$(REF_ARCHIVE)
+	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/$(REF_ARCHIVE)
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
@@ -91,7 +92,7 @@ build-olga-models: ## >> build an archive with olga models
 build-ref: ##@main >> build all references
 	@echo ""
 	@echo "$(ccso)--> Build all references $(ccend)"
-	$(MAKE) build-igblast-ref
+	$(MAKE) build-igblast-ref REF_ARCHIVE=igblast.reference.major_allele.tar.gz
 	$(MAKE) build-vidjil-ref
 	$(MAKE) build-olga-models
 
