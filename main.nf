@@ -11,7 +11,7 @@ params.fq2 = null
 params.zenodo = false
 params.vidjil_ref = './steps/vidjil/vidjil.germline.tar.gz'
 params.allow_minor_alleles = false
-if (params.allow_minor_alleles) {
+if (params.all_alleles) {
     params.igblast_ref = './steps/igblast/igblast.reference.all_alleles.tar.gz'
 } else {
     params.igblast_ref = './steps/igblast/igblast.reference.major_allele.tar.gz'
@@ -27,7 +27,7 @@ log.info "Mode                 : ${params.mode}"
 log.info "Sample               : ${params.sample}"
 log.info "Enable zenodo        : ${params.zenodo}"
 log.info "Reads to process     : ${params.reads}"
-log.info "Allow minor alleles: : ${params.allow_minor_alleles}"
+log.info "All alleles          : ${params.all_alleles}"
 log.info "Fastq1               : ${params.fq1}"
 log.info "Fastq2               : ${params.fq2}"
 log.info "Output directory     : ${params.outdir}"
@@ -74,7 +74,7 @@ def help_message() {
 
         Workflow Options:
     --mode                      the mode of pipeline "rnaseq" (without umi-preprocessing) or "amplicon" (with umi-preprocessing)
-    --allow_minor_alleles       allow alignment of reads to minor alleles (*02, *03, *04, etc) (default: false)
+    --all-alleles               will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT) (default: false)
 
         Nextflow options:
     -resume                     resume the workflow where it stopped
