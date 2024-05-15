@@ -33,3 +33,12 @@ COPY logger.py ${SOFT_DIR}/logger.py
 FROM image AS tool
 
 ENTRYPOINT ["python3.9", "/usr/local/run.py"]
+
+FROM image as ref
+
+RUN wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database/ncbi_human_c_genes.tar -q -O ncbi_human_c_genes.tar && \
+    tar -xvf ncbi_human_c_genes.tar -C ${IGBLAST_DIR}/database \
+
+COPY build_ref.py ${SOFT_DIR}/build_ref.py
+
+ENTRYPOINT ["python3.9", "/usr/local/build_ref.py"]
