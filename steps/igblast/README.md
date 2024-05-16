@@ -19,9 +19,9 @@ This step is a wrapping of [IgBlast](https://ncbi.github.io/igblast/) V(D)J mapp
 
 * `--out-annotation`: path to the output IgBLAST annotation (`path/to/igblast_annotation.tsv.gz`)
 
-## Build archive with V(D)J reference in IgBLAST format:
+## Build archive with V(D)J reference in IgBLAST format
 
-
+Build docker image with tool to generate IgBLAST reference:
 ```bash
 docker build --target build-ref -t build-ref .
 ```

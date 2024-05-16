@@ -28,7 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('-a', '--all-alleles', action='store_true',
                         help='Will use all alleles provided in the antigen receptor segment database '
                              '(*01, *02, etc. according to IMGT).')
-    parser.add_argument('-o', '--out-archive', help='Output IgBLAST reference archive basename', required=True)
+    parser.add_argument('-o', '--out-archive', help='Output IgBLAST reference archive path', required=True)
 
     return parser.parse_args()
 
@@ -36,9 +36,10 @@ def parse_args() -> argparse.Namespace:
 def download_fasta_from_imgt_database(chains_list: list[str], specie: str) -> list[str]:
     """Downloads VDJ fasta reference from https://www.imgt.org/"""
     fasta_local_paths = []
-    for chain in chains_list:
-        specie_imgt = SPECIES_GLOSSARY[specie]
-        fasta_link = f"https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/{specie_imgt}/{chain[:2]}/{chain}.fasta"
+    for library in chains_list:
+        specie_in_imgt_format = SPECIES_GLOSSARY[specie]
+        fasta_link = (f"https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/"
+                      f"{specie_in_imgt_format}/{library[:2]}/{library}.fasta")
         fasta_local_path = tempfile.NamedTemporaryFile().name
         cmd = ['wget', fasta_link, '-q', '-O', fasta_local_path]
         _ = run_command(cmd)
@@ -69,7 +70,7 @@ def concat_fasta_files(fasta_paths: list[str]) -> str:
 
 
 def clean_imgt_fasta(fasta_path: str) -> str:
-    """Cleans the header of the IMGT fasta"""
+    """Cleans the header of the fasta downloaded from IMGT"""
     cmd = [os.path.join(IGBLAST_DIR, 'bin', 'edit_imgt_file.pl'), fasta_path]
     clean_fasta = run_command(cmd)
     clean_fasta_path = tempfile.NamedTemporaryFile().name
@@ -87,7 +88,7 @@ def make_blast_db(fasta_path: str, output_basename: str):
 
 
 def archive_reference_as_tar_gz(archive_path: str) -> str:
-    """Makes tar.gz archive with IgBLAST reference"""
+    """Makes tar.gz archive with IgBLAST final reference"""
 
     cmd = ['tar', '-czf', archive_path, '-C', IGBLAST_DIR, 'database', 'internal_data', 'optional_file']
     _ = run_command(cmd)
@@ -97,9 +98,9 @@ def archive_reference_as_tar_gz(archive_path: str) -> str:
     return archive_path
 
 
-def remove_duplicates_by_id(fasta_path: str) -> str:
+def remove_duplicates_by_sequence_id(fasta_path: str) -> str:
     """Removes duplicated sequences by sequence id (header).
-    If you don't do this, he will fall makeblastdb tool
+    If you don't do this, makeblastdb tool will fall
     """
     output_fasta = tempfile.NamedTemporaryFile().name
     cmd = ['seqkit', 'rmdup', '--by-name', fasta_path, '-o', output_fasta]
@@ -121,12 +122,12 @@ def run(args: argparse.Namespace):
 
             concatenated_fasta_path = concat_fasta_files(clean_fasta_paths)
 
-            fasta_without_duplicates_path = remove_duplicates_by_id(concatenated_fasta_path)
+            fasta_without_duplicates_path = remove_duplicates_by_sequence_id(concatenated_fasta_path)
 
             output_basename = os.path.join(REFERENCE_DIR, f'{specie}.{locus}')
             make_blast_db(fasta_without_duplicates_path, output_basename)
 
-    archive_reference_as_tar_gz(os.path.join(TMP_DIR, args.out_archive))
+    archive_reference_as_tar_gz(args.out_archive)
 
 
 if __name__ == "__main__":

@@ -41,6 +41,6 @@ RUN wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database/ncb
 
 COPY build_ref.py ${SOFT_DIR}/build_ref.py
 
-RUN mkdir /work/
+RUN mkdir /work
 
 ENTRYPOINT ["python3.9", "/usr/local/build_ref.py"]

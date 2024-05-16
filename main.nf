@@ -74,7 +74,8 @@ def help_message() {
 
         Workflow Options:
     --mode                      the mode of pipeline "rnaseq" (without umi-preprocessing) or "amplicon" (with umi-preprocessing)
-    --all_alleles               will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT) (default: false)
+    --all_alleles               will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT);
+                                only major (*01) allele for each gene will be used otherwise (default: false)
 
         Nextflow options:
     -resume                     resume the workflow where it stopped

@@ -70,10 +70,10 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		.nextflow.log* work .nextflow nextflow \
 		/tmp/pytest_workflow_*
 
-build-ref-images:
+build-ref-image:
 	@echo ""
 	@echo "$(ccso)--> Build images of reference generators $(ccend)"
-	docker build --target build-ref -t igblast-$(BUILD_REF_STAGE) steps/igblast/
+	docker build --target build-ref -t $(STEP)-$(BUILD_REF_STAGE) steps/$(STEP)/
 
 build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
 	@echo ""
@@ -100,7 +100,7 @@ build-olga-models: ## >> build an archive with olga models
 build-ref: ##@main >> build all references
 	@echo ""
 	@echo "$(ccso)--> Build all references $(ccend)"
-	$(MAKE) build-ref-images
+	$(MAKE) build-ref-image STEP=igblast
 	$(MAKE) build-igblast-ref-major
 	$(MAKE) build-igblast-ref-all
 	$(MAKE) build-vidjil-ref
