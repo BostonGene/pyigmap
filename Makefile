@@ -70,12 +70,20 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		.nextflow.log* work .nextflow nextflow \
 		/tmp/pytest_workflow_*
 
-build-igblast-ref: ## >> build an archive with igblast vdj reference
+build-ref-images:
 	@echo ""
-	@echo "$(ccso)--> Build a vdj reference for igblast $(ccend)"
+	@echo "$(ccso)--> Build images of reference generators $(ccend)"
 	docker build --target build-ref -t igblast-$(BUILD_REF_STAGE) steps/igblast/
-	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/$(REF_ARCHIVE)
-	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/$(REF_ARCHIVE)
+
+build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
+	@echo ""
+	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
+	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
+
+build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
+	@echo ""
+	@echo "$(ccso)--> Build a vdj reference with all alleles (*01, *02, etc.) for igblast $(ccend)"
+	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
@@ -85,14 +93,16 @@ build-vidjil-ref: ## >> build an archive with vidjil reference
 
 build-olga-models: ## >> build an archive with olga models
 	@echo ""
-	@echo "$(ccso)--> Build olga models for OLGA tool $(ccend)"
+	@echo "$(ccso)--> Build olga models for cdr3nt-error-corrector $(ccend)"
 	bash steps/cdr3nt_error_corrector/build_ref.sh
 	mv /tmp/olga-models.tar.gz steps/cdr3nt_error_corrector/
 
 build-ref: ##@main >> build all references
 	@echo ""
 	@echo "$(ccso)--> Build all references $(ccend)"
-	$(MAKE) build-igblast-ref REF_ARCHIVE=igblast.reference.major_allele.tar.gz
+	$(MAKE) build-ref-images
+	$(MAKE) build-igblast-ref-major
+	$(MAKE) build-igblast-ref-all
 	$(MAKE) build-vidjil-ref
 	$(MAKE) build-olga-models
 
