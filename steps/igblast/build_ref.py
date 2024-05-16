@@ -36,10 +36,10 @@ def parse_args() -> argparse.Namespace:
 def download_fasta_from_imgt_database(chains_list: list[str], specie: str) -> list[str]:
     """Downloads VDJ fasta reference from https://www.imgt.org/"""
     fasta_local_paths = []
-    for library in chains_list:
+    for chain in chains_list:
         specie_in_imgt_format = SPECIES_GLOSSARY[specie]
         fasta_link = (f"https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/"
-                      f"{specie_in_imgt_format}/{library[:2]}/{library}.fasta")
+                      f"{specie_in_imgt_format}/{chain[:2]}/{chain}.fasta")
         fasta_local_path = tempfile.NamedTemporaryFile().name
         cmd = ['wget', fasta_link, '-q', '-O', fasta_local_path]
         _ = run_command(cmd)
@@ -111,7 +111,7 @@ def remove_duplicates_by_sequence_id(fasta_path: str) -> str:
 
 def run(args: argparse.Namespace):
     for specie in SPECIES_GLOSSARY:
-        for locus, chains_list in CHAINS_GLOSSARY.items():
+        for library, chains_list in CHAINS_GLOSSARY.items():
 
             fasta_paths = download_fasta_from_imgt_database(chains_list, specie)
 
@@ -124,7 +124,7 @@ def run(args: argparse.Namespace):
 
             fasta_without_duplicates_path = remove_duplicates_by_sequence_id(concatenated_fasta_path)
 
-            output_basename = os.path.join(REFERENCE_DIR, f'{specie}.{locus}')
+            output_basename = os.path.join(REFERENCE_DIR, f'{specie}.{library}')
             make_blast_db(fasta_without_duplicates_path, output_basename)
 
     archive_reference_as_tar_gz(args.out_archive)
