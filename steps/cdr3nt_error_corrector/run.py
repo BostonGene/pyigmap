@@ -65,12 +65,6 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def parse_filter_pgen_args(filter_pgen_all: float, filter_pgen_singletons: float) -> tuple[float, bool]:
-    """Parses args with values to calculate and filter probability generation (pgen)"""
-    pgen_threshold = filter_pgen_singletons if filter_pgen_singletons is not None else filter_pgen_all
-    return pgen_threshold, filter_pgen_singletons is not None
-
-
 def run(args: argparse.Namespace) -> None:
     if not args.skip_pgen_calculation:
         decompress(args.olga_models)
@@ -80,7 +74,9 @@ def run(args: argparse.Namespace) -> None:
                                                     only_canonical=args.only_canonical,
                                                     remove_chimeras=args.remove_chimeras)
 
-    pgen_threshold, filter_only_singletons = parse_filter_pgen_args(args.filter_pgen_all, args.filter_pgen_singletons)
+    pgen_threshold = args.filter_pgen_singletons \
+        if args.filter_pgen_singletons is not None else args.filter_pgen_all
+    filter_pgen_singletons = args.filter_pgen_singletons is not None
 
     if len(annotation):
         corrected_annotations = []
@@ -100,7 +96,7 @@ def run(args: argparse.Namespace) -> None:
         concatenated_annotation = pd.concat(corrected_annotations)
 
         filtered_annotation = filter.run_filtration(concatenated_annotation, args.only_productive,
-                                                    pgen_threshold, filter_only_singletons)
+                                                    pgen_threshold, filter_pgen_singletons)
     else:
         filtered_annotation = annotation
 

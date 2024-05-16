@@ -7,9 +7,9 @@ ALLOWED_LOCUS_CHIMERAS = {'TRA', 'TRD'}
 
 
 def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float,
-                   filter_only_singletons: bool) -> pd.DataFrame:
+                   filter_pgen_singletons: bool) -> pd.DataFrame:
     if pgen_threshold is not None:
-        annotation = filter_pgen(annotation, pgen_threshold, filter_only_singletons)
+        annotation = filter_pgen(annotation, pgen_threshold, filter_pgen_singletons)
     if only_productive:
         annotation = remove_non_productive(annotation)
     return annotation
@@ -73,9 +73,9 @@ def remove_chimeras(annotation: pd.DataFrame) -> pd.DataFrame:
     return annotation
 
 
-def filter_pgen(annotation: pd.DataFrame, pgen_threshold: float, filter_only_singletons: bool) -> pd.DataFrame:
+def filter_pgen(annotation: pd.DataFrame, pgen_threshold: float, filter_pgen_singletons: bool) -> pd.DataFrame:
     condition = (annotation['pgen'].isna()) | (annotation['pgen'] > pgen_threshold)
-    if filter_only_singletons:
+    if filter_pgen_singletons:
         condition |= annotation['duplicate_count'] != 1
     filtered_annotation = annotation[condition]
     diff_count = annotation.shape[0] - filtered_annotation.shape[0]
