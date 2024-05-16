@@ -75,6 +75,7 @@ def run(args: argparse.Namespace) -> None:
                                                     remove_chimeras=args.remove_chimeras)
 
     pgen_threshold = args.filter_pgen_all or args.filter_pgen_singletons
+    filter_pgen_singletons = args.filter_pgen_singletons is not None
 
     if len(annotation):
         corrected_annotations = []
@@ -94,7 +95,7 @@ def run(args: argparse.Namespace) -> None:
         concatenated_annotation = pd.concat(corrected_annotations)
 
         filtered_annotation = filter.run_filtration(concatenated_annotation, args.only_productive,
-                                                    pgen_threshold, args.filter_pgen_singletons)
+                                                    pgen_threshold, filter_pgen_singletons)
     else:
         filtered_annotation = annotation
 
