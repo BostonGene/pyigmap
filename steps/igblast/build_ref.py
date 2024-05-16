@@ -69,7 +69,7 @@ def concat_fasta_files(fasta_paths: list[str]) -> str:
 
 
 def clean_imgt_fasta(fasta_path: str) -> str:
-    """Cleans the header of the IMGT germline sequence file"""
+    """Cleans the header of the IMGT fasta"""
     cmd = [os.path.join(IGBLAST_DIR, 'bin', 'edit_imgt_file.pl'), fasta_path]
     clean_fasta = run_command(cmd)
     clean_fasta_path = tempfile.NamedTemporaryFile().name
@@ -79,7 +79,7 @@ def clean_imgt_fasta(fasta_path: str) -> str:
 
 
 def make_blast_db(fasta_path: str, output_basename: str):
-    """Makes the blast database from cleaned germline sequence file"""
+    """Makes the blast database from cleaned IMGT fasta"""
     cmd = [os.path.join(IGBLAST_DIR, 'bin', 'makeblastdb'), '-parse_seqids', '-dbtype', 'nucl', '-in', fasta_path,
            '-out', output_basename]
     cmd_process = run_command(cmd)
@@ -87,7 +87,7 @@ def make_blast_db(fasta_path: str, output_basename: str):
 
 
 def archive_reference_as_tar_gz(archive_path: str) -> str:
-    """Makes tar.gz archive"""
+    """Makes tar.gz archive with IgBLAST reference"""
 
     cmd = ['tar', '-czf', archive_path, '-C', IGBLAST_DIR, 'database', 'internal_data', 'optional_file']
     _ = run_command(cmd)
@@ -98,6 +98,9 @@ def archive_reference_as_tar_gz(archive_path: str) -> str:
 
 
 def remove_duplicates_by_id(fasta_path: str) -> str:
+    """Removes duplicated sequences by sequence id (header).
+    If you don't do this, he will fall makeblastdb tool
+    """
     output_fasta = tempfile.NamedTemporaryFile().name
     cmd = ['seqkit', 'rmdup', '--by-name', fasta_path, '-o', output_fasta]
     cmd_process = run_command(cmd)
