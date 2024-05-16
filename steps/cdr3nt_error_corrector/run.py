@@ -19,9 +19,9 @@ def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     msg_list = []
     if not args.olga_models and not args.skip_pgen_calculation:
         msg_list += ["Pgen calculation is enabled, but no OLGA model is provided"]
-    if args.skip_pgen_calculation and (args.filter_pgen_all or args.filter_pgen_singletons):
+    if args.skip_pgen_calculation and (args.filter_pgen_all is not None or args.filter_pgen_singletons is not None):
         msg_list += ["Pgen calculation is disabled, but '--filter-pgen-all' or '--filter-pgen-singletons' is provided"]
-    if args.filter_pgen_all and args.filter_pgen_singletons:
+    if args.filter_pgen_all is not None and args.filter_pgen_singletons is not None:
         msg_list += ["Flags '--filter-pgen-all' and '--filter-pgen-singletons' cannot be provided at the same time"]
     return msg_list
 
@@ -74,7 +74,9 @@ def run(args: argparse.Namespace) -> None:
                                                     only_canonical=args.only_canonical,
                                                     remove_chimeras=args.remove_chimeras)
 
-    pgen_threshold = args.filter_pgen_all or args.filter_pgen_singletons
+    pgen_threshold = args.filter_pgen_singletons \
+        if args.filter_pgen_singletons is not None else args.filter_pgen_all
+    filter_pgen_singletons = args.filter_pgen_singletons is not None
 
     if len(annotation):
         corrected_annotations = []
@@ -94,7 +96,7 @@ def run(args: argparse.Namespace) -> None:
         concatenated_annotation = pd.concat(corrected_annotations)
 
         filtered_annotation = filter.run_filtration(concatenated_annotation, args.only_productive,
-                                                    pgen_threshold, args.filter_pgen_singletons)
+                                                    pgen_threshold, filter_pgen_singletons)
     else:
         filtered_annotation = annotation
 
