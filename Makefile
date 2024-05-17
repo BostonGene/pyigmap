@@ -6,7 +6,7 @@ VIRTUAL_ENV=env
 PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
 JAVA_VERSION=21
 ARCHITECTURE=amd64
-STAGE=image
+BUILD_REF_STAGE=build-ref
 
 # .ONESHELL:
 DEFAULT_GOAL: install
@@ -70,11 +70,20 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		.nextflow.log* work .nextflow nextflow \
 		/tmp/pytest_workflow_*
 
-build-igblast-ref: ## >> build an archive with igblast vdj reference
+build-ref-image:
 	@echo ""
-	@echo "$(ccso)--> Build a vdj reference for igblast $(ccend)"
-	bash steps/igblast/build_ref.sh -o steps/igblast/igblast.reference.major_allele.tar.gz
-	bash steps/igblast/build_ref.sh -a -o steps/igblast/igblast.reference.all_alleles.tar.gz
+	@echo "$(ccso)--> Build images of reference generators $(ccend)"
+	docker build --target build-ref -t $(STEP)-$(BUILD_REF_STAGE) steps/$(STEP)/
+
+build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
+	@echo ""
+	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
+	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
+
+build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
+	@echo ""
+	@echo "$(ccso)--> Build a vdj reference with all alleles (*01, *02, etc.) for igblast $(ccend)"
+	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
@@ -84,14 +93,16 @@ build-vidjil-ref: ## >> build an archive with vidjil reference
 
 build-olga-models: ## >> build an archive with olga models
 	@echo ""
-	@echo "$(ccso)--> Build olga models for OLGA tool $(ccend)"
+	@echo "$(ccso)--> Build olga models for cdr3nt-error-corrector $(ccend)"
 	bash steps/cdr3nt_error_corrector/build_ref.sh
 	mv /tmp/olga-models.tar.gz steps/cdr3nt_error_corrector/
 
 build-ref: ##@main >> build all references
 	@echo ""
 	@echo "$(ccso)--> Build all references $(ccend)"
-	$(MAKE) build-igblast-ref
+	$(MAKE) build-ref-image STEP=igblast
+	$(MAKE) build-igblast-ref-major
+	$(MAKE) build-igblast-ref-all
 	$(MAKE) build-vidjil-ref
 	$(MAKE) build-olga-models
 

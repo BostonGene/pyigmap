@@ -19,13 +19,21 @@ This step is a wrapping of [IgBlast](https://ncbi.github.io/igblast/) V(D)J mapp
 
 * `--out-annotation`: path to the output IgBLAST annotation (`path/to/igblast_annotation.tsv.gz`)
 
-## Build archive with V(D)J reference in IgBLAST format:
+## Build archive with V(D)J reference in IgBLAST format
+
+Build docker image with tool to generate IgBLAST reference:
+```bash
+docker build --target build-ref -t build-ref .
+```
 
 ### Only major alleles
 
 If you need to keep only *01 (major) alleles, execute:
 ```bash
-bash build_ref.sh -o ./igblast.reference.tar.gz
+docker run --rm \
+    -v /path/to/put/results:/work \
+    build-ref \
+    --out-archive /work/iglast.reference.major_allele.tar.gz
 ```
 
 Reference will contain sequences with only major allele (*01):
@@ -36,9 +44,12 @@ aggatattgtagtagtaccagctgctatgcc
 
 ### All alleles
 
-Or you can keep all (major and minor) alleles by adding `--allow-minor-alleles` flag:
+Or you can keep all alleles (*01, *02, etc.) by specifying `--all-alleles` flag:
 ```bash
-bash build_ref.sh --allow-minor-alleles -o ./igblast.reference.tar.gz
+docker run --rm \
+    -v /path/to/put/results:/work \
+    build-ref \
+    --all-alleles --out-archive /work/iglast.reference.all_alleles.tar.gz
 ```
 
 Reference will contain sequences with all alleles (*01, *02, *03, etc.):
