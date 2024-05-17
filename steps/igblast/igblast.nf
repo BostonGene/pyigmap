@@ -1,6 +1,5 @@
 process IgBlast {
-//     publishDir "${params.outdir}/igblast", mode: 'copy', overwrite: false
-    container 'igblast'
+//     publishDir "${params.outdir}/igblast", mode: 'copy'
 
     input:
         path fasta

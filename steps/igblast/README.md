@@ -17,30 +17,64 @@ This step is a wrapping of [IgBlast](https://ncbi.github.io/igblast/) V(D)J mapp
 
 ## Output
 
-* `out_annotation`: path to the output IgBLAST annotation (`path/to/igblast_annotation.tsv.gz`)
+* `--out-annotation`: path to the output IgBLAST annotation (`path/to/igblast_annotation.tsv.gz`)
 
-## Build archive with V(D)J reference in IgBLAST format:
+## Build archive with V(D)J reference in IgBLAST format
 
-Run script:
+Build docker image with tool to generate IgBLAST reference:
 ```bash
-bash build_ref.sh
+docker build --target build-ref -t build-ref .
+```
 
-cp /tmp/igblast.reference.tar.gz .
-``` 
+### Only major alleles
+
+If you need to keep only *01 (major) alleles, execute:
+```bash
+docker run --rm \
+    -v /path/to/put/results:/work \
+    build-ref \
+    --out-archive /work/iglast.reference.major_allele.tar.gz
+```
+
+Reference will contain sequences with only major allele (*01):
+```
+>IGHD2-2*01
+aggatattgtagtagtaccagctgctatgcc
+```
+
+### All alleles
+
+Or you can keep all alleles (*01, *02, etc.) by specifying `--all-alleles` flag:
+```bash
+docker run --rm \
+    -v /path/to/put/results:/work \
+    build-ref \
+    --all-alleles --out-archive /work/iglast.reference.all_alleles.tar.gz
+```
+
+Reference will contain sequences with all alleles (*01, *02, *03, etc.):
+```
+>IGHD2-2*01
+aggatattgtagtagtaccagctgctatgcc
+>IGHD2-2*02
+aggatattgtagtagtaccagctgctatacc
+>IGHD2-2*03
+tggatattgtagtagtaccagctgctatgcc
+```
 
 ## How to run
 
 ```bash
-docker build -t igblast .
+docker build --target tool -t igblast .
 
-# should contain: vidjil.TCR.fasta.gz, vidjil.BCR.fasta.gz and igblast.reference.tar.gz
+# should contain: vidjil.TCR.fasta.gz, vidjil.BCR.fasta.gz and igblast.reference.major_allele.tar.gz
 FOLDER_WITH_DATA=path/to/your/folder
 
 docker run \
     -v ${FOLDER_WITH_DATA}:/root/ \
     igblast \
     --in-fasta /root/vidjil.TCR.fasta.gz \
-    --in-ref /root/igblast.reference.tar.gz \
+    --in-ref /root/igblast.reference.major_allele.tar.gz \
     --receptor 'TCR' \
     --organism human \
     --out-annotation /root/raw_annotation.TCR.tsv.gz
@@ -49,7 +83,7 @@ docker run \
     -v ${FOLDER_WITH_DATA}:/root/ \
     igblast \
     --in-fasta /root/vidjil.BCR.fasta.gz \
-    --in-ref /root/igblast.reference.tar.gz \
+    --in-ref /root/igblast.reference.major_allele.tar.gz \
     --receptor 'BCR' \
     --organism human \
     --out-annotation /root/raw_annotation.BCR.tsv.gz

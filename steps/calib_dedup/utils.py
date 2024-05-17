@@ -2,7 +2,6 @@ import json
 import os
 import sys
 from typing import Optional, Union
-
 import shutil
 import subprocess
 import tempfile
@@ -136,7 +135,6 @@ def generate_consensus(in_fq1: str, in_fq2: str, cluster_file: str,
                       '--max-reads-per-cluster', str(max_reads_per_cluster)]
 
     run_command(calib_cons_cmd)
-
     logger.info('Consensus generation has been done.')
 
     fq1_cons = fq1_cons_prefix + '.fastq'

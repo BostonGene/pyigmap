@@ -1,6 +1,5 @@
 process CDR3ErrorCorrector {
-    publishDir "${params.outdir}", mode: 'copy', overwrite: false
-    container 'cdr3nt-error-corrector'
+    publishDir "${params.outdir}", mode: 'copy'
 
     input:
         path bcr_annotation
@@ -14,8 +13,9 @@ process CDR3ErrorCorrector {
         python3.9 /usr/local/run.py \
             --in-tcr-annotation $bcr_annotation \
             --in-bcr-annotation $tcr_annotation \
-            --pgen-threshold 0 \
+            --filter-pgen-all 0 \
             --only-functional \
+            --only-canonical \
             --remove-chimeras \
             --clonotype-collapse-factor 0.05 \
             --olga-models $olga_models \

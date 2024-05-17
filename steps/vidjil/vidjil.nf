@@ -1,6 +1,5 @@
 process Vidjil {
-//     publishDir "${params.outdir}/vidjil", mode: 'copy', overwrite: false
-    container 'vidjil'
+//     publishDir "${params.outdir}/vidjil", mode: 'copy'
 
     input:
         path fq1

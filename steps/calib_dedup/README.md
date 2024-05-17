@@ -43,7 +43,7 @@ See [here](https://github.com/vpc-ccg/calib?tab=readme-ov-file#error-correction-
 ## How to run
 
 ```bash
-docker build -t calib-dedup .
+docker build --target tool -t calib-dedup .
 
 docker run \
    -v ./unit_tests/test_data:/root/ \

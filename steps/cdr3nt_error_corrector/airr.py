@@ -44,6 +44,13 @@ def get_loci_count(annotation: pd.DataFrame, suffix='_aligned_reads'):
     return {locus + suffix: count for locus, count in loci_dict.items()}
 
 
+def get_no_call_count(annotation: pd.DataFrame) -> dict[str, int]:
+    """Returns count of no call in v and j genes"""
+    return {
+        "no_v_call": len(annotation[annotation['v_call'].isna()]),
+        "no_j_call": len(annotation[annotation['j_call'].isna()]),
+    }
+
 def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     annotations = []
     for annotation_path in annotation_paths:
@@ -56,7 +63,8 @@ def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     return concatenated_annotation
 
 
-def read_annotation(*annotation_paths: str, only_functional: bool, remove_chimeras: bool) -> tuple[pd.DataFrame, dict]:
+def read_annotation(*annotation_paths: str, only_functional: bool,
+                    only_canonical: bool, remove_chimeras: bool) -> tuple[pd.DataFrame, dict]:
     logger.info('Reading annotation...')
 
     annotation = _concat_annotations(*annotation_paths)
@@ -65,18 +73,24 @@ def read_annotation(*annotation_paths: str, only_functional: bool, remove_chimer
         logger.warning('Annotation is an empty.')
         return annotation, {}
 
+    no_call_count = get_no_call_count(annotation)
     annotation = _prepare_vj_columns(annotation)
     annotation = _process_cdr3_sequences(annotation)
     annotation = _prepare_duplicate_count_column(annotation)
 
     annotation = filter.remove_chimeras(annotation) if remove_chimeras else annotation
     loci_count = get_loci_count(annotation)
+    annotation = filter.remove_non_canonical(annotation) if only_canonical else annotation
     annotation = filter.remove_non_functional(annotation) if only_functional else annotation
-    annotation = filter.drop_duplicates_in_different_loci(annotation, use_pgen=False)
+    annotation = filter.drop_duplicates_in_different_loci(annotation)
+
+    metrics_dict = {}
+    metrics_dict.update(no_call_count)
+    metrics_dict.update(loci_count)
 
     logger.info('Annotation has been read.')
 
-    return annotation, loci_count
+    return annotation, metrics_dict
 
 
 def _prepare_duplicate_count_column(annotation: pd.DataFrame):
