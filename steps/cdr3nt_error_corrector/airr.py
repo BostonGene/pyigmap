@@ -51,6 +51,7 @@ def get_no_call_count(annotation: pd.DataFrame) -> dict[str, int]:
         "no_j_call": len(annotation[annotation['j_call'].isna()]),
     }
 
+
 def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     annotations = []
     for annotation_path in annotation_paths:
@@ -66,7 +67,7 @@ def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
 def read_annotation(*annotation_paths: str, only_functional: bool,
                     only_canonical: bool, remove_chimeras: bool) -> tuple[pd.DataFrame, dict]:
     logger.info('Reading annotation...')
-
+    metrics_dict = {}
     annotation = _concat_annotations(*annotation_paths)
 
     if not len(annotation):
@@ -74,19 +75,26 @@ def read_annotation(*annotation_paths: str, only_functional: bool,
         return annotation, {}
 
     no_call_count = get_no_call_count(annotation)
+    metrics_dict.update(no_call_count)
+
     annotation = _prepare_vj_columns(annotation)
-    annotation = _process_cdr3_sequences(annotation)
+
+    if 'duplicate_count' in annotation.columns:
+        annotation = _process_cdr3_sequences(annotation)
+    else:
+        annotation, no_junction_count = filter.remove_no_junction(annotation)
+        metrics_dict.update(no_junction_count)
+
     annotation = _prepare_duplicate_count_column(annotation)
 
     annotation = filter.remove_chimeras(annotation) if remove_chimeras else annotation
+
     loci_count = get_loci_count(annotation)
+    metrics_dict.update(loci_count)
+
     annotation = filter.remove_non_canonical(annotation) if only_canonical else annotation
     annotation = filter.remove_non_functional(annotation) if only_functional else annotation
     annotation = filter.drop_duplicates_in_different_loci(annotation)
-
-    metrics_dict = {}
-    metrics_dict.update(no_call_count)
-    metrics_dict.update(loci_count)
 
     logger.info('Annotation has been read.')
 
