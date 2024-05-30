@@ -79,11 +79,12 @@ def read_annotation(*annotation_paths: str, only_functional: bool,
 
     annotation = _prepare_vj_columns(annotation)
 
-    if 'duplicate_count' in annotation.columns:
+    if "duplicate_count" in annotation.columns:
+        # run CDR3 processing on Vidjil's annotation
         annotation = _process_cdr3_sequences(annotation)
-    else:
-        annotation, no_junction_count = filter.remove_no_junction(annotation)
-        metrics_dict.update(no_junction_count)
+
+    annotation, no_junction_count = filter.remove_no_junction(annotation)
+    metrics_dict.update(no_junction_count)
 
     annotation = _prepare_duplicate_count_column(annotation)
 
