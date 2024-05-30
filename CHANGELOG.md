@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+* Remove clones with `junction == None` and disable `_process_cdr3_sequences()` function for annotation generated using IgBLAST ([#80](https://github.com/BostonGene/pyigmap/issues/80))
 * Remove the same filters in cdr3nt-error-corrector ([#60](https://github.com/BostonGene/pyigmap/issues/60)) ([fff8937](https://github.com/BostonGene/pyigmap/commit/fff8937f6e8c420b4cb2c3409dcd13c530e056ca))
 * Reference generation via Makefile ([#55](https://github.com/BostonGene/pyigmap/issues/55)) ([03824c](https://github.com/BostonGene/pyigmap/commit/803824ca3479fd121802281bea4071cd719230c0))
 * Move most of the functions from `run.py` to `utils.py` (for compatibility with internal bitbucket repository) ([#28](https://github.com/BostonGene/pyigmap/issues/28)) ([d3fdfd7](https://github.com/BostonGene/pyigmap/commit/d3fdfd71e33f2995bb349c7880bd9d5af06c4d7a))

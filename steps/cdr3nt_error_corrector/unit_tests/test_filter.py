@@ -3,7 +3,7 @@ import pandas as pd
 
 from filter import (remove_non_canonical, remove_non_functional, remove_non_productive, filter_pgen,
                     _get_duplicates_in_different_loci, drop_duplicates_in_different_loci,
-                    _remove_chimeras_by_segment)
+                    _remove_chimeras_by_segment, remove_no_junction)
 
 from logger import set_logger
 
@@ -63,6 +63,17 @@ def annotation_with_v_chimeras() -> pd.DataFrame:
 def annotation_with_j_chimeras() -> pd.DataFrame:
     return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
                               'j_call': ['IGLJ3-25*03', 'IGHJ2-26*03', 'TRAJ4-2*01', 'IGLJ2-34*01,IGHJ4-34*02', 'TRAJ7-6*01,TRDJ7-6*02']})
+
+
+def test_remove_no_junction(annotation_non_functional):
+    filtered_annotation, no_junction_count = remove_no_junction(annotation_non_functional)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={'junction_aa': ['AAAA', 'AA*A', 'AA_A'],
+                           'junction': ['AAAA', 'AAAA', 'AAAA']
+                           },
+                     index=[1, 2, 3])
+    )
+    assert no_junction_count == {"no_junction": 1}
 
 
 def test_remove_non_functional(annotation_non_functional):

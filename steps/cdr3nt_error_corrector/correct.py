@@ -83,7 +83,7 @@ class ClonotypeCorrector:
                               .reset_index()
                               .rename(columns={'sum': self.COUNT_COLUMN})
                               .sort_values(by=self.COUNT_COLUMN, ascending=False))
-        logger.info(f'Filter out {annotation.shape[0] - fetched_annotation.shape[0]} clones while fetching.')
+        logger.info(f'Filtered out {annotation.shape[0] - fetched_annotation.shape[0]} clones while fetching.')
         return fetched_annotation
 
     def correct_clonotypes(self, annotation: pd.DataFrame):
