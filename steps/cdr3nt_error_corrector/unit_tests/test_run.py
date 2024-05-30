@@ -43,22 +43,26 @@ def annotation_tcr():
 def annotation_bcr():
     annotation = tempfile.NamedTemporaryFile().name
     pd.DataFrame(
-        data={'sequence': ['GTGCCAGACAGATTAGAGGGCAGTGGTATCAACGCAGAGTACGTGCCTACTGAGGTACAGATTCTTGGGGGATGCTTTCTGAGAGTCATGGATCTCATGTGCAAGAAAATGAAGCACCTGTGGTTCTTCCTCCTGCTGGTGGCGGCTCCCAGATGGGTCCTGTCCCAACTACAGTTGCAGGAGTCGGGCCCAGGACTGGTGAAGCCTTCGGAGACCCTGTCCCTCACCTGCAGTGTCTCTGTTGGCTTCATCGACATTGAAGGTTATCACTGGGGCTGGATCCGCCAGTCCCCAGGGGCGGCCCTGGAGGGGCTTGGGAGCATCGATTATCGTGACACTTCCTGGCACAACCCGTCCCTCGGGAGGCGAGTCGCCCTGTCCATGGACACGCCCAAGAACAACTTCTCTCTGCAGTTGACCTCCGTGACCGCCGCAGACACGGCTGTGTATTTCTGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGGGGCCAAGGAACCATGGTCACCGTCTCTTATCTGTCTGGCAC'],
-              'locus': ['IGH'],
-              'stop_codon': ['F'],
-              'vj_in_frame': ['T'],
-              'v_frameshift': ['F'],
-              'productive': ['T'],
-              'v_call': ['IGHV4-39*01'],
-              'j_call': ['IGHJ6*02'],
-              'junction': ['TGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGG'],
-              'junction_aa': ['CVRHKPMVQGGVDVW'],
-              'v_support': [9.911E-086],
-              'j_support': [0.000000000005645],
-              'v_sequence_start': [166],
-              'v_sequence_end': [464],
-              'j_sequence_start': [490],
-              'j_sequence_end': [524]
+        data={'sequence': ['GTGCCAGACAGATTAGAGGGCAGTGGTATCAACGCAGAGTACGTGCCTACTGAGGTACAGATTCTTGGGGGATGCTTTCTGAGAGTCATGGATCTCATGTGCAAGAAAATGAAGCACCTGTGGTTCTTCCTCCTGCTGGTGGCGGCTCCCAGATGGGTCCTGTCCCAACTACAGTTGCAGGAGTCGGGCCCAGGACTGGTGAAGCCTTCGGAGACCCTGTCCCTCACCTGCAGTGTCTCTGTTGGCTTCATCGACATTGAAGGTTATCACTGGGGCTGGATCCGCCAGTCCCCAGGGGCGGCCCTGGAGGGGCTTGGGAGCATCGATTATCGTGACACTTCCTGGCACAACCCGTCCCTCGGGAGGCGAGTCGCCCTGTCCATGGACACGCCCAAGAACAACTTCTCTCTGCAGTTGACCTCCGTGACCGCCGCAGACACGGCTGTGTATTTCTGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGGGGCCAAGGAACCATGGTCACCGTCTCTTATCTGTCTGGCAC',
+                           'ATTTTACACTGAAAGTCAGCCGAGGGGAGGCTGAGGATGTTGGACTTTATTACTGCGCACAAGATGCACAAGATCGTCCGCTCACTGTTGGCGGAGGGACCAAGGTGGAGATCAGACGTGAGTGCACTTTCCTAATGCTTTTCTTATACAG',
+                           'GAGGATGTTGGACTTTATTACTGCGCATAAGATGCACAAGATCGTCCGCTCACTGTTGGCGGAGGGACCAAGGTGGAGATCAGACGATTTTCTCTGCATCGGTCAGGTTAGTGATATTAACAGCGAAAAGAGACTTTTGTTAAGGACTC'],
+              'locus': ['IGH', 'IGK', 'IGK'],
+              'stop_codon': ['F', 'F', 'F'],
+              'vj_in_frame': ['T', 'T', 'T'],
+              'v_frameshift': ['F', 'F', 'F'],
+              'productive': ['T', 'T', 'T'],
+              'v_call': ['IGHV4-39*01', 'IGKV2D-26*01', 'IGKV2D-26*01'],
+              'j_call': ['IGHJ6*02', 'IGKJ4*01', 'IGKJ4*01'],
+              'junction': ['TGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGG',
+                           'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT',
+                           'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT'],
+              'junction_aa': ['CVRHKPMVQGGVDVW', 'CAQDAQDRPLTV', 'CAQDAQDRPLTV'],
+              'v_support': [9.911E-086, 0, 0],
+              'j_support': [0.000000000005645, 0, 0],
+              'v_sequence_start': [166, 1, 1],
+              'v_sequence_end': [464, 79, 47],
+              'j_sequence_start': [490, 80, 48],
+              'j_sequence_end': [524, 114, 82]
               }
     ).to_csv(annotation, sep='\t')
     return annotation
@@ -126,8 +130,6 @@ def docker_cmd(olga_models, annotation_bcr, annotation_tcr, input_json, output_a
         "--in-tcr-annotation", f"/root/{tcr_annotation_basename}",
         "--in-bcr-annotation", f"/root/{bcr_annotation_basename}",
         "--filter-pgen-singletons", str(0),
-        "--only-productive",
-        "--only-functional",
         "--remove-chimeras",
         "--clonotype-collapse-factor", str(0.05),
         "--olga-models", f"/root/{olga_models_basename}",
@@ -148,4 +150,4 @@ def test_run_with_calib(olga_models, annotation_bcr, annotation_tcr, calib_json,
     run_command(cmd)
     annotation = read_annotation(output_annotation_path)
     logger.info(f"{annotation['locus']}")
-    assert annotation['locus'].tolist() == ['IGH', 'TRB']
+    assert set(annotation['locus']) == {'IGH', 'IGK', 'TRB'}
