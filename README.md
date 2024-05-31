@@ -27,7 +27,7 @@ make install-java # requirements: Linux x64
 make # will use Docker as container engine
 ```
 
-Or 
+or
 
 ```bash
 make ENGINE=podman # will use Podman as container engine
