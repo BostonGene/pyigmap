@@ -21,8 +21,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--in-fq2', help='Input with the reverse fastq')
     parser.add_argument('--in-fq12', help='Input with the merged (forward + reverse) fastq')
     parser.add_argument('--in-fasta', help='Input fasta file with detected V(D)J segments')
-    parser.add_argument('--receptor', help="Receptor type: 'BCR' or 'TCR'", required=True)
-    parser.add_argument('--organism', help="Organism name: 'human' or 'mouse'", default='human')
+    parser.add_argument('--receptor', help="Receptor type: 'BCR' or 'TCR'",
+                        choices=["BCR", "TCR", "all"], required=True)
+    parser.add_argument('--organism', help="Organism name: 'human' or 'mouse'",
+                        choices=["human", "mouse"], default='human')
     parser.add_argument('--in-ref', help='FASTA reference with V(D)J segments', required=True)
     parser.add_argument('--out-annotation', help='Output BCR annotation table', required=True)
 
@@ -32,12 +34,6 @@ def parse_args() -> argparse.Namespace:
 def check_args(args: argparse.Namespace):
     if not (args.in_fq1 or args.in_fq2 or args.in_fq12 or args.in_fasta):
         logger.critical('One of the arguments --in-fq1, --in-fq2, --in-fq12, --in-fasta is required.')
-        sys.exit(1)
-    if args.receptor not in RECEPTOR_GLOSSARY:
-        logger.critical(f"Invalid receptor name: {args.receptor}. Should be: 'BCR', 'TCR' or 'all', exiting...")
-        sys.exit(1)
-    if args.organism not in ORGANISM_GLOSSARY:
-        logger.critical(f"Invalid organism name: {args.organism}. Should be: 'human' or 'mouse', exiting...")
         sys.exit(1)
 
 
