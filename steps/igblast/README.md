@@ -67,7 +67,7 @@ tggatattgtagtagtaccagctgctatgcc
 ```bash
 docker build --target tool -t igblast .
 
-# should contain: vidjil.TCR.fasta.gz, vidjil.BCR.fasta.gz and igblast.reference.major_allele.tar.gz
+# should contain: vidjil.fasta.gz and igblast.reference.major_allele.tar.gz
 FOLDER_WITH_DATA=path/to/your/folder
 
 docker run \
