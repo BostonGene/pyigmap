@@ -22,7 +22,13 @@ make install-java # requirements: linux x64
 3. Build all reference archives:
 
 ```bash
-make build-ref
+make build-ref # will use Docker as container engine
+```
+
+or
+
+```bash
+make ENGINE=podman build-ref # will use Podman as container engine
 ```
 
 ## Building and Testing
@@ -32,7 +38,7 @@ To build an executable and not executable docker images, python virtual environm
 make build # will use Docker as container engine
 ```
 
-Or
+or
 
 ```bash
 make ENGINE=podman build # will use Podman as container engine
