@@ -47,7 +47,7 @@ make ENGINE=podman build # will use Podman as container engine
 ### Unit (step) tests
 
 ```bash
-make unit-tests
+make unit-tests # or `make ENGINE=podman unit-tests`
 ```
 
 ### Integration (workflow) tests
