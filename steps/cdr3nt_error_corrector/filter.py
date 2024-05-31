@@ -67,6 +67,14 @@ def _remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str):
     return filtered_annotation
 
 
+def remove_no_junction(annotation: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    """Removes clonotypes without junction region nucleotide sequence"""
+    filtered_annotation = annotation[~annotation['junction'].isna()]
+    no_junction_count = annotation.shape[0] - filtered_annotation.shape[0]
+    logger.info(f'Filtered out {no_junction_count} clones with junction == None.')
+    return filtered_annotation, {'no_junction': no_junction_count}
+
+
 def remove_chimeras(annotation: pd.DataFrame) -> pd.DataFrame:
     annotation = _remove_chimeras_by_segment(annotation, 'v')
     annotation = _remove_chimeras_by_segment(annotation, 'j')
