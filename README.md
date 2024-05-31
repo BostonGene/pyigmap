@@ -13,18 +13,24 @@ git clone https://github.com/BostonGene/pyigmap.git
 cd pyigmap
 ```
 
-2. This workflow requires [Docker](https://docs.docker.com/engine/install/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can install it manually or execute:
+2. This workflow requires [Docker](https://docs.docker.com/engine/install/) or [Podman](https://podman.io/), Bash 3.2 (or later) and [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html). You can install it manually or execute:
 
 ```bash
-make install-docker # requirements: ubuntu x64
-make install-java # requirements: linux x64
+make install-docker # requirements: Ubuntu x64
+make install-podman # requirements: Ubuntu 20.10 and newer
+make install-java # requirements: Linux x64
 ```
 
 3. Run this command to install all dependencies:
 
 ```bash
-make
-chmod +x pyigmap
+make # will use Docker as container engine
+```
+
+Or 
+
+```bash
+make ENGINE=podman # will use Podman as container engine
 ```
 
 4. Start running your own analysis!
