@@ -126,7 +126,7 @@ def docker_cmd(olga_models, annotation_bcr, annotation_tcr, input_json, output_a
         "-v", f"{output_annotation_path}:/root/{output_annotation_basename}",
         "-v", f"{output_json_path}:/root/{output_json_basename}",
         "-v", f"{output_archive_path}:/root/{output_archive_basename}",
-        "cdr3nt-error-corrector-tool",
+        "cdr3nt_error_corrector-tool",
         "--in-tcr-annotation", f"/root/{tcr_annotation_basename}",
         "--in-bcr-annotation", f"/root/{bcr_annotation_basename}",
         "--filter-pgen-singletons", str(0),
