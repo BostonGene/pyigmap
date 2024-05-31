@@ -11,6 +11,7 @@ ENGINE=docker
 
 ifeq ($(ENGINE),podman)
 	PODMAN_PARAM=--format docker
+	export USE_PODMAN=true
 endif
 
 # .ONESHELL:
