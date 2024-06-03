@@ -2,8 +2,7 @@ process CDR3ErrorCorrector {
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
-        path bcr_annotation
-        path tcr_annotation
+        path raw_annotation
         path olga_models
         path json
     output:
@@ -11,8 +10,7 @@ process CDR3ErrorCorrector {
     script:
         """
         python3.9 /usr/local/run.py \
-            --in-tcr-annotation $bcr_annotation \
-            --in-bcr-annotation $tcr_annotation \
+            --in-annotation $raw_annotation \
             --filter-pgen-all 0 \
             --only-functional \
             --only-canonical \

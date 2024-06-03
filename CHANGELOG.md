@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+* Optimized workflow: igblast processes TCR and BCR in one run ([#78](https://github.com/BostonGene/pyigmap/issues/78))
+* Now TCR and BCR run in one vidjil job ([#67](https://github.com/BostonGene/pyigmap/issues/67))
 * Remove clones with `junction == None` and disable `_process_cdr3_sequences()` function for annotation generated using IgBLAST ([#80](https://github.com/BostonGene/pyigmap/issues/80))
 * Remove the same filters in cdr3nt-error-corrector ([#60](https://github.com/BostonGene/pyigmap/issues/60)) ([fff8937](https://github.com/BostonGene/pyigmap/commit/fff8937f6e8c420b4cb2c3409dcd13c530e056ca))
 * Reference generation via Makefile ([#55](https://github.com/BostonGene/pyigmap/issues/55)) ([03824c](https://github.com/BostonGene/pyigmap/commit/803824ca3479fd121802281bea4071cd719230c0))

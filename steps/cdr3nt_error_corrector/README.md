@@ -35,8 +35,7 @@ By default, all the rules for filtering out spurious sequences are defined in th
 
 ## Input
 
-* `--in-tcr-annotation`: path to the raw TCR annotation, which we need to correct (`path/to/raw_annotation.TCR.tsv.gz`)
-* `--in-bcr-annotation`: path to the raw BCR annotation, which we need to correct (`path/to/raw_annotation.BCR.tsv.gz`)
+* `--in-annotation`: path to the raw TCR/BCR annotation, which we need to correct (`path/to/raw_annotation.tsv.gz`)
 * `--olga-models`: path to the archive with [OLGA](https://github.com/statbiophys/OLGA/tree/master/olga/default_models) models (`path/to/olga-models.tar.gz`)
 * `--in-json`: path to the json files with total reads count (`path/to/stat.json`)
 
@@ -90,8 +89,7 @@ docker run \
    -v ${FOLDER_WITH_DATA}:/root/ \
    -v ./olga-models.tar.gz:/root/olga-models.tar.gz \
    cdr3nt-error-corrector \
-   --in-tcr-annotation /root/raw_annotation.TCR.tsv.gz \
-   --in-bcr-annotation /root/raw_annotation.BCR.tsv.gz \
+   --in-annotation /root/raw_annotation.TCR.tsv.gz /root/raw_annotation.BCR.tsv.gz \
    --filter-pgen-all 0 \
    --only-functional \
    --remove-chimeras \

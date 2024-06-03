@@ -1,7 +1,5 @@
-include { Vidjil as VidjilBCR } from '../steps/vidjil/vidjil.nf'
-include { Vidjil as VidjilTCR } from '../steps/vidjil/vidjil.nf'
-include { IgBlast as IgBlastBCR } from '../steps/igblast/igblast.nf'
-include { IgBlast as IgBlastTCR } from '../steps/igblast/igblast.nf'
+include { Vidjil } from '../steps/vidjil/vidjil.nf'
+include { IgBlast } from '../steps/igblast/igblast.nf'
 
 workflow VDJ_MAPPING {
     take:
@@ -13,13 +11,9 @@ workflow VDJ_MAPPING {
         olga_models
 
     main:
-        VidjilTCR(fq1, fq2, fq12, vidjil_ref, 'TCR')
-        VidjilBCR(fq1, fq2, fq12, vidjil_ref, 'BCR')
-
-        IgBlastTCR(VidjilTCR.out.fasta, igblast_ref, 'TCR')
-        IgBlastBCR(VidjilBCR.out.fasta, igblast_ref, 'BCR')
+        Vidjil(fq1, fq2, fq12, vidjil_ref)
+        IgBlast(Vidjil.out.fasta, igblast_ref)
 
     emit:
-        tcr_annotation = IgBlastTCR.out
-        bcr_annotation = IgBlastBCR.out
+        raw_annotation = IgBlast.out
 }
