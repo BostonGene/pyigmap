@@ -15,5 +15,5 @@ workflow PYIGMAP_AMPLICON {
         CalibDedup(fq1, fq2)
         Fastp(CalibDedup.out.fq1, CalibDedup.out.fq2)
         VDJ_MAPPING(Fastp.out.fq1, Fastp.out.fq2, Fastp.out.fq12, vidjil_ref, igblast_ref, olga_models)
-        CDR3ErrorCorrector(VDJ_MAPPING.out.tcr_annotation, VDJ_MAPPING.out.bcr_annotation, olga_models, CalibDedup.out.json)
+        CDR3ErrorCorrector(VDJ_MAPPING.out.raw_annotation, olga_models, CalibDedup.out.json)
 }

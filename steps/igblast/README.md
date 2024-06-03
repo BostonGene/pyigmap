@@ -67,24 +67,15 @@ tggatattgtagtagtaccagctgctatgcc
 ```bash
 docker build --target tool -t igblast .
 
-# should contain: vidjil.TCR.fasta.gz, vidjil.BCR.fasta.gz and igblast.reference.major_allele.tar.gz
+# should contain: vidjil.fasta.gz and igblast.reference.major_allele.tar.gz
 FOLDER_WITH_DATA=path/to/your/folder
 
 docker run \
     -v ${FOLDER_WITH_DATA}:/root/ \
     igblast \
-    --in-fasta /root/vidjil.TCR.fasta.gz \
+    --in-fasta /root/vidjil.fasta.gz \
     --in-ref /root/igblast.reference.major_allele.tar.gz \
-    --receptor 'TCR' \
+    --receptor 'all' \
     --organism human \
-    --out-annotation /root/raw_annotation.TCR.tsv.gz
-
-docker run \
-    -v ${FOLDER_WITH_DATA}:/root/ \
-    igblast \
-    --in-fasta /root/vidjil.BCR.fasta.gz \
-    --in-ref /root/igblast.reference.major_allele.tar.gz \
-    --receptor 'BCR' \
-    --organism human \
-    --out-annotation /root/raw_annotation.BCR.tsv.gz
+    --out-annotation /root/raw_annotation.tsv.gz
 ```

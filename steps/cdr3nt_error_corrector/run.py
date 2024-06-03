@@ -33,9 +33,7 @@ def parse_args() -> argparse.Namespace:
     :return: argparse.Namespace object with parsed arguments
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in-tcr-annotation', help='Input raw TCR annotation', nargs='+',
-                        action='extend', required=True, type=str)
-    parser.add_argument('--in-bcr-annotation', help='Input raw BCR annotation', nargs='+',
+    parser.add_argument('--in-annotation', help='Input raw annotation', nargs='+',
                         action='extend', required=True, type=str)
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
@@ -69,7 +67,7 @@ def run(args: argparse.Namespace) -> None:
     if not args.skip_pgen_calculation:
         decompress(args.olga_models)
 
-    annotation, metrics_dict = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
+    annotation, metrics_dict = airr.read_annotation(*args.in_annotation,
                                                     only_functional=args.only_functional,
                                                     only_canonical=args.only_canonical,
                                                     remove_chimeras=args.remove_chimeras)
