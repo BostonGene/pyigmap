@@ -37,16 +37,16 @@ make ENGINE=podman # will use Podman as container engine
 
 ```bash
 # for amplicon data
-./pyigmap --mode amplicon --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+./pyigmap --mode amplicon --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz -profile docker
 
 # for RNASeq data
-./pyigmap --mode rnaseq --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+./pyigmap --mode rnaseq --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz -profile docker
 
 # for public data by sample id
-./pyigmap --mode rnaseq --sample SRR3743469 --reads 200000
+./pyigmap --mode rnaseq --sample SRR3743469 --reads 200000 -profile docker
 
 # for public data from ZENODO
-./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads 200000
+./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads 200000 -profile docker
 ```
 
 ## Contributing

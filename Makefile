@@ -174,7 +174,6 @@ install-java: ## >> install a java
 install-nextflow: ## >> install a NextFlow
 	@java --version
 	curl -s https://get.nextflow.io | bash
-	sed -i 's/docker/$(ENGINE)/g' nextflow.config
 
 build-step-image:
 	@$(ENGINE) version
