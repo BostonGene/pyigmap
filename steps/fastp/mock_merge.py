@@ -28,10 +28,15 @@ def save_fastq_reads_to_file(reads: list[str], output_path: str):
             f.write(read)
 
 
+def get_reverse_complement(read_sequence: str) -> str:
+    """Returns reverse complement of nucleotide sequence"""
+    return read_sequence.translate(TRANSLATION_TABLE)[::-1]
+
+
 def mock_merge_one_reads_pair(read1: list[str], read2: list[str], insert_size: int) -> str:
     """Perform a mock merging for non-overlapping reads"""
     new_header = f"{read1[0]} mock_merged_{len(read1[1])}_{len(read2[1])}"
-    new_read_sequence = read1[1] + "N" * insert_size + read2[1].translate(TRANSLATION_TABLE)
+    new_read_sequence = read1[1] + "N" * insert_size + get_reverse_complement(read2[1])
     new_read_quality = read1[2] + "#" * insert_size + read2[2]
     return f"@{new_header}\n" \
            f"{new_read_sequence}\n" \
