@@ -141,11 +141,14 @@ def concat_gz_files(gz_files: list[str]) -> str:
 
 
 def run(args: argparse.Namespace) -> None:
-    out_fq1 = tempfile.NamedTemporaryFile().name + ".gz"
-    out_fq2 = tempfile.NamedTemporaryFile().name + ".gz"
-    out_fq12 = tempfile.NamedTemporaryFile().name + ".gz"
 
-    run_fastp(args.in_fq1, args.in_fq2, args.trimq, args.disable, args.merge, args.out_json, args.out_html,
+    merge = True if args.mock_merge else args.merge
+
+    out_fq1 = tempfile.NamedTemporaryFile(suffix=".gz").name
+    out_fq2 = tempfile.NamedTemporaryFile(suffix=".gz").name
+    out_fq12 = tempfile.NamedTemporaryFile(suffix=".gz").name
+
+    run_fastp(args.in_fq1, args.in_fq2, args.trimq, args.disable, merge, args.out_json, args.out_html,
               out_fq1, out_fq2, out_fq12)
 
     if args.mock_merge:
