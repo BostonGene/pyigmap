@@ -15,8 +15,6 @@ logger = set_logger(name=__file__)
 
 def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     msg_list = []
-    if not args.merge and args.mock_merge:
-        msg_list += ["Reads merging is disabled, but --mock-merge is provided"]
     if args.insert_size and not args.mock_merge:
         msg_list += ["--insert-size cannot be provided without --mock-merge"]
     if args.mock_merge and (args.out_fq1 or args.out_fq2):
@@ -129,7 +127,7 @@ def archive_file_as_gz(file: str):
 
 def concat_gz_files(gz_files: list[str]) -> str:
     """Concatenates gz files into one file"""
-    out_file_path = tempfile.NamedTemporaryFile().name
+    out_file_path = tempfile.NamedTemporaryFile(suffix=".gz").name
     with gzip.open(out_file_path, "ab") as concat_file:
         for gz_file in gz_files:
             with gzip.open(gz_file, "rb") as f:
