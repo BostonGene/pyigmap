@@ -12,6 +12,6 @@ workflow PYIGMAP_RNASEQ {
 
     main:
         Fastp(fq1, fq2)
-        VDJ_MAPPING(Fastp.out.fq1, Fastp.out.fq2, Fastp.out.fq12, vidjil_ref, igblast_ref, olga_models)
+        VDJ_MAPPING(Fastp.out.fq12, vidjil_ref, igblast_ref, olga_models)
         CDR3ErrorCorrector(VDJ_MAPPING.out.raw_annotation, olga_models, Fastp.out.json)
 }
