@@ -149,7 +149,7 @@ def run(args: argparse.Namespace) -> None:
     run_fastp(args.in_fq1, args.in_fq2, args.trimq, args.disable, merge, args.out_json, args.out_html,
               out_fq1, out_fq2, out_fq12)
 
-    if args.mock_merge:
+    if args.in_fq2 and args.mock_merge:
         fq12_mock = mock_merge_reads(out_fq1, out_fq2, args.insert_size)
         fq12_mock_gz = archive_file_as_gz(fq12_mock)
 
