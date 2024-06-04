@@ -34,7 +34,7 @@ def _create_new_read(header: str, seq: str, quality: str) -> str:
 
 
 def mock_merge_one_reads_pair(read1: list[str], read2: list[str], insert_size: int) -> str:
-    new_header = f"{read1[0]} merged_{len(read1[1])}_{len(read2[1])}"
+    new_header = f"{read1[0]} mock_merged_{len(read1[1])}_{len(read2[1])}"
     new_read_sequence = read1[1] + "N" * insert_size + read2[1]
     new_read_quality = read1[2] + "#" * insert_size + read2[2]
     return f"@{new_header}\n" \
