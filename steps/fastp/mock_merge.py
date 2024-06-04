@@ -8,6 +8,8 @@ import multiprocessing
 from logger import set_logger
 logger = set_logger(name=__file__)
 
+TRANSLATION_TABLE = bytes.maketrans(b"ATGCRYSWKMBDHVN", b"TACGAAAAAAAAAAA")
+
 
 def get_fastq_reads(fq1_path: str, fq2_path: str) -> tuple[list[str], list[str]]:
     logger.info("Reading FASTQ files...")
@@ -26,16 +28,10 @@ def save_fastq_reads_to_file(reads: list[str], output_path: str):
             f.write(read)
 
 
-def _create_new_read(header: str, seq: str, quality: str) -> str:
-    return f"@{header}\n" \
-           f"{seq}\n" \
-           f"+\n" \
-           f"{quality}\n"
-
-
 def mock_merge_one_reads_pair(read1: list[str], read2: list[str], insert_size: int) -> str:
+    """Perform a mock merging for non-overlapping reads"""
     new_header = f"{read1[0]} mock_merged_{len(read1[1])}_{len(read2[1])}"
-    new_read_sequence = read1[1] + "N" * insert_size + read2[1]
+    new_read_sequence = read1[1] + "N" * insert_size + read2[1].translate(TRANSLATION_TABLE)
     new_read_quality = read1[2] + "#" * insert_size + read2[2]
     return f"@{new_header}\n" \
            f"{new_read_sequence}\n" \
@@ -44,6 +40,7 @@ def mock_merge_one_reads_pair(read1: list[str], read2: list[str], insert_size: i
 
 
 def mock_merge_reads(fq1_path: str, fq2_path: str, insert_size) -> str:
+    """Run mock merging in parallel"""
     reads1, reads2 = get_fastq_reads(fq1_path, fq2_path)
 
     with multiprocessing.Pool(processes=os.cpu_count()) as pool:
