@@ -127,21 +127,23 @@ def archive_file_as_gz(file: str):
     return file_gz
 
 
-def concat_gz_files(gz_files: list[str], out_concatenated_path: str) -> None:
+def concat_gz_files(gz_files: list[str]) -> str:
     """Concatenates gz files into one file"""
-    with gzip.open(out_concatenated_path, 'ab') as concat_file:
+    out_file_path = tempfile.NamedTemporaryFile().name
+    with gzip.open(out_file_path, "ab") as concat_file:
         for gz_file in gz_files:
-            with open(gz_file, "rb") as f:
+            with gzip.open(gz_file, "rb") as f:
                 concat_file.write(f.read())
-                logger.info(f"{gz_file} appended to {out_concatenated_path}")
-    check_if_exist(out_concatenated_path)
-    logger.info(f'{out_concatenated_path} concatenation has been done.')
+                logger.info(f"{gz_file} appended to {out_file_path}")
+    check_if_exist(out_file_path)
+    logger.info(f"{out_file_path} concatenation has been done.")
+    return out_file_path
 
 
 def run(args: argparse.Namespace) -> None:
-    out_fq1 = tempfile.NamedTemporaryFile().name
-    out_fq2 = tempfile.NamedTemporaryFile().name
-    out_fq12 = tempfile.NamedTemporaryFile().name
+    out_fq1 = tempfile.NamedTemporaryFile().name + ".gz"
+    out_fq2 = tempfile.NamedTemporaryFile().name + ".gz"
+    out_fq12 = tempfile.NamedTemporaryFile().name + ".gz"
 
     run_fastp(args.in_fq1, args.in_fq2, args.trimq, args.disable, args.merge, args.out_json, args.out_html,
               out_fq1, out_fq2, out_fq12)
@@ -150,8 +152,7 @@ def run(args: argparse.Namespace) -> None:
         fq12_mock = mock_merge_reads(out_fq1, out_fq2, args.insert_size)
         fq12_mock_gz = archive_file_as_gz(fq12_mock)
 
-        out_fq12 = tempfile.NamedTemporaryFile().name
-        concat_gz_files([out_fq12, fq12_mock_gz], out_fq12)
+        out_fq12 = concat_gz_files([out_fq12, fq12_mock_gz])
 
     if args.out_fq1:
         replace_file(out_fq1, args.out_fq1)
