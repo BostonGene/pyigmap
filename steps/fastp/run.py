@@ -13,6 +13,17 @@ from logger import set_logger
 logger = set_logger(name=__file__)
 
 
+def check_argument_consistency(args: argparse.Namespace) -> list[str]:
+    msg_list = []
+    if not args.merge and args.mock_merge:
+        msg_list += ["Reads merging is disabled, but --mock-merge is provided"]
+    if args.insert_size and not args.mock_merge:
+        msg_list += ["--insert-size cannot be provided without --mock-merge"]
+    if args.mock_merge and (args.out_fq1 or args.out_fq2):
+        msg_list += ["--out-fq1 or --out-fq2 cannot be used with --mock-merge"]
+    return msg_list
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-fq1', help='Input fastq.gz file, SE or PE pair 1', required=True)
@@ -22,19 +33,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--disable', help='Mode(s) to disable',
                         choices=["length_filtering", "quality_filtering", "adapter_trimming"], nargs='+', action='extend')
     parser.add_argument('--merge', help='Merge reads', action='store_true')
-
-    mock_merge_group = parser.add_argument_group("Mock merge group")
-
-    mock_merge_group.add_argument('--mock-merge', help='Mock merge reads', action='store_true')
-    mock_merge_group.add_argument('--insert-size', help='Mock insert size', type=int)
-
+    parser.add_argument('--mock-merge', help='Enable mock merging of reads', action='store_true')
+    parser.add_argument('--insert-size', help='Insert size for mock merging', type=int)
     parser.add_argument('--out-fq1', help='Output fastq file, SE or PE pair 1')
     parser.add_argument('--out-fq2', help='Output fastq file, PE pair 2')
     parser.add_argument('--out-fq12', help='Output merged fastq file, PE pairs 1 and 2')
     parser.add_argument('--out-html', help='Output html file', required=True)
     parser.add_argument('--out-json', help='Output json file', required=True)
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    error_message_list = check_argument_consistency(args)
+    if error_message_list:
+        parser.error("\n".join(error_message_list))
+
+    return args
 
 
 def replace_file(src_file: str, dst_file: str):
