@@ -1,6 +1,4 @@
 process CDR3ErrorCorrector {
-    publishDir "${params.outdir}", mode: 'copy'
-
     input:
         path raw_annotation
         path olga_models

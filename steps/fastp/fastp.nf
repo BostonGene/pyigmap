@@ -1,6 +1,4 @@
 process Fastp {
-//     publishDir "${params.outdir}/fastp", mode: 'copy'
-
     input:
         path fq1
         path fq2
