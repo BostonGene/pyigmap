@@ -15,9 +15,9 @@ process CDR3ErrorCorrector {
             --remove-chimeras \
             --clonotype-collapse-factor 0.05 \
             --olga-models $olga_models \
-            --out-corrected-annotation corrected_annotation.tsv \
+            --out-corrected-annotation ${params.out_corrected_annotation} \
             --in-json $json \
-            --out-json stat.json \
-            --out-archive pyigmap.tar.gz
+            --out-json ${params.out_stat_json} \
+            --out-archive ${params.out_archive}
         """
 }
