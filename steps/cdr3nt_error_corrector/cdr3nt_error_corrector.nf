@@ -1,4 +1,6 @@
 process CDR3ErrorCorrector {
+    publishDir "${params.outdir}", mode: 'copy'
+
     input:
         path raw_annotation
         path olga_models
@@ -15,9 +17,9 @@ process CDR3ErrorCorrector {
             --remove-chimeras \
             --clonotype-collapse-factor 0.05 \
             --olga-models $olga_models \
-            --out-corrected-annotation ${params.out_corrected_annotation} \
+            --out-corrected-annotation corrected_annotation.tsv \
             --in-json $json \
-            --out-json ${params.out_stat_json} \
-            --out-archive ${params.out_archive}
+            --out-json stat.json \
+            --out-archive pyigmap.tar.gz
         """
 }

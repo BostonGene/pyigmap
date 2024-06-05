@@ -14,7 +14,7 @@ process Fastp {
             --out-fq12 mR12.fastq.gz \
             --disable "length_filtering" "adapter_trimming" "quality_filtering" \
             --mock-merge \
-            --insert-size ${params.insert_size} \
+            --insert-size 1 \
             --out-html fastp.html \
             --out-json fastp.json
         """
