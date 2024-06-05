@@ -62,13 +62,21 @@ class ClonotypeCorrector:
         annotation['max_count'] = clonotype_groups[self.COUNT_COLUMN].transform('max')
         annotation['min_rank'] = clonotype_groups['rank'].transform('min')
 
+        # get the most frequent value in 'c_call' for each group of clonotypes
+        annotation['c_call_mode'] = clonotype_groups['c_call'].transform(
+            lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0]
+        )
+
         annotation.reset_index(drop=True, inplace=True)
         aggregated_annotation = annotation[(annotation[self.COUNT_COLUMN].values == annotation['max_count'].values)
                                            & (annotation['rank'].values == annotation['min_rank'].values)]
         aggregated_annotation[self.COUNT_COLUMN] = aggregated_annotation['total']
+        aggregated_annotation['c_call'] = aggregated_annotation['c_call_mode']
 
-        aggregated_annotation = aggregated_annotation.drop(columns=['min_rank', 'rank', 'total', 'max_count'],
-                                                           errors='ignore')
+        aggregated_annotation = aggregated_annotation.drop(
+            columns=['min_rank', 'rank', 'total', 'max_count', 'c_call_mode'],
+            errors='ignore'
+        )
 
         aggregated_annotation = aggregated_annotation.sort_values(by=self.COUNT_COLUMN, ascending=False)
 
