@@ -13,6 +13,8 @@ logger = set_logger(name=__file__)
 
 STEP_DIR = pathlib.Path(__file__).parents[1]
 
+container_engine = "podman" if os.environ.get("USE_PODMAN", False) else "docker"
+
 
 @fixture(scope="module")
 def annotation_tcr():
@@ -118,7 +120,7 @@ def docker_cmd(olga_models, annotation_bcr, annotation_tcr, input_json, output_a
     output_annotation_basename = "corrected_annotation.tsv"
     output_archive_basename = "pyigmap.tar.gz"
     return [
-        "docker", "run",
+        container_engine, "run",
         "-v", f"{olga_models}:/root/{olga_models_basename}",
         "-v", f"{annotation_tcr}:/root/{tcr_annotation_basename}",
         "-v", f"{annotation_bcr}:/root/{bcr_annotation_basename}",
@@ -126,7 +128,7 @@ def docker_cmd(olga_models, annotation_bcr, annotation_tcr, input_json, output_a
         "-v", f"{output_annotation_path}:/root/{output_annotation_basename}",
         "-v", f"{output_json_path}:/root/{output_json_basename}",
         "-v", f"{output_archive_path}:/root/{output_archive_basename}",
-        "cdr3nt-error-corrector-tool",
+        "cdr3nt_error_corrector-tool",
         "--in-annotation", f"/root/{tcr_annotation_basename}", f"/root/{bcr_annotation_basename}",
         "--filter-pgen-singletons", str(0),
         "--remove-chimeras",
