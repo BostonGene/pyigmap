@@ -24,8 +24,6 @@ process GetLinks {
 }
 
 process Download {
-//     publishDir "${params.outdir}/downloaded", mode: 'copy'
-
     input:
         val sample_id
         val link
@@ -47,8 +45,6 @@ process Download {
 }
 
 process Downsample {
-//     publishDir "${params.outdir}/downsampled", mode: 'copy'
-
     input:
         path fastq
         val reads_to_save

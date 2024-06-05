@@ -6,18 +6,6 @@ include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK } from './workflow
 include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from './steps/downloader/downloader.nf'
 
 
-params.fq1 = null
-params.fq2 = null
-params.zenodo = false
-params.vidjil_ref = './steps/vidjil/vidjil.germline.tar.gz'
-params.allow_minor_alleles = false
-if (params.all_alleles) {
-    params.igblast_ref = './steps/igblast/igblast.reference.all_alleles.tar.gz'
-} else {
-    params.igblast_ref = './steps/igblast/igblast.reference.major_allele.tar.gz'
-}
-params.olga_models = './steps/cdr3nt_error_corrector/olga-models.tar.gz'
-params.reads = 'all'
 if (params.help) { exit 0, help_message() }
 
 log.info ""

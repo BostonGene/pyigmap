@@ -3,22 +3,22 @@ process Fastp {
         path fq1
         path fq2
     output:
-        path "mR1.fastq.gz", emit: fq1
-        path "mR2.fastq.gz", emit: fq2
-        path "mR12.fastq.gz", emit: fq12
-        path "fastp.json", emit: json
-        path "fastp.html", emit: html
+        path params.out_fastp_fq1, emit: fq1
+        path params.out_fastp_fq2, emit: fq2
+        path params.out_fastp_fq12, emit: fq12
+        path params.out_fastp_json, emit: json
+        path params.out_fastp_html, emit: html
     script:
         """
         python3.9 /usr/local/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
-            --out-fq1 mR1.fastq.gz \
-            --out-fq2 mR2.fastq.gz \
-            --out-fq12 mR12.fastq.gz \
+            --out-fq1 ${params.out_fastp_fq1} \
+            --out-fq2 ${params.out_fastp_fq2} \
+            --out-fq12 ${params.out_fastp_fq12} \
             --disable "length_filtering" "adapter_trimming" "quality_filtering" \
             --merge \
-            --out-html fastp.html \
-            --out-json fastp.json
+            --out-html ${params.out_fastp_html} \
+            --out-json ${params.out_fastp_json}
         """
 }

@@ -4,16 +4,16 @@ process CDR3ErrorCorrector {
         path olga_models
         path json
     output:
-        path ${params.out_corrected_annotation}, emit: archive
+        path params.out_corrected_annotation, emit: archive
     script:
         """
         python3.9 /usr/local/run.py \
             --in-annotation $raw_annotation \
-            --filter-pgen-all 0 \
+            --filter-pgen-all ${params.pgen_threshold} \
             --only-functional \
             --only-canonical \
             --remove-chimeras \
-            --clonotype-collapse-factor 0.05 \
+            --clonotype-collapse-factor ${params.clonotype_collapse_factor} \
             --olga-models $olga_models \
             --out-corrected-annotation ${params.out_corrected_annotation} \
             --in-json $json \
