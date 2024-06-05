@@ -1,6 +1,4 @@
 process IgBlast {
-//     publishDir "${params.outdir}/igblast", mode: 'copy'
-
     input:
         path fasta
         path ref

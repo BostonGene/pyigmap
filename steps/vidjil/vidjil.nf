@@ -1,6 +1,4 @@
 process Vidjil {
-//     publishDir "${params.outdir}/vidjil", mode: 'copy'
-
     input:
         path fq1
         path fq2
