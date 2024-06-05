@@ -53,12 +53,10 @@ class ClonotypeCorrector:
         return full_corrected_annotation
 
     def aggregate_clonotypes_group(self, group):
-        unique_c_calls = group['c_call'].unique()
-        if len(unique_c_calls) > 1:
+        if len(group['c_call']) > 1:
             index_clone = group['c_call'].value_counts().idxmax()
             return group.loc[group['c_call'] == index_clone].iloc[0]
-        else:
-            return group.iloc[0]
+        return group.iloc[0]
 
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
