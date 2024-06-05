@@ -52,31 +52,29 @@ class ClonotypeCorrector:
 
         return full_corrected_annotation
 
-    def aggregate_clonotypes_group(self, group):
-        unique_c_calls = group['c_call'].unique()
-        if len(unique_c_calls) > 1:
-            index_clone = group['c_call'].value_counts().idxmax()
-            return group.loc[group['c_call'] == index_clone].iloc[0]
-        else:
-            return group.iloc[0]
-
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
+
+        annotation['rank'] = annotation.index
         clonotype_groups = annotation.groupby(grouping_columns)
 
-        duplicate_count = clonotype_groups[self.COUNT_COLUMN].transform('sum')
+        annotation['total'] = clonotype_groups[self.COUNT_COLUMN].transform('sum')
+        annotation['max_count'] = clonotype_groups[self.COUNT_COLUMN].transform('max')
+        annotation['min_rank'] = clonotype_groups['rank'].transform('min')
 
-        aggregated_groups = [self.aggregate_clonotypes_group(group) for _, group in clonotype_groups]
+        annotation.reset_index(drop=True, inplace=True)
+        aggregated_annotation = annotation[(annotation[self.COUNT_COLUMN].values == annotation['max_count'].values)
+                                           & (annotation['rank'].values == annotation['min_rank'].values)]
+        aggregated_annotation[self.COUNT_COLUMN] = aggregated_annotation['total']
 
-        annotation = pd.DataFrame(aggregated_groups)
+        aggregated_annotation = aggregated_annotation.drop(columns=['min_rank', 'rank', 'total', 'max_count'],
+                                                           errors='ignore')
 
-        annotation[self.COUNT_COLUMN] = duplicate_count
+        aggregated_annotation = aggregated_annotation.sort_values(by=self.COUNT_COLUMN, ascending=False)
 
-        annotation.sort_values(by=self.COUNT_COLUMN, ascending=False, inplace=True)
+        logger.info(f'Filtered out {annotation.shape[0] - aggregated_annotation.shape[0]} clones while aggregation.')
 
-        logger.info(f'Filtered out {len(annotation) - len(annotation.drop_duplicates())} clones while aggregation.')
-
-        return annotation
+        return aggregated_annotation
 
     def fetch_clonotypes(self, annotation: pd.DataFrame) -> pd.DataFrame:
         fetched_annotation = (annotation[annotation[self.JUNCTION_COLUMN].values != '']
