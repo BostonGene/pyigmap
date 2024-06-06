@@ -52,10 +52,11 @@ class ClonotypeCorrector:
 
         return full_corrected_annotation
 
-    def aggregate_clonotypes_group(self, group):
-        if len(group['c_call']) > 1:
-            index_clone = group['c_call'].value_counts().idxmax()
-            return group.loc[group['c_call'] == index_clone].iloc[0]
+    def aggregate_clonotypes_group(self, group: pd.DataFrame) -> pd.Series:
+        """Removes duplicates and saves a clonotype with the most frequent c_call"""
+        group_with_c_call = group.dropna(subset=['c_call'])
+        if not group_with_c_call.empty:
+            return group[group['c_call'] == group_with_c_call['c_call'].mode()[0]].iloc[0]
         return group.iloc[0]
 
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list) -> pd.DataFrame:
@@ -66,15 +67,15 @@ class ClonotypeCorrector:
 
         aggregated_groups = [self.aggregate_clonotypes_group(group) for _, group in clonotype_groups]
 
-        annotation = pd.DataFrame(aggregated_groups)
+        aggregate_annotation = pd.DataFrame(aggregated_groups)
 
-        annotation[self.COUNT_COLUMN] = duplicate_count
+        aggregate_annotation[self.COUNT_COLUMN] = duplicate_count
 
-        annotation.sort_values(by=self.COUNT_COLUMN, ascending=False, inplace=True)
+        aggregate_annotation.sort_values(by=self.COUNT_COLUMN, ascending=False, inplace=True)
 
-        logger.info(f'Filtered out {len(annotation) - len(annotation.drop_duplicates())} clones while aggregation.')
+        logger.info(f'Filtered out {len(annotation) - len(aggregate_annotation)} clones while aggregation.')
 
-        return annotation
+        return aggregate_annotation
 
     def fetch_clonotypes(self, annotation: pd.DataFrame) -> pd.DataFrame:
         fetched_annotation = (annotation[annotation[self.JUNCTION_COLUMN].values != '']
