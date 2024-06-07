@@ -1,3 +1,4 @@
+import gzip
 import itertools
 import tempfile
 
@@ -23,9 +24,9 @@ def get_fastq_reads(fq1_path: str, fq2_path: str) -> tuple[list[str], list[str]]
 
 
 def save_fastq_reads_to_file(reads: list[str], output_path: str):
-    with open(output_path, 'w') as f:
+    with gzip.open(output_path, "wb") as f:
         for read in reads:
-            f.write(read)
+            f.write(read.encode())
 
 
 def get_reverse_complement(read_sequence: str) -> str:
