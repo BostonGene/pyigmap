@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+* Podman support ([#69](https://github.com/BostonGene/pyigmap/issues/41))
 * Add a new flag `--only-canonical` to `cdr3nt-error-corrector` step ([#41](https://github.com/BostonGene/pyigmap/issues/41)) ([217c316](https://github.com/BostonGene/pyigmap/commit/217c316f82a9613a0b3e5994f90b50fbed3e37b6))
 * Add `--filter-pgen-singleton`, `--filter-pgen-all` and `--skip-pgen-calculation` flags to `cdr3nt-error-corrector` ([#48](https://github.com/BostonGene/pyigmap/issues/48)) ([f04b3cd](https://github.com/BostonGene/pyigmap/commit/f04b3cd36646e0a7272d3026794c4b726f59d7af))
 * Automate python, java and docker installation ([#53](https://github.com/BostonGene/pyigmap/issues/53)) ([25c8bf8](https://github.com/BostonGene/pyigmap/commit/25c8bf8e0dd68a872acd77f1648d2bc92ad15ec7))
