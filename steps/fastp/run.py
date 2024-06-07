@@ -111,20 +111,6 @@ def run_fastp(in_fq1: str, in_fq2: str, trimq: int, disable: str, merge: bool, o
     run_command(cmd)
 
 
-def archive_file_as_gz(file: str):
-    logger.info(f"Compressing {file} into {file}.gz...")
-
-    pigz_cmd = ["pigz", file]
-    run_command(pigz_cmd)
-
-    file_gz = file + ".gz"
-    check_if_exist(file_gz)
-
-    logger.info(f"{file} has been compressed.")
-
-    return file_gz
-
-
 def concat_gz_files(gz_files: list[str]) -> str:
     """Concatenates gz files into one file"""
     out_file_path = tempfile.NamedTemporaryFile(suffix=".gz").name
