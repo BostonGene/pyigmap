@@ -136,8 +136,9 @@ def run(args: argparse.Namespace) -> None:
               out_fq1, out_fq2, out_fq12)
 
     if args.in_fq2 and args.mock_merge:
-        fq12_mock = mock_merge_reads(out_fq1, out_fq2, args.insert_size)
-        out_fq12 = concat_gz_files([out_fq12, fq12_mock])
+        if os.path.getsize(out_fq1) != 0 and os.path.getsize(out_fq2) != 0:
+            fq12_mock = mock_merge_reads(out_fq1, out_fq2, args.insert_size)
+            out_fq12 = concat_gz_files([out_fq12, fq12_mock])
 
     if args.out_fq1:
         replace_file(out_fq1, args.out_fq1)
