@@ -107,14 +107,10 @@ workflow {
         }
     }
 
-    igblast_ref = file(params.igblast_ref)
-    vidjil_ref = file(params.vidjil_ref)
-    olga_models = file(params.olga_models)
-
     if (params.mode == "amplicon") {
-        PYIGMAP_AMPLICON(fq1, fq2, vidjil_ref, igblast_ref, olga_models)
+        PYIGMAP_AMPLICON(fq1, fq2)
     } else if (params.mode == "rnaseq") {
-        PYIGMAP_RNASEQ(fq1, fq2, vidjil_ref, igblast_ref, olga_models)
+        PYIGMAP_RNASEQ(fq1, fq2)
     } else {
         error "Error: unexpected --mode '${params.mode}'. Supported only two modes: --mode 'amplicon' and --mode 'rnaseq'."
     }
