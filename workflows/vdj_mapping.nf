@@ -6,12 +6,12 @@ workflow VDJ_MAPPING {
         fq1
         fq2
         fq12
-        vidjil_ref
-        igblast_ref
-        olga_models
 
     main:
+        vidjil_ref = file(params.vidjil_ref)
         Vidjil(fq1, fq2, fq12, vidjil_ref)
+
+        igblast_ref = file(params.igblast_ref)
         IgBlast(Vidjil.out.fasta, igblast_ref)
 
     emit:
