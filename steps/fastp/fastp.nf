@@ -16,7 +16,7 @@ process Fastp {
             --out-fq1 ${params.out_fastp_fq1} \
             --out-fq2 ${params.out_fastp_fq2} \
             --out-fq12 ${params.out_fastp_fq12} \
-            --disable "length_filtering" "adapter_trimming" "quality_filtering" \
+            --disable ${params.disable} \
             --merge \
             --out-html ${params.out_fastp_html} \
             --out-json ${params.out_fastp_json}
