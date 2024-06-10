@@ -10,9 +10,7 @@ process CDR3ErrorCorrector {
         python3.9 /usr/local/run.py \
             --in-annotation $raw_annotation \
             --filter-pgen-all ${params.pgen_threshold} \
-            --only-functional \
-            --only-canonical \
-            --remove-chimeras \
+            ${params.enabled_filters} \
             --clonotype-collapse-factor ${params.clonotype_collapse_factor} \
             --olga-models $olga_models \
             --out-corrected-annotation ${params.out_corrected_annotation} \
