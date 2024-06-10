@@ -9,7 +9,7 @@ process CDR3ErrorCorrector {
         """
         python3.9 /usr/local/run.py \
             --in-annotation $raw_annotation \
-            --filter-pgen-all ${params.pgen_threshold} \
+            --filter-pgen-singletons ${params.pgen_threshold} \
             ${params.enabled_filters} \
             --clonotype-collapse-factor ${params.clonotype_collapse_factor} \
             --olga-models $olga_models \
