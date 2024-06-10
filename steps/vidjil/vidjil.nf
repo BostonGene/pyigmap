@@ -1,18 +1,16 @@
 process Vidjil {
-//     publishDir "${params.outdir}/vidjil", mode: 'copy'
-
     input:
         path fq12
         path ref
     output:
-        path "vidjil.fasta.gz", emit: fasta
-        path "vidjil.log", emit: logs
+        path params.out_vidjil_fasta, emit: fasta
+        path params.out_vidjil_logs, emit: logs
     script:
         """
         python3.9 /usr/local/run.py \
             --in-fq12 $fq12 \
             --ref $ref \
-            --out-fasta vidjil.fasta.gz \
-            --logs vidjil.log
+            --out-fasta ${params.out_vidjil_fasta} \
+            --logs ${params.out_vidjil_logs}
         """
 }

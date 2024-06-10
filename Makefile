@@ -67,12 +67,12 @@ tests: venv ##@main >> run integration and unit tests
 clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
 	@echo "$(ccso)--> Removing temporary files and images $(ccend)"
-	$(ENGINE) rmi -f downloader \
-		calib-dedup-tool calib-dedup-image \
+	$(ENGINE) rmi -f downloader-image \
+		calib_dedup-tool calib_dedup-image \
 		fastp-tool fastp-image \
 		vidjil-tool vidjil-image \
 		igblast-tool igblast-image \
-		cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
+		cdr3nt_error_corrector-tool cdr3nt_error_corrector-image
 	rm -rf $(VIRTUAL_ENV) \
 		.nextflow.log* work .nextflow nextflow \
 		/tmp/pytest_workflow_*

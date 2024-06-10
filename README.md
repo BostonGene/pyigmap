@@ -53,10 +53,10 @@ make ENGINE=podman # will use Podman as container engine
 ./pyigmap --mode rnaseq --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz -profile docker
 
 # for public data by sample id
-./pyigmap --mode rnaseq --sample SRR3743469 --reads 200000 -profile docker
+./pyigmap --mode rnaseq --sample_id SRR3743469 --reads_to_process 200000 -profile docker
 
 # for public data from ZENODO
-./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads 200000 -profile docker
+./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads_to_process 200000 -profile docker
 ```
 
 ## Contributing
