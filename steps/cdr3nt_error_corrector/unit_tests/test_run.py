@@ -53,6 +53,7 @@ def annotation_bcr():
               'productive': ['T', 'T', 'T'],
               'v_call': ['IGHV4-39*01', 'IGKV2D-26*01', 'IGKV2D-26*01'],
               'j_call': ['IGHJ6*02', 'IGKJ4*01', 'IGKJ4*01'],
+              'c_call': [None, 'IGHM', 'IGHM'],
               'junction': ['TGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGG',
                            'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT',
                            'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT'],
@@ -148,5 +149,10 @@ def test_run_with_calib(olga_models, annotation_bcr, annotation_tcr, calib_json,
                      output_json_path, output_archive_path)
     run_command(cmd)
     annotation = read_annotation(output_annotation_path)
+
     logger.info(f"{annotation['locus']}")
     assert set(annotation['locus']) == {'IGH', 'IGK', 'TRB'}
+
+    annotation['c_call'] = annotation['c_call'].fillna('')
+    logger.info(f"{annotation['c_call']}")
+    assert set(annotation['c_call']) == {'', 'IGHM'}

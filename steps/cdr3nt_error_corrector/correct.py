@@ -52,11 +52,12 @@ class ClonotypeCorrector:
 
         return full_corrected_annotation
 
-    def aggregate_clonotypes_group(self, group: pd.DataFrame) -> pd.Series:
+    @staticmethod
+    def _aggregate_clonotypes_group(group: pd.DataFrame) -> pd.Series:
         """Removes duplicates and saves a clonotype with the most frequent c_call"""
-        group_with_c_call = group.dropna(subset=['c_call'])
-        if not group_with_c_call.empty:
-            return group[group['c_call'] == group_with_c_call['c_call'].mode()[0]].iloc[0]
+        most_freq_c_call = group['c_call'].mode(dropna=True)
+        if not most_freq_c_call.empty:
+            return group[group['c_call'] == most_freq_c_call[0]].iloc[0]
         return group.iloc[0]
 
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list) -> pd.DataFrame:
@@ -65,7 +66,7 @@ class ClonotypeCorrector:
 
         duplicate_count = clonotype_groups[self.COUNT_COLUMN].transform('sum')
 
-        aggregated_groups = [self.aggregate_clonotypes_group(group) for _, group in clonotype_groups]
+        aggregated_groups = [self._aggregate_clonotypes_group(group) for _, group in clonotype_groups]
 
         aggregate_annotation = pd.DataFrame(aggregated_groups)
 
