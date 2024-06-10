@@ -1,8 +1,8 @@
 - name: test_main_rnaseq_sample_id
-  command: ./pyigmap --mode rnaseq --sample SRR3743469 --reads 10000 --outdir ./
+  command: ./pyigmap --mode rnaseq --sample SRR3743469 --reads 10000 --outdir ./ -profile docker
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
-  command: ./pyigmap --mode amplicon --sample SRR3743469 --reads 10000 --outdir ./
+  command: ./pyigmap --mode amplicon --sample SRR3743469 --reads 10000 --outdir ./ -profile docker
   files:
     - path: "pyigmap.tar.gz"

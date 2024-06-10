@@ -15,26 +15,39 @@ git clone https://github.com/BostonGene/pyigmap.git
 ```bash
 make install-python
 make install-docker # requirements: ubuntu x64
+make install-podman # requirements: Ubuntu 20.10 and newer
 make install-java # requirements: linux x64
 ```
 
 3. Build all reference archives:
 
 ```bash
-make build-ref
+make build-ref # will use Docker as container engine
+```
+
+or
+
+```bash
+make ENGINE=podman build-ref # will use Podman as container engine
 ```
 
 ## Building and Testing
 
 To build an executable and not executable docker images, python virtual environment and installs requirements execute:
 ```bash
-make build
+make build # will use Docker as container engine
+```
+
+or
+
+```bash
+make ENGINE=podman build # will use Podman as container engine
 ```
 
 ### Unit (step) tests
 
 ```bash
-make unit-tests
+make unit-tests # or `make ENGINE=podman unit-tests`
 ```
 
 ### Integration (workflow) tests
