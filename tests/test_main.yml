@@ -3,6 +3,6 @@
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
-  command: ./pyigmap --mode amplicon --sample_id SRR3743469 --reads_to_process 10000 --outdir ./ -profile docker
+  command: ./pyigmap --mode amplicon --sample_id ERR7425614 --reads_to_process 10 --outdir ./ -profile docker
   files:
     - path: "pyigmap.tar.gz"
