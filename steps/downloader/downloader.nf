@@ -54,7 +54,7 @@ process Downsample {
     script:
         """
         #!/bin/bash
-        let lines_to_save=${params.reads_to_save}*4
+        let lines_to_save=${params.reads_to_process}*4
         zcat $fastq | head -\${lines_to_save} | gzip > R${read}.fastq.gz
         """
 }
