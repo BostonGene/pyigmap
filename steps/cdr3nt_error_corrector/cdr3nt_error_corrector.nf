@@ -4,7 +4,7 @@ process CDR3ErrorCorrector {
         path olga_models
         path json
     output:
-        path params.out_corrected_annotation, emit: archive
+        path params.out_archive, emit: archive
     script:
         """
         python3.9 /usr/local/run.py \
