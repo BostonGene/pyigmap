@@ -13,6 +13,7 @@ TRANSLATION_TABLE = bytes.maketrans(b"ATGCRYSWKMBDHVN", b"TACGAAAAAAAAAAA")
 
 
 def get_fastq_reads(fq1_path: str, fq2_path: str) -> tuple[list[str], list[str]]:
+    """Reads a pair of FASTQ files into two lists of reads"""
     logger.info("Reading FASTQ files...")
 
     reads1 = [seq for seq in pyfastx.Fastq(fq1_path, build_index=False, full_name=True)]
@@ -24,6 +25,7 @@ def get_fastq_reads(fq1_path: str, fq2_path: str) -> tuple[list[str], list[str]]
 
 
 def save_fastq_reads_to_file(reads: list[str], output_path: str):
+    """Saves processed reads to gzipped file"""
     with gzip.open(output_path, "wb") as f:
         for read in reads:
             f.write(read.encode("utf-8"))
