@@ -27,7 +27,7 @@ process Download {
     input:
         val sample_id
         val link
-        val reads_to_save
+        val reads_to_process
         val read
 
     output:
@@ -35,10 +35,10 @@ process Download {
 
     script:
         """
-        if [[ "${reads_to_save}" == "all" ]]; then
+        if [[ "${reads_to_process}" == "all" ]]; then
             wget "${link}" -O "${sample_id}_R${read}.fastq.gz"
         else
-            let lines_to_save=$reads_to_save*4
+            let lines_to_save=$reads_to_process*4
             wget -O - "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz"
         fi
         """
@@ -47,7 +47,7 @@ process Download {
 process Downsample {
     input:
         path fastq
-        val reads_to_save
+        val reads_to_process
         val read
 
     output:
@@ -56,7 +56,6 @@ process Downsample {
     script:
         """
         #!/bin/bash
-        let lines_to_save=$reads_to_save*4
-        zcat $fastq | head -\$lines_to_save | gzip > R${read}.fastq.gz
+        zcat $fastq | head -\${$reads_to_process*4} | gzip > R${read}.fastq.gz
         """
 }

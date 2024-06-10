@@ -14,7 +14,7 @@ log.info "======================================================="
 log.info "Mode                 : ${params.mode}"
 log.info "Sample               : ${params.sample}"
 log.info "Enable zenodo        : ${params.zenodo}"
-log.info "Reads to process     : ${params.reads}"
+log.info "Reads to process     : ${params.reads_to_process}"
 log.info "All alleles          : ${params.all_alleles}"
 log.info "Fastq1               : ${params.fq1}"
 log.info "Fastq2               : ${params.fq2}"
@@ -74,7 +74,7 @@ def help_message() {
 }
 
 workflow {
-    reads_to_save = Channel.from(params.reads)
+    reads_to_process = Channel.from(params.reads_to_process)
 
     // Running pipeline by sample id
     if (params.sample) {
@@ -86,7 +86,7 @@ workflow {
         ArrayList sample = params.sample.split(",")
         sample_ch = Channel.from(sample)
 
-        DOWNLOAD_FASTQ_BY_SAMPLE_ID(sample_ch, reads_to_save)
+        DOWNLOAD_FASTQ_BY_SAMPLE_ID(sample_ch, reads_to_process)
 
         fq1 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq1
         fq2 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq2
@@ -100,7 +100,7 @@ workflow {
             fq1_link = params.zenodo_link + params.fq1
             fq2_link = params.zenodo_link + params.fq2
             sample = params.fq1.replace("_R1.fastq.gz", "").replace("_1.fastq.gz", "")
-            DOWNLOAD_FASTQ_BY_LINK(fq1_link, fq2_link, sample, reads_to_save)
+            DOWNLOAD_FASTQ_BY_LINK(fq1_link, fq2_link, sample, reads_to_process)
             fq1 = DOWNLOAD_FASTQ_BY_LINK.out.fq1
             fq2 = DOWNLOAD_FASTQ_BY_LINK.out.fq2
         } else {
@@ -108,9 +108,9 @@ workflow {
             fq2 = Channel.fromPath(params.fq2)
         }
 
-        if (params.reads.toString().isInteger()) {
-            DownsampleRead1(fq1, reads_to_save, Channel.from("1"))
-            DownsampleRead2(fq2, reads_to_save, Channel.from("2"))
+        if (params.reads_to_process.toString().isInteger()) {
+            DownsampleRead1(fq1, reads_to_process, Channel.from("1"))
+            DownsampleRead2(fq2, reads_to_process, Channel.from("2"))
             fq1 = DownsampleRead1.out.fq
             fq2 = DownsampleRead2.out.fq
         }
