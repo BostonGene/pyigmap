@@ -135,10 +135,9 @@ def run(args: argparse.Namespace) -> None:
     run_fastp(args.in_fq1, args.in_fq2, args.trimq, args.disable, merge, args.out_json, args.out_html,
               out_fq1, out_fq2, out_fq12)
 
-    if args.in_fq2 and args.mock_merge:
-        if os.path.getsize(out_fq1) != 0 and os.path.getsize(out_fq2) != 0:
-            fq12_mock = mock_merge_reads(out_fq1, out_fq2, args.insert_size)
-            out_fq12 = concat_gz_files([out_fq12, fq12_mock])
+    if args.mock_merge and os.path.getsize(out_fq1) != 0 and os.path.getsize(out_fq2) != 0:
+        fq12_mock = mock_merge_reads(out_fq1, out_fq2, args.insert_size)
+        out_fq12 = concat_gz_files([out_fq12, fq12_mock])
 
     if args.out_fq1:
         replace_file(out_fq1, args.out_fq1)
