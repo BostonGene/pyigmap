@@ -35,3 +35,20 @@ process IgBlastFASTQ {
             --out-annotation \${PWD}/${params.out_igblast_annotation}
         """
 }
+
+process IgBlastMockFASTQ {
+    input:
+        path fq12
+        path ref
+    output:
+        path params.out_igblast_annotation, emit: annotation
+    script:
+        """
+        python3.9 /usr/local/run.py \
+            --in-fq12 \${PWD}/$fq12 \
+            --in-ref \${PWD}/$ref \
+            --receptor ${params.igblast_receptor} \
+            --organism ${params.igblast_organism} \
+            --out-annotation \${PWD}/${params.out_igblast_annotation}
+        """
+}
