@@ -31,17 +31,20 @@ class ClonotypeCorrector:
     COUNT_COLUMN = 'duplicate_count'
     BASES_GAP = ['A', 'T', 'G', 'C', '']
 
-    def __init__(self, collapse_factor=None):
+    def __init__(self, use_v_align: bool, collapse_factor=None):
         self.factor = collapse_factor or 0.05
+        self.use_v_align = use_v_align
 
     def correct_full(self, annotation: pd.DataFrame) -> pd.DataFrame:
-        aggregated_annotation = self.aggregate_clonotypes(annotation, self.CLONOTYPE_COLUMNS)
+        annotation = annotation.reset_index(drop=True)
+
+        aggregated_annotation = self.aggregate_full(annotation)
 
         fetched_annotation = self.fetch_clonotypes(aggregated_annotation)
 
         corrected_annotation = (self.correct_clonotypes(fetched_annotation)
-                                    .drop(columns=['count'])
-                                    .drop_duplicates())
+                                .drop(columns=['count'])
+                                .drop_duplicates())
 
         merged_annotation = aggregated_annotation.merge(corrected_annotation,
                                                         on=self.CLONOTYPE_COLUMNS,
@@ -52,31 +55,51 @@ class ClonotypeCorrector:
 
         return full_corrected_annotation
 
-    @staticmethod
-    def _aggregate_clonotypes_group(group: pd.DataFrame) -> pd.Series:
-        """Removes duplicates and saves a clonotype with the most frequent c_call"""
-        most_freq_c_call = group['c_call'].mode(dropna=True)
-        if not most_freq_c_call.empty:
-            return group[group['c_call'] == most_freq_c_call[0]].iloc[0]
-        return group.iloc[0]
+    def _aggregate_clonotypes_group(self, group: pd.DataFrame) -> pd.DataFrame:
+        group['count'] = group[self.COUNT_COLUMN].sum()
+        group['max_count'] = group.groupby(self.CLONOTYPE_COLUMNS)['count'].transform('max')
+        filtered = group[group['count'] == group['max_count']]
+        filtered['duplicate_count'] = filtered['count']
+        return filtered.drop(columns=['count', 'max_count'])
 
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
-        clonotype_groups = annotation.groupby(grouping_columns)
 
-        duplicate_count = clonotype_groups[self.COUNT_COLUMN].transform('sum')
+        clonotype_groups = annotation.groupby(grouping_columns, as_index=False)
+        if clonotype_groups.ngroups:
+            aggregated_annotation = pd.concat([self._aggregate_clonotypes_group(group) for _, group in clonotype_groups])
+        else:
+            return annotation
 
-        aggregated_groups = [self._aggregate_clonotypes_group(group) for _, group in clonotype_groups]
+        aggregated_annotation.sort_values(by=self.COUNT_COLUMN, ascending=False, inplace=True)
 
-        aggregate_annotation = pd.DataFrame(aggregated_groups)
+        logger.info(f'Filtered out {len(annotation) - len(aggregated_annotation)} clones while aggregation.')
 
-        aggregate_annotation[self.COUNT_COLUMN] = duplicate_count
+        return aggregated_annotation
 
-        aggregate_annotation.sort_values(by=self.COUNT_COLUMN, ascending=False, inplace=True)
+    def aggregate_full(self, annotation: pd.DataFrame) -> pd.DataFrame:
+        aggregated_annotations_list = []
 
-        logger.info(f'Filtered out {len(annotation) - len(aggregate_annotation)} clones while aggregation.')
+        if not annotation['c_call'].isna().all():
+            filtered_annotation = annotation.dropna(subset=['c_call'])
+            aggregated_c_call = self.aggregate_clonotypes(filtered_annotation, self.CLONOTYPE_COLUMNS + ['c_call'])
+            aggregated_annotations_list.append(aggregated_c_call)
 
-        return aggregate_annotation
+        grouping_columns = annotation.columns.difference(['c_call'])
+
+        if self.use_v_align:
+            aggregated_v_align = self.aggregate_clonotypes(
+                annotation,
+                self.CLONOTYPE_COLUMNS + ['v_sequence_alignment', 'v_germline_alignment', 'v_cigar']
+            )
+            aggregated_annotations_list.append(aggregated_v_align)
+            grouping_columns = annotation.columns.difference(
+                ['c_call', 'v_sequence_alignment', 'v_germline_alignment', 'v_cigar'])
+
+        aggregated_annotation = self.aggregate_clonotypes(annotation, grouping_columns.tolist())
+        aggregated_annotations_list.append(aggregated_annotation)
+
+        return pd.concat(aggregated_annotations_list).drop_duplicates(subset=self.CLONOTYPE_COLUMNS)
 
     def fetch_clonotypes(self, annotation: pd.DataFrame) -> pd.DataFrame:
         fetched_annotation = (annotation[annotation[self.JUNCTION_COLUMN].values != '']
