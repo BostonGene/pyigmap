@@ -1,19 +1,9 @@
 # Fastp step
 
-This step is a wrapping of [fastp](https://github.com/OpenGene/fastp) tool designed to provide fast all-in-one preprocessing for FastQ files.
-
-## Overview
-
-By default:
-* Trims Illumina adapters
-* Trims polyG for 2ch SBS
-* Filters out reads if >40% bases have quality < 20
-* Filters out reads shorter than 15bp
-* Filters out reads with more than 5 N's
-* Generates JSON & HTML report
+This step is a wrapping of [fastp](https://github.com/OpenGene/fastp) tool designed to provide fast all-in-one preprocessing for FASTQ files.
 
 ## Parameters:
-* `--merge`: merges forward and reverse fastq.
+* `--merge`: merges forward and reverse FASTQ.
 * `--disable`: disables modes. Example:
     ```bash
     --disable "length_filtering" # disables filtering reads shorter than 15bp
@@ -25,12 +15,12 @@ By default:
 
 Example:
 
-Not overlapped forward and reverse reads:
+There are such not overlapped forward and reverse reads:
 ```
 CCCAAA ->
           <- GGGTTT
 ```
-Mock merging with `--insert-size 1`:
+After mock merging them with `--insert-size 1` you get such read:
 ```
 CCCAAANAAACCC
 ```
