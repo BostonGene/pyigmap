@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Generator, Optional
+from typing import Generator
 from logger import set_logger
 
 logger = set_logger(name=__file__)
@@ -28,6 +28,7 @@ class ClonotypeCounter:
 class ClonotypeCorrector:
     CLONOTYPE_COLUMNS = ['v_call', 'j_call', 'junction']
     V_ALIGN_COLUMNS = ['v_sequence_alignment', 'v_germline_alignment', 'v_cigar']
+    C_CALL_COLUMN = 'c_call'
     JUNCTION_COLUMN = 'junction'
     COUNT_COLUMN = 'duplicate_count'
     BASES_GAP = ['A', 'T', 'G', 'C', '']
@@ -57,10 +58,10 @@ class ClonotypeCorrector:
         return full_corrected_annotation
 
     def aggregate_full(self, annotation: pd.DataFrame, grouping_columns: list[str]) -> pd.DataFrame:
-
-        aggregated_annotation_c_call = self.aggregate_clonotypes(annotation[~annotation['c_call'].isna()],
-                                                                 grouping_columns + ['c_call'])
-        aggregated_annotation_no_c_call = self.aggregate_clonotypes(annotation[annotation['c_call'].isna()],
+        """Runs full clonotypes aggregation using c_call and v alignment columns"""
+        aggregated_annotation_c_call = self.aggregate_clonotypes(annotation[~annotation[self.C_CALL_COLUMN].isna()],
+                                                                 grouping_columns + [self.C_CALL_COLUMN])
+        aggregated_annotation_no_c_call = self.aggregate_clonotypes(annotation[annotation[self.C_CALL_COLUMN].isna()],
                                                                     grouping_columns)
 
         aggregated_annotation = pd.concat([aggregated_annotation_no_c_call, aggregated_annotation_c_call])
@@ -74,22 +75,29 @@ class ClonotypeCorrector:
         return group[group['count'] == group['max_count']].drop(columns=['count', 'max_count'])
 
     def _most_frequent(self, group: pd.DataFrame, columns: list[str]):
+        """Returns clonotype with the most frequent values in selected columns"""
         group_filtered = group.dropna(subset=columns)
 
         if group_filtered.empty:
             return group
 
-        most_frequent_values = {col: group_filtered[col].value_counts().idxmax() for col in columns}
+        value_counts = group_filtered[columns].value_counts().reset_index(name='count')
 
-        condition = group_filtered[columns].eq(pd.Series(most_frequent_values))
-        clonotypes_with_most_frequent_values = group_filtered[condition.all(axis=1)]
+        most_frequent_row = value_counts.loc[value_counts['count'].idxmax()]
+
+        most_frequent_values = most_frequent_row[columns].to_dict()
+
+        condition = (group_filtered[columns] == pd.Series(most_frequent_values)).all(axis=1)
+        clonotypes_with_most_frequent_values = group_filtered[condition]
 
         return clonotypes_with_most_frequent_values
 
     def _aggregate_clonotypes_group(self, group: pd.DataFrame) -> pd.Series:
         """Removes duplicates and saves a clonotype with the most frequent c_call"""
         weighted_group = self._most_weighted(group)
-        clones_with_most_freq_c_call = self._most_frequent(weighted_group, ['c_call'])
+        clones_with_most_freq_c_call = self._most_frequent(weighted_group, [self.C_CALL_COLUMN])
+        if len(group) > 1000:
+            a = 5
         if self.use_v_align:
             return self._most_frequent(weighted_group, self.V_ALIGN_COLUMNS).head(1)
         return clones_with_most_freq_c_call.head(1)
