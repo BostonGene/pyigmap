@@ -53,7 +53,7 @@ unit-tests: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
 #	$(PYTHON_ENV) -m pytest steps/calib_dedup/unit_tests -vv
-#	$(PYTHON_ENV) -m pytest steps/fastp/unit_tests -vv
+	$(PYTHON_ENV) -m pytest steps/fastp/unit_tests -vv
 #	$(PYTHON_ENV) -m pytest steps/vidjil/unit_tests -vv
 	$(PYTHON_ENV) -m pytest steps/igblast/unit_tests -vv
 	$(PYTHON_ENV) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv

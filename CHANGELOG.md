@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+* Consider mock merging reads for non-overlapped reads ([#84](https://github.com/BostonGene/pyigmap/issues/84))
+* Pgen calculation disabled for amplicon ([#76](https://github.com/BostonGene/pyigmap/issues/76))
 * Vidjil disabled for amplicon data ([#75](https://github.com/BostonGene/pyigmap/issues/75))
 * Optimized workflow: igblast processes TCR and BCR in one run ([#78](https://github.com/BostonGene/pyigmap/issues/78))
 * Now TCR and BCR run in one vidjil job ([#67](https://github.com/BostonGene/pyigmap/issues/67))
