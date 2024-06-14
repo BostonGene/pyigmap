@@ -27,8 +27,8 @@ Example:
 
 Not overlapped forward and reverse reads:
 ```
-CCCAAA
-        GGGTTT
+CCCAAA ->
+          <- GGGTTT
 ```
 Mock merging with `--insert-size 1`:
 ```
