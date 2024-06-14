@@ -112,9 +112,12 @@ class ClonotypeCorrector:
 
         duplicate_count = clonotype_groups[self.COUNT_COLUMN].transform('sum')
 
-        aggregated_annotation = pd.concat(
-            [self._aggregate_clonotypes_group(group) for _, group in clonotype_groups]
-        )
+        aggregated_groups = [self._aggregate_clonotypes_group(group) for _, group in clonotype_groups]
+
+        if not aggregated_groups:
+            return annotation
+
+        aggregated_annotation = pd.concat(aggregated_groups)
 
         aggregated_annotation[self.COUNT_COLUMN] = duplicate_count
 
