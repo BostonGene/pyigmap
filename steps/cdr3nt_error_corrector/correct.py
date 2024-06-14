@@ -33,9 +33,10 @@ class ClonotypeCorrector:
     COUNT_COLUMN = 'duplicate_count'
     BASES_GAP = ['A', 'T', 'G', 'C', '']
 
-    def __init__(self, only_most_freq_c_genes: bool, collapse_factor=None):
+    def __init__(self, top_c_call: bool, top_v_alignment_call: bool, collapse_factor=None):
         self.factor = collapse_factor or 0.05
-        self.only_most_freq_c_genes = only_most_freq_c_genes
+        self.top_c_call = top_c_call
+        self.top_v_alignment_call = top_v_alignment_call
 
     def correct_full(self, annotation: pd.DataFrame) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
@@ -92,14 +93,18 @@ class ClonotypeCorrector:
         return clonotypes_with_most_frequent_values
 
     def _aggregate_clonotypes_group(self, group: pd.DataFrame) -> pd.Series:
-        """Select the most weighted clonotype with the most frequent """
+        """Select the most weighted clonotype with the most frequent values"""
         weighted_group = self._most_weighted(group)
 
-        if self.only_most_freq_c_genes:
-            clones_with_most_freq_c_call = self._most_frequent(weighted_group, [self.C_CALL_COLUMN])
-            return self._most_frequent(clones_with_most_freq_c_call, self.V_ALIGN_COLUMNS).head(1)
+        top_clonotypes = weighted_group
 
-        return weighted_group.head(1)
+        if self.top_c_call:
+            top_clonotypes = self._most_frequent(weighted_group, [self.C_CALL_COLUMN])
+
+        if self.top_v_alignment_call:
+            top_clonotypes = self._most_frequent(top_clonotypes, self.V_ALIGN_COLUMNS)
+
+        return top_clonotypes.head(1)
 
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list[str]) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
