@@ -1,5 +1,4 @@
 import pandas as pd
-import re
 from logger import set_logger
 
 logger = set_logger(name=__file__)
