@@ -64,8 +64,8 @@ def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     return concatenated_annotation
 
 
-def read_annotation(*annotation_paths: str, only_functional: bool,
-                    only_canonical: bool, remove_chimeras: bool) -> tuple[pd.DataFrame, dict]:
+def read_annotation(*annotation_paths: str, only_functional: bool, only_canonical: bool, remove_chimeras: bool,
+                    only_best_alignment: bool) -> tuple[pd.DataFrame, dict]:
     logger.info('Reading annotation...')
     metrics_dict = {}
     annotation = _concat_annotations(*annotation_paths)
@@ -77,7 +77,7 @@ def read_annotation(*annotation_paths: str, only_functional: bool,
     no_call_count = get_no_call_count(annotation)
     metrics_dict.update(no_call_count)
 
-    annotation = _prepare_vj_columns(annotation)
+    annotation = _prepare_vj_columns(annotation, only_best_alignment)
 
     if "duplicate_count" in annotation.columns:
         # run CDR3 processing on Vidjil's annotation
@@ -109,8 +109,11 @@ def _prepare_duplicate_count_column(annotation: pd.DataFrame):
     return annotation
 
 
-def _prepare_vj_columns(annotation: pd.DataFrame) -> pd.DataFrame:
+def _prepare_vj_columns(annotation: pd.DataFrame, only_best_alignment: bool) -> pd.DataFrame:
     annotation.dropna(subset=['v_call', 'j_call'], inplace=True)
+    if only_best_alignment:
+        annotation['v_call'] = annotation['v_call'].str.split(',').str[0]
+        annotation['j_call'] = annotation['j_call'].str.split(',').str[0]
     annotation['v_sequence_end'] = annotation['v_sequence_end'].fillna(-1).astype(int)
     annotation['j_sequence_start'] = annotation['j_sequence_start'].fillna(-1).astype(int)
     return annotation
