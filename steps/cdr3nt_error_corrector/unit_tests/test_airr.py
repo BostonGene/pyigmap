@@ -22,7 +22,7 @@ def test_get_no_call_count(annotation_with_no_call):
 
 
 def test__prepare_vj_columns(annotation_with_no_call):
-    assert _prepare_vj_columns(annotation_with_no_call).equals(
+    assert _prepare_vj_columns(annotation_with_no_call, only_best_alignment=True).equals(
         pd.DataFrame(data={"v_call": ["IGHV4-59*01"],
                            "j_call": ["IGHJ4-59*01"],
                            "v_sequence_end": [-1],
