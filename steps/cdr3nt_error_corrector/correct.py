@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Generator
+from typing import Generator, Optional
 from logger import set_logger
 
 logger = set_logger(name=__file__)
@@ -39,7 +39,7 @@ class ClonotypeCorrector:
     def correct_full(self, annotation: pd.DataFrame) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
 
-        aggregated_annotation = self.aggregate_clonotypes(annotation, self.CLONOTYPE_COLUMNS)
+        aggregated_annotation = self.aggregate_full(annotation, self.CLONOTYPE_COLUMNS)
 
         fetched_annotation = self.fetch_clonotypes(aggregated_annotation)
 
@@ -51,81 +51,55 @@ class ClonotypeCorrector:
                                                         on=self.CLONOTYPE_COLUMNS,
                                                         how='left')
 
-        full_corrected_annotation = (self.aggregate_clonotypes(merged_annotation, grouping_columns=['parent'])
+        full_corrected_annotation = (self.aggregate_full(merged_annotation, ['parent'])
                                      .drop(columns=['parent', 'factor']))
 
         return full_corrected_annotation
+
+    def aggregate_full(self, annotation: pd.DataFrame, grouping_columns: list[str]) -> pd.DataFrame:
+
+        aggregated_annotation_c_call = self.aggregate_clonotypes(annotation[~annotation['c_call'].isna()],
+                                                                 grouping_columns, ['c_call'])
+        aggregated_annotation_no_c_call = self.aggregate_clonotypes(annotation[annotation['c_call'].isna()],
+                                                                    grouping_columns, [])
+
+        aggregated_annotation = pd.concat([aggregated_annotation_no_c_call, aggregated_annotation_c_call])
+
+        return aggregated_annotation
 
     def _most_weighted(self, group: pd.DataFrame) -> pd.DataFrame:
         """Returns clonotypes with the biggest weight (count)"""
         group['count'] = group[self.COUNT_COLUMN].sum()
         group['max_count'] = group.groupby(self.CLONOTYPE_COLUMNS)['count'].transform('max')
-        return group[group['count'] == group['max_count']]
+        return group[group['count'] == group['max_count']].drop(columns=['count', 'max_count'])
 
-    @staticmethod
-    def _most_frequent_values(df, columns):
-        most_frequent_values = {}
+    def _most_frequent(self, group: pd.DataFrame, columns: list[str]):
+        group_filtered = group.dropna(subset=columns)
 
-        df_without_na = df.dropna(subset=columns)
+        if group_filtered.empty:
+            return group
 
-        if not len(df_without_na):
-            return df
+        most_frequent_values = {col: group_filtered[col].value_counts().idxmax() for col in columns}
 
-        for col in columns:
-            most_freq_value = df_without_na[col].value_counts().idxmax()
-            most_frequent_values[col] = most_freq_value
+        condition = group_filtered[columns].eq(pd.Series(most_frequent_values))
+        clonotypes_with_most_frequent_values = group_filtered[condition.all(axis=1)]
 
-        condition = df_without_na[columns].eq(pd.Series(most_frequent_values))
-        most_frequent_row_df = df_without_na[condition.all(axis=1)]
+        return clonotypes_with_most_frequent_values.head(1)
 
-        return most_frequent_row_df.head(1)
+    def _aggregate_clonotypes_group(self, group: pd.DataFrame, columns: list[str]) -> pd.Series:
+        """Removes duplicates and saves a clonotype with the most frequent c_call"""
+        weighted_group = self._most_weighted(group)
+        return self._most_frequent(weighted_group, columns)
 
-    def _aggregate_clonotypes_group(self, group: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
-        """Returns the most weighted clonotype and with the most frequent values in selected columns"""
-
-        group_weighted = self._most_weighted(group)
-
-        columns_to_drop = list(set(columns).union(set(self.CLONOTYPE_COLUMNS)))
-
-        group_weighted.drop(
-            columns=group_weighted.columns.difference(columns_to_drop),
-            inplace=True, axis=1
-        )
-
-        if group_weighted[columns].isna().all().all():
-            return group_weighted
-
-        # most_frequent = group_weighted[columns].mode(dropna=True).iloc[0]
-        #
-        # mask = (group_weighted[columns] == most_frequent).all(axis=1)
-
-        # return group_weighted[mask].head(1)
-
-        return ClonotypeCorrector._most_frequent_values(group_weighted, columns)
-
-    def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list) -> pd.DataFrame:
+    def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list[str],
+                             additional_columns: Optional[list[str]]) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
-
-        clonotype_groups = annotation.groupby(grouping_columns)
+        clonotype_groups = annotation.groupby(grouping_columns + additional_columns)
 
         duplicate_count = clonotype_groups[self.COUNT_COLUMN].transform('sum')
 
-        aggregated_c_call_groups = pd.concat([self._aggregate_clonotypes_group(group, ['c_call'])
-                                              for _, group in clonotype_groups])
-        columns_to_drop = ['c_call']
-
-        if self.use_v_align:
-            aggregated_v_align_groups = pd.concat([self._aggregate_clonotypes_group(group, self.V_ALIGN_COLUMNS)
-                                                   for _, group in clonotype_groups])
-            columns_to_drop.append(self.V_ALIGN_COLUMNS)
-
-        annotation = annotation.drop(columns=columns_to_drop)
-        clonotype_groups = annotation.groupby(grouping_columns)
-        aggregated_annotation = pd.concat([self._aggregate_clonotypes_group(group, annotation.columns)
-                                           for _, group in clonotype_groups])
-
-        aggregated_annotation = aggregated_annotation.merge(aggregated_c_call_groups, how='left',
-                                                            on=self.CLONOTYPE_COLUMNS)
+        aggregated_annotation = pd.concat(
+            [self._aggregate_clonotypes_group(group, additional_columns) for _, group in clonotype_groups])
 
         aggregated_annotation[self.COUNT_COLUMN] = duplicate_count
 
