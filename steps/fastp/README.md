@@ -27,12 +27,12 @@ Example:
 
 Not overlapped forward and reverse reads:
 ```
-AAATTT
-        GGGCCC
+CCCAAA
+        GGGTTT
 ```
 Mock merging with `--insert-size 1`:
 ```
-AAATTTNGGGCCC
+CCCAAANAAACCC
 ```
 
 ## Input
