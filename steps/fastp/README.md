@@ -20,6 +20,20 @@ By default:
     --disable "quality_filtering" # disables quality filtering (if >40% bases have quality <20)
     --disable "adapter_trimming" # disables trimming Illumina adapters
     ```
+* `--mock-merge`: enables mock merging of not overlapped forward and reverse reads with a selected insert size (distance)
+    * `--insert-size`: insert distance between reads in mock merge 
+
+Example:
+
+Not overlapped forward and reverse reads:
+```
+AAATTT
+        GGGCCC
+```
+Mock merging with `--insert-size 1`:
+```
+AAATTTNGGGCCC
+```
 
 ## Input
 
