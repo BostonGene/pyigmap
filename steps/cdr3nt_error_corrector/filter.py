@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 from logger import set_logger
 
 logger = set_logger(name=__file__)
@@ -101,7 +102,8 @@ def remove_non_productive(annotation: pd.DataFrame) -> pd.DataFrame:
 
 
 def remove_non_canonical(annotation: pd.DataFrame) -> pd.DataFrame:
-    filtered_canonical = annotation[annotation['junction_aa'].str.startswith('C', na=False) &
+    filtered_canonical = annotation[annotation['j_sequence_alignment_aa'].str.contains(r"[FW]G.G", na=False, regex=True) &
+                                    annotation['junction_aa'].str.startswith('C', na=False) &
                                     (annotation['junction_aa'].str.endswith('F', na=False) |
                                      annotation['junction_aa'].str.endswith('W', na=False))]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_canonical.shape[0]} non canonical clones.')
