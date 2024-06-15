@@ -114,3 +114,11 @@ def remove_non_functional(annotation: pd.DataFrame) -> pd.DataFrame:
                                      ~annotation['junction_aa'].str.contains('\\*', na=False)]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_functional.shape[0]} non functional clones.')
     return filtered_functional
+
+
+def discard_junctions_with_n(annotation: pd.DataFrame) -> pd.DataFrame:
+    filtered_annotation = annotation[~annotation['junction'].str.contains('N', na=False) &
+                                     ~annotation['junction_aa'].str.contains('X', na=False)]
+    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} clones with undefined nucleotide '
+                f'and amino acid in CDR3.')
+    return filtered_annotation
