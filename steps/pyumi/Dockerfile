@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.9-bullseye AS image
 
 ENV SOFT_DIR=/usr/local
 
@@ -18,5 +18,6 @@ COPY extract.py ${SOFT_DIR}/extract.py
 COPY pattern.py ${SOFT_DIR}/pattern.py
 COPY logger.py ${SOFT_DIR}/logger.py
 
-# Uncomment it if you need to run an executable container
+FROM image AS tool
+
 ENTRYPOINT ["python3.9", "/usr/local/run.py"]
