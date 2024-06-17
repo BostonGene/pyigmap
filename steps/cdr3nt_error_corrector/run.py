@@ -46,6 +46,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
     parser.add_argument('--only-canonical', help='Filter out non-canonical clonotypes', action='store_true')
     parser.add_argument("--only-best-alignment", help="Store the best aligned V, D, J and C genes call", action="store_true")
+    parser.add_argument("--discard-junctions-with-N", help="Discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence",
+                        action="store_true")
     parser.add_argument("--filter-pgen-all", type=float,
                         help="All clonotypes with 'pgen <= pgen_threshold' will be removed")
     parser.add_argument("--filter-pgen-singletons", type=float,
@@ -75,6 +77,7 @@ def run(args: argparse.Namespace) -> None:
                                                     only_canonical=args.only_canonical,
                                                     remove_chimeras=args.remove_chimeras,
                                                     only_best_alignment=args.only_best_alignment)
+                                                    discard_junctions_with_N=args.discard_junctions_with_N)
 
     pgen_threshold = args.filter_pgen_singletons \
         if args.filter_pgen_singletons is not None else args.filter_pgen_all

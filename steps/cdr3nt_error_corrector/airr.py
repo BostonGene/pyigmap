@@ -62,7 +62,7 @@ def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
 
 
 def read_annotation(*annotation_paths: str, only_functional: bool, only_canonical: bool, remove_chimeras: bool,
-                    only_best_alignment: bool) -> tuple[pd.DataFrame, dict]:
+                    only_best_alignment: bool, discard_junctions_with_N: bool) -> tuple[pd.DataFrame, dict]:
     logger.info('Reading annotation...')
     metrics_dict = {}
     annotation = _concat_annotations(*annotation_paths)
@@ -82,6 +82,8 @@ def read_annotation(*annotation_paths: str, only_functional: bool, only_canonica
 
     annotation, no_junction_count = filter.remove_no_junction(annotation)
     metrics_dict.update(no_junction_count)
+
+    annotation = filter.discard_junctions_with_n(annotation)
 
     annotation = _prepare_duplicate_count_column(annotation)
 

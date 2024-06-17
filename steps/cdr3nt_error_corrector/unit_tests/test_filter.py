@@ -3,7 +3,7 @@ import pandas as pd
 
 from filter import (remove_non_canonical, remove_non_functional, remove_non_productive, filter_pgen,
                     _get_duplicates_in_different_loci, drop_duplicates_in_different_loci,
-                    _remove_chimeras_by_segment, remove_no_junction)
+                    _remove_chimeras_by_segment, remove_no_junction, discard_junctions_with_n)
 
 from logger import set_logger
 
@@ -40,6 +40,13 @@ def annotation_non_productive() -> pd.DataFrame:
 def annotation_non_functional() -> pd.DataFrame:
     return pd.DataFrame(data={'junction_aa': ['AAAA', 'AAAA', 'AA*A', 'AA_A'],
                               'junction': [None, 'AAAA', 'AAAA', 'AAAA']
+                              })
+
+
+@fixture(scope='module')
+def annotation_junctions_with_n() -> pd.DataFrame:
+    return pd.DataFrame(data={"junction_aa": ["CXA", "KC", "CA", "KC"],
+                              "junction": ["TGTNGCG", "AAATGT", "TGTNGCG", "AAATGTN"]
                               })
 
 
@@ -179,4 +186,13 @@ def test_filter_pgen_default(annotation_pgen):
         pd.DataFrame(data={'duplicate_count': [2, 100, 2],
                            'pgen': [None, 0.9, 0.9]},
                      index=[2, 5, 6])
+    )
+
+
+def test_discard_junctions_with_n(annotation_junctions_with_n):
+    filtered_annotation = discard_junctions_with_n(annotation_junctions_with_n)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={"junction_aa": ["KC"],
+                           "junction": ["AAATGT"]},
+                     index=[1])
     )

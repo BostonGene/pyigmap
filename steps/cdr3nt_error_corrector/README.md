@@ -33,6 +33,7 @@ By default, all the rules for filtering out spurious sequences are defined in th
 * `--only-canonical` (**optional**): filter out non-canonical clonotypes
 * `--only-productive` (**optional**): filter out non-productive clonotypes (if IgBlast fields are present, for Vidjil same as ``--only-functional``)
 * `--only-best-alignment` (**optional**): store the best aligned V, D, J and C genes call. Example: for IGHJ4-59*01,IGHJ4-59*02 returns IGHJ4-59*01 as the most aligned.
+* `--discard-junctions-with-N` (**optional**): discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence.
 * `--top-c-call` (**optional**): group clonotypes by the most weighted and frequent C-gene call
 * `--top-v-alignment-call` (**optional**): group clonotypes by the most weighted and frequent V-gene alignment call
 
