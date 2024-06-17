@@ -83,7 +83,8 @@ def read_annotation(*annotation_paths: str, only_functional: bool, only_canonica
     annotation, no_junction_count = filter.remove_no_junction(annotation)
     metrics_dict.update(no_junction_count)
 
-    annotation = filter.discard_junctions_with_n(annotation)
+    if discard_junctions_with_N:
+        annotation = filter.discard_junctions_with_n(annotation)
 
     annotation = _prepare_duplicate_count_column(annotation)
 
