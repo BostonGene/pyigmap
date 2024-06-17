@@ -45,13 +45,8 @@ def get_loci_count(annotation: pd.DataFrame, suffix='_aligned_reads'):
 
 
 def get_no_call_count(annotation: pd.DataFrame) -> dict[str, int]:
-    """Returns count of no call in v and j genes"""
-    return {
-        "no_v_call": len(annotation[annotation['v_call'].isna()]),
-        "no_j_call": len(annotation[annotation['j_call'].isna()]),
-        "no_d_call": len(annotation[annotation['d_call'].isna()]),
-        "no_c_call": len(annotation[annotation['c_call'].isna()]),
-    }
+    """Returns the number of uncalled V, D, J and C genes"""
+    return {column: annotation[column].isna().sum() for column in ['v_call', 'j_call', 'd_call', 'c_call']}
 
 
 def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
