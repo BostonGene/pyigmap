@@ -1,7 +1,7 @@
 import argparse
 
 from logger import set_logger
-from utils import keep_only_paired_reads, split_by_chunks, extract_umi, save_total_read_count, save_results
+from utils import keep_only_paired_reads, split_by_chunks, extract_umi, save_metrics, save_results
 from pattern import get_prepared_pattern_and_umi_len
 
 logger = set_logger(name=__file__)
@@ -50,8 +50,11 @@ def run(args: argparse.Namespace):
 
     fq1_filtered, fq2_filtered = keep_only_paired_reads(processed_fq1, processed_fq2, clear=True)
 
+    save_metrics({"summary": {"before_filtering": {"total_reads": int(total_reads_count)}}},
+                 {"fq1_umi_length": fq1_umi_length},
+                 {"fq2_umi_length": fq2_umi_length},
+                 output_json=args.out_json)
 
-    save_total_read_count(total_reads_count, args.out_json)
     save_results(fq1_filtered, fq2_filtered, args.out_fq1, args.out_fq2)
 
 

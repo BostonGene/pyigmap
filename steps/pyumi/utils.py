@@ -16,16 +16,19 @@ TMP_DIR = '/tmp'
 FASTQ_CHUNK_SIZE = 2_000_000  # reads count in one fastq chunk
 
 
-def save_total_read_count(total_reads_count: int, out_json_path: str):
-    json_content = json.dumps({
-        "summary": {
-            "before_filtering": {
-                "total_reads": int(total_reads_count)
-            }
-        }
-    })
-    save_to_file(json_content, out_json_path)
-    logger.info(f'Total read count has been saved into {out_json_path}.')
+def save_metrics(*metrics: dict, output_json: str):
+    """Saves metrics into JSON file"""
+    all_metrics = dict()
+
+    for metric in metrics:
+        all_metrics.update(metric)
+
+    json_content = json.dumps(all_metrics)
+
+    with open(output_json, 'w') as f:
+        f.write(json_content)
+
+    check_if_exist(output_json)
 
 
 def exit_with_error(message: Optional[str]):
