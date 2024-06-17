@@ -76,7 +76,7 @@ def run(args: argparse.Namespace) -> None:
                                                     only_functional=args.only_functional,
                                                     only_canonical=args.only_canonical,
                                                     remove_chimeras=args.remove_chimeras,
-                                                    only_best_alignment=args.only_best_alignment)
+                                                    only_best_alignment=args.only_best_alignment,
                                                     discard_junctions_with_N=args.discard_junctions_with_N)
 
     pgen_threshold = args.filter_pgen_singletons \
