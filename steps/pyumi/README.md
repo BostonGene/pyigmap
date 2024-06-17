@@ -1,23 +1,23 @@
 # pyumi step
 
-This step is a Python-based tool to preprocess UMI and CELL barcodes in fastq reads.
+This step is a Python-based tool to preprocess UMI and CELL barcodes in FASTQ reads.
 
 ## Parameters
 
-* `--fq1-pattern`: barcode pattern of the fq1
-* `--fq2-pattern`: barcode pattern of the fq2
+* `--fq1-pattern`: barcode pattern of the first FASTQ
+* `--fq2-pattern`: barcode pattern of the second FASTQ
 * `--max-error`: maximum error size (budget) between pattern and read substring
 * `--find-in-reverse-complement`: enable finding umi in reverse complement reads
 
 ## Input
 
-* `--in-fq1`: path to the forward fastq (`path/to/R1.fastq.gz`)
-* `--in-fq2`: path to the reverse fastq (`path/to/R2.fastq.gz`)
+* `--in-fq1`: path to the forward FASTQ (`path/to/R1.fastq.gz`)
+* `--in-fq2`: path to the reverse FASTQ (`path/to/R2.fastq.gz`)
 
 ## Output
 
-* `--out-fq1`: path to the output deduplicated forward fastq (`path/to/cR1.fastq.gz`)
-* `--out-fq2`: path to the output deduplicated reverse fastq (`path/to/cR2.fastq.gz`)
+* `--out-fq1`: path to the output deduplicated forward FASTQ (`path/to/cR1.fastq.gz`)
+* `--out-fq2`: path to the output deduplicated reverse FASTQ (`path/to/cR2.fastq.gz`)
 * `--out-json`: path to the output json with umi metrics and total reads (`path/to/calib.json`)
 
 ## How to run
