@@ -32,7 +32,8 @@ By default, all the rules for filtering out spurious sequences are defined in th
 * `--only-functional` (**optional**): filter out non-functional clonotypes
 * `--only-canonical` (**optional**): filter out non-canonical clonotypes
 * `--only-productive` (**optional**): filter out non-productive clonotypes (if IgBlast fields are present, for Vidjil same as ``--only-functional``)
-
+* `--top-c-call` (**optional**): aggregate clonotypes with the most weighted and frequent C-gene call
+* `--top-v-alignment-call`: aggregate clonotypes with the most weighted and frequent V-gene alignment call
 ## Input
 
 * `--in-annotation`: path to the raw TCR/BCR annotation, which we need to correct (`path/to/raw_annotation.tsv.gz`)
