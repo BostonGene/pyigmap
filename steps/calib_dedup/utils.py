@@ -6,7 +6,6 @@ import shutil
 import subprocess
 import tempfile
 
-from barcode.extract import get_processed_fastqs
 from logger import set_logger
 
 logger = set_logger(name=__file__)
@@ -168,32 +167,6 @@ def cluster_umi(in_fq1: str, in_fq2: str, fq1_umi_len: int, fq2_umi_len: int,
     logger.info('UMI clustering has been done.')
 
     return cluster_file
-
-
-def extract_umi(fq12_chunks: list[str], read1_pattern: str,
-                read2_pattern: str, find_umi_in_rc: bool) -> tuple[str, str, int]:
-    total_reads_count, initial_reads_count = 0, 0
-    processed_fq1_chunks, processed_fq2_chunks = [], []
-
-    logger.info(f'Extracting UMI...')
-    for fq1_chunk, fq2_chunk in fq12_chunks:
-        (processed_fq1_chunk_path, processed_fq2_chunk_path,
-         reads_num_before, reads_num_after) = get_processed_fastqs(fq1_chunk, fq2_chunk, read1_pattern,
-                                                                   read2_pattern, find_umi_in_rc)
-        processed_fq1_chunks.append(processed_fq1_chunk_path)
-        processed_fq2_chunks.append(processed_fq2_chunk_path)
-
-        initial_reads_count += reads_num_before
-        total_reads_count += reads_num_after
-
-        remove(fq1_chunk, fq2_chunk)
-
-    logger.info('UMI successfully extracted.')
-
-    processed_fq1 = concat_files(processed_fq1_chunks)
-    processed_fq2 = concat_files(processed_fq2_chunks)
-
-    return processed_fq1, processed_fq2, total_reads_count
 
 
 def split_by_chunks(fq1_path: str, fq2_path: str) -> list[str]:
