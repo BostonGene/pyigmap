@@ -21,8 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--in-fq2', help='Input reverse fastq(.gz)', required=True)
     parser.add_argument('--kmer-size', type=int, default=8)
     parser.add_argument('--minimizer-count', type=int, default=7)
-    parser.add_argument('--fq1-barcode-pattern', type=str)
-    parser.add_argument('--fq2-barcode-pattern', type=str)
+    parser.add_argument('--barcode-json', type=str)
     parser.add_argument('--find-umi-in-reverse-complement', action='store_true')
     parser.add_argument('--pattern-max-error-budget', type=int, default=10)
     parser.add_argument('--minimizer-threshold', type=int, default=7,
@@ -44,12 +43,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace):
-    fq1_prepared_pattern, fq1_umi_length = get_prepared_pattern_and_umi_len(args.fq1_barcode_pattern,
-                                                                            max_error=args.pattern_max_error_budget)
-    fq2_prepared_pattern, fq2_umi_length = get_prepared_pattern_and_umi_len(args.fq2_barcode_pattern,
-                                                                            max_error=args.pattern_max_error_budget)
-    check_error_tolerance_size(fq1_umi_length, args.error_tolerance)
-    check_error_tolerance_size(fq2_umi_length, args.error_tolerance)
+    check_error_tolerance_size(args.fq1_umi_length, args.error_tolerance)
+    check_error_tolerance_size(args.fq2_umi_length, args.error_tolerance)
 
     fq1_filtered, fq2_filtered = keep_only_paired_reads(args.in_fq1, args.in_fq2)
 
