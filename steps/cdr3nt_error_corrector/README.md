@@ -56,6 +56,8 @@ By default, all the rules for filtering out spurious sequences are defined in th
            "TRB_aligned_reads": 20, // reads that aligned to TRB locus
            "no_v_call": 10, // reads with v_call = None
            "no_j_call": 100, // reads with j_call = None
+           "no_d_call": 10000, // reads with d_call = None
+           "no_c_call": 100000, // reads with c_call = None
            "no_junction": 1000 // reads with junction = None
         }
       ```
