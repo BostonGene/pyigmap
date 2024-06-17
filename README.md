@@ -10,6 +10,9 @@
 
 `pyIgMap` is a [Nextflow](https://github.com/nextflow-io/nextflow)-driven and Python-based workflow for extracting and summarizing antigen receptor gene rearrangements from sequencing data.
 
+> [!NOTE]
+> The pipeline is built upon open source components commonly used for AIRR-seq data processing. The output is provided in [AIRR format](https://docs.airr-community.org/en/stable/) enabling downstream analysis with AIRR-compliant software such as [Immcantation](https://immcantation.readthedocs.io/en/stable/index.html).
+
 <p align="center">
     <img title="Pyigmap Workflow" src="docs/images/pyigmap_workflow.svg">
 </p>
