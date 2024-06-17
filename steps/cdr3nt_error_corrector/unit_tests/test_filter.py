@@ -45,7 +45,8 @@ def annotation_non_functional() -> pd.DataFrame:
 
 @fixture(scope='module')
 def annotation_non_canonical() -> pd.DataFrame:
-    return pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF', 'CAAA', 'AAAF', 'AAAW']})
+    return pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF', 'CAAA', 'AAAF', 'AAAW'],
+                              'j_sequence_alignment_aa': ['FGGGG', 'CWGGG', 'FWGGG', None, 'WCCG']})
 
 
 @fixture(scope='module')
@@ -95,10 +96,12 @@ def test_remove_non_productive(annotation_non_productive):
                      index=[0, 2])
     )
 
+
 def test_remove_non_canonical(annotation_non_canonical):
     filtered_annotation = remove_non_canonical(annotation_non_canonical)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF']},
+        pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF'],
+                           'j_sequence_alignment_aa': ['FGGGG', 'CWGGG']},
                      index=[0, 1])
     )
 
