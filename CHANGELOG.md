@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+* Implement `--only-best-alignment` flag to store clonotypes with the best alignment of V, D, J and C genes ([#93](https://github.com/BostonGene/pyigmap/issues/93))
 * Add a new flag `--discard-junctions-with-N` toto `cdr3nt-error-corrector` step ([#92](https://github.com/BostonGene/pyigmap/issues/92))
 * Podman support ([#69](https://github.com/BostonGene/pyigmap/issues/41))
 * Add a new flag `--only-canonical` to `cdr3nt-error-corrector` step ([#41](https://github.com/BostonGene/pyigmap/issues/41)) ([217c316](https://github.com/BostonGene/pyigmap/commit/217c316f82a9613a0b3e5994f90b50fbed3e37b6))

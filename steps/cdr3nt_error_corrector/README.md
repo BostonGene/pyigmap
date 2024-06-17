@@ -32,6 +32,7 @@ By default, all the rules for filtering out spurious sequences are defined in th
 * `--only-functional` (**optional**): filter out non-functional clonotypes
 * `--only-canonical` (**optional**): filter out non-canonical clonotypes
 * `--only-productive` (**optional**): filter out non-productive clonotypes (if IgBlast fields are present, for Vidjil same as ``--only-functional``)
+* `--only-best-alignment` (**optional**): store the best aligned V, D, J and C genes call. Example: for IGHJ4-59*01,IGHJ4-59*02 returns IGHJ4-59*01 as the most aligned.
 * `--discard-junctions-with-N` (**optional**): discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence.
 * `--top-c-call` (**optional**): group clonotypes by the most weighted and frequent C-gene call
 * `--top-v-alignment-call` (**optional**): group clonotypes by the most weighted and frequent V-gene alignment call
@@ -56,6 +57,8 @@ By default, all the rules for filtering out spurious sequences are defined in th
            "TRB_aligned_reads": 20, // reads that aligned to TRB locus
            "no_v_call": 10, // reads with v_call = None
            "no_j_call": 100, // reads with j_call = None
+           "no_d_call": 10000, // reads with d_call = None
+           "no_c_call": 100000, // reads with c_call = None
            "no_junction": 1000 // reads with junction = None
         }
       ```
