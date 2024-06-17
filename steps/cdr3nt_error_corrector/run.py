@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
                         help='Remove chimeras clonotypes, that have different locus in v-/j-genes')
     parser.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
     parser.add_argument('--only-canonical', help='Filter out non-canonical clonotypes', action='store_true')
-    parser.add_argument("--only-best-alignment", help="Only store clonotypes with the best alignment in v_call/j_call", action="store_true")
+    parser.add_argument("--only-best-alignment", help="Store the best aligned V, D, J and C genes call", action="store_true")
     parser.add_argument("--filter-pgen-all", type=float,
                         help="All clonotypes with 'pgen <= pgen_threshold' will be removed")
     parser.add_argument("--filter-pgen-singletons", type=float,
