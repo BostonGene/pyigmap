@@ -51,6 +51,8 @@ def parse_args() -> argparse.Namespace:
                         help="All clonotypes with 'pgen <= pgen_threshold' will be removed")
     parser.add_argument("--filter-pgen-singletons", type=float,
                         help="All clonotypes with 'duplicate_count == 1 && pgen <= pgen_threshold' will be removed")
+    parser.add_argument('--top-c-call', help='Returns clonotypes with the most frequent c_call', action='store_true')
+    parser.add_argument('--top-v-alignment-call', help='Returns clonotypes with the most frequent v alignment', action='store_true')
     parser.add_argument('--olga-models', type=str, help='Archive with OLGA models')
     parser.add_argument('--out-corrected-annotation', type=str, help='Output corrected annotation', required=True)
     parser.add_argument('--out-json', type=str, help='Output json with metrics')
@@ -84,7 +86,7 @@ def run(args: argparse.Namespace) -> None:
         for annotation_by_locus, locus in zip(*airr.split_by_loci(annotation)):
             logger.info(f'Processing {locus} locus...')
 
-            corrector = ClonotypeCorrector(args.clonotype_collapse_factor)
+            corrector = ClonotypeCorrector(args.top_c_call, args.top_v_alignment_call, args.clonotype_collapse_factor)
             corrected_annotation = corrector.correct_full(annotation_by_locus)
 
             if not args.skip_pgen_calculation:
