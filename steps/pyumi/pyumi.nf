@@ -1,22 +1,20 @@
 process PyUMI {
-//     publishDir "${params.outdir}/pyumi", mode: 'copy'
-    container 'pyumi'
-
     input:
         path fq1
         path fq2
     output:
-        path "bR1.fastq.gz", emit: fq1
-        path "bR2.fastq.gz", emit: fq2
-        path "pyumi.json", emit: json
+        path params.out_pyumi_fq1, emit: fq1
+        path params.out_pyumi_fq2, emit: fq2
+        path params.out_pyumi_json, emit: json
     script:
         """
         python3.9 /usr/local/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
-            --out-fq1 cR1.fastq.gz \
-            --out-fq2 cR2.fastq.gz \
-            --out-json pyumi.json \
-            --fq1-pattern "^UMI:N{12}"
+            --fq1-pattern ${params.fq1_pattern} \
+            --fq2-pattern ${params.fq2_pattern}
+            --out-fq1 ${params.out_pyumi_fq1} \
+            --out-fq2 ${params.out_pyumi_fq2} \
+            --out-json ${params.out_pyumi_json}
         """
 }
