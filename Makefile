@@ -52,6 +52,7 @@ integration-tests: venv ## >> run tests for all workflows via pytest and pytest-
 unit-tests: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
+	$(PYTHON_ENV) -m pytest steps/pyumi/unit_tests -vv
 #	$(PYTHON_ENV) -m pytest steps/calib_dedup/unit_tests -vv
 	$(PYTHON_ENV) -m pytest steps/fastp/unit_tests -vv
 #	$(PYTHON_ENV) -m pytest steps/vidjil/unit_tests -vv
@@ -68,6 +69,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
 	@echo "$(ccso)--> Removing temporary files and images $(ccend)"
 	$(ENGINE) rmi -f downloader-image \
+		pyumi-tool pyumi-image \
 		calib_dedup-tool calib_dedup-image \
 		fastp-tool fastp-image \
 		vidjil-tool vidjil-image \
@@ -119,7 +121,7 @@ build: ##@main >> build docker images, the virtual environment and install requi
 	$(MAKE) clean
 	$(MAKE) install-nextflow
 	$(MAKE) build-step-image STEP=downloader STAGE=image
-	for step in calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
     	$(MAKE) build-step-image STEP=$$step STAGE=tool ; \
 	done
@@ -136,7 +138,8 @@ $(VIRTUAL_ENV): ## >> setup the virtual environment
 
 update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
-	$(PYTHON_ENV) -m pip install -r ./steps/calib_dedup/requirements.txt
+	$(PYTHON_ENV) -m pip install -r ./steps/pyumi/requirements.txt
+	$(PYTHON_ENV) -m pip install -r ./steps/fastp/requirements.txt
 	$(PYTHON_ENV) -m pip install -r ./steps/igblast/requirements.txt
 	$(PYTHON_ENV) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
@@ -183,7 +186,7 @@ install: ## Install and check dependencies
 	$(MAKE) install-nextflow
 	$(MAKE) build-ref
 	$(MAKE) build-step-image STEP=downloader STAGE=image
-	for step in calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
 	done
 	chmod +x pyigmap
