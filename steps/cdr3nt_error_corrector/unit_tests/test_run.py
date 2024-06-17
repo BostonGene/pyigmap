@@ -57,6 +57,7 @@ def annotation_bcr():
               'v_call': ['IGHV4-39*01', 'IGKV2D-26*01', 'IGKV2D-26*01', 'IGKV2D-26*01'],
               'j_call': ['IGHJ6*02', 'IGKJ4*01', 'IGKJ4*01', 'IGKJ4*01'],
               'c_call': [None, 'IGHM', 'IGHM', 'IGHD'],
+              'd_call': [None, None, None, None],
               'junction': ['TGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGG',
                            'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT',
                            'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT',
@@ -67,7 +68,11 @@ def annotation_bcr():
               'v_sequence_start': [166, 1, 1, 1],
               'v_sequence_end': [464, 79, 47, 47],
               'j_sequence_start': [490, 80, 48, 48],
-              'j_sequence_end': [524, 114, 82, 82]
+              'j_sequence_end': [524, 114, 82, 82],
+              'd_sequence_start': [None, None, None, None],
+              'd_sequence_end': [None, None, None, None],
+              'c_sequence_start': [None, 153, 102, 100],
+              'c_sequence_end': [None, 298, 147, 145]
               }
     ).to_csv(annotation, sep='\t')
     return annotation
