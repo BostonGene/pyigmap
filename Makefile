@@ -7,10 +7,17 @@ PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
 JAVA_VERSION=21
 ARCHITECTURE=amd64
 BUILD_REF_STAGE=build-ref
+ENGINE=docker
+
+ifeq ($(ENGINE),podman)
+	PODMAN_PARAM=--format docker
+	export USE_PODMAN=true
+endif
 
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help clean build build-ref integration-tests unit-tests mypy check format install-nextflow install-python install-docker install-java
+.PHONY: help clean build build-ref integration-tests unit-tests mypy check format \
+		install-nextflow install-python install-docker install-java install-podman
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -46,7 +53,7 @@ unit-tests: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
 #	$(PYTHON_ENV) -m pytest steps/calib_dedup/unit_tests -vv
-#	$(PYTHON_ENV) -m pytest steps/fastp/unit_tests -vv
+	$(PYTHON_ENV) -m pytest steps/fastp/unit_tests -vv
 #	$(PYTHON_ENV) -m pytest steps/vidjil/unit_tests -vv
 	$(PYTHON_ENV) -m pytest steps/igblast/unit_tests -vv
 	$(PYTHON_ENV) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv
@@ -60,12 +67,12 @@ tests: venv ##@main >> run integration and unit tests
 clean: ## >> remove docker images, python environment and nextflow build files
 	@echo ""
 	@echo "$(ccso)--> Removing temporary files and images $(ccend)"
-	docker rmi -f downloader \
-		calib-dedup-tool calib-dedup-image \
+	$(ENGINE) rmi -f downloader-image \
+		calib_dedup-tool calib_dedup-image \
 		fastp-tool fastp-image \
 		vidjil-tool vidjil-image \
 		igblast-tool igblast-image \
-		cdr3nt-error-corrector-tool cdr3nt-error-corrector-image
+		cdr3nt_error_corrector-tool cdr3nt_error_corrector-image
 	rm -rf $(VIRTUAL_ENV) \
 		.nextflow.log* work .nextflow nextflow \
 		/tmp/pytest_workflow_*
@@ -73,17 +80,17 @@ clean: ## >> remove docker images, python environment and nextflow build files
 build-ref-image:
 	@echo ""
 	@echo "$(ccso)--> Build images of reference generators $(ccend)"
-	docker build --target build-ref -t $(STEP)-$(BUILD_REF_STAGE) steps/$(STEP)/
+	$(ENGINE) build --target build-ref -t $(STEP)-$(BUILD_REF_STAGE) $(PODMAN_PARAM) steps/$(STEP)/
 
 build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
-	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
+	$(ENGINE) run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
 
 build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01, *02, etc.) for igblast $(ccend)"
-	docker run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
+	$(ENGINE) run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
@@ -111,9 +118,13 @@ build: ##@main >> build docker images, the virtual environment and install requi
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
 	$(MAKE) install-nextflow
-	$(MAKE) build-images STAGE=image
-	$(MAKE) build-images STAGE=tool
+	$(MAKE) build-step-image STEP=downloader STAGE=image
+	for step in calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+    	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
+    	$(MAKE) build-step-image STEP=$$step STAGE=tool ; \
+	done
 	$(MAKE) update
+	chmod +x pyigmap
 
 venv: $(VIRTUAL_ENV)
 
@@ -146,6 +157,10 @@ install-docker: ## >> install a docker
 	sudo apt-get update
 	sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
+install-podman: ## >> install a Podman
+	sudo apt-get update
+	sudo apt-get -y install podman
+
 install-java: ## >> install a java
 	curl -fL https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz > /tmp/java.tar.gz
 	mkdir -p /tmp/java-${JAVA_VERSION}
@@ -160,19 +175,18 @@ install-nextflow: ## >> install a NextFlow
 	@java --version
 	curl -s https://get.nextflow.io | bash
 
-build-images:
-	@docker version
-	docker build -t downloader steps/downloader
-	docker build --target $(STAGE) -t calib-dedup-$(STAGE) steps/calib_dedup
-	docker build --target $(STAGE) -t fastp-$(STAGE) steps/fastp
-	docker build --target $(STAGE) -t vidjil-$(STAGE) steps/vidjil
-	docker build --target $(STAGE) -t igblast-$(STAGE) steps/igblast
-	docker build --target $(STAGE) -t cdr3nt-error-corrector-$(STAGE) steps/cdr3nt_error_corrector
+build-step-image:
+	@$(ENGINE) version
+	$(ENGINE) build --target $(STAGE) -t $(STEP)-$(STAGE) $(PODMAN_PARAM) steps/$(STEP)
 
 install: ## Install and check dependencies
 	$(MAKE) install-nextflow
 	$(MAKE) build-ref
-	$(MAKE) build-images STAGE=image
+	$(MAKE) build-step-image STEP=downloader STAGE=image
+	for step in calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+    	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
+	done
+	chmod +x pyigmap
 
 # And add help text after each target name starting with '\#\#'
 # A category can be added with @category

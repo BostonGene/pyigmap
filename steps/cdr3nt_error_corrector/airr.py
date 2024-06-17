@@ -45,11 +45,9 @@ def get_loci_count(annotation: pd.DataFrame, suffix='_aligned_reads'):
 
 
 def get_no_call_count(annotation: pd.DataFrame) -> dict[str, int]:
-    """Returns count of no call in v and j genes"""
-    return {
-        "no_v_call": len(annotation[annotation['v_call'].isna()]),
-        "no_j_call": len(annotation[annotation['j_call'].isna()]),
-    }
+    """Returns the number of uncalled V, D, J and C genes"""
+    return {f'no_{column}': int(annotation[column].isna().sum()) for column in ['v_call', 'j_call', 'd_call', 'c_call']}
+
 
 def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     annotations = []
@@ -63,10 +61,10 @@ def _concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     return concatenated_annotation
 
 
-def read_annotation(*annotation_paths: str, only_functional: bool,
-                    only_canonical: bool, remove_chimeras: bool) -> tuple[pd.DataFrame, dict]:
+def read_annotation(*annotation_paths: str, only_functional: bool, only_canonical: bool, remove_chimeras: bool,
+                    only_best_alignment: bool, discard_junctions_with_N: bool) -> tuple[pd.DataFrame, dict]:
     logger.info('Reading annotation...')
-
+    metrics_dict = {}
     annotation = _concat_annotations(*annotation_paths)
 
     if not len(annotation):
@@ -74,19 +72,28 @@ def read_annotation(*annotation_paths: str, only_functional: bool,
         return annotation, {}
 
     no_call_count = get_no_call_count(annotation)
-    annotation = _prepare_vj_columns(annotation)
-    annotation = _process_cdr3_sequences(annotation)
+    metrics_dict.update(no_call_count)
+
+    annotation = _prepare_vdjc_genes_columns(annotation, only_best_alignment)
+
+    if "duplicate_count" in annotation.columns:
+        # run CDR3 processing on Vidjil's annotation
+        annotation = _process_cdr3_sequences(annotation)
+
+    annotation, no_junction_count = filter.remove_no_junction(annotation)
+    metrics_dict.update(no_junction_count)
+
+    if discard_junctions_with_N:
+        annotation = filter.discard_junctions_with_n(annotation)
+
     annotation = _prepare_duplicate_count_column(annotation)
 
     annotation = filter.remove_chimeras(annotation) if remove_chimeras else annotation
     loci_count = get_loci_count(annotation)
+    metrics_dict.update(loci_count)
     annotation = filter.remove_non_canonical(annotation) if only_canonical else annotation
     annotation = filter.remove_non_functional(annotation) if only_functional else annotation
     annotation = filter.drop_duplicates_in_different_loci(annotation)
-
-    metrics_dict = {}
-    metrics_dict.update(no_call_count)
-    metrics_dict.update(loci_count)
 
     logger.info('Annotation has been read.')
 
@@ -102,10 +109,19 @@ def _prepare_duplicate_count_column(annotation: pd.DataFrame):
     return annotation
 
 
-def _prepare_vj_columns(annotation: pd.DataFrame) -> pd.DataFrame:
+def _prepare_vdjc_genes_columns(annotation: pd.DataFrame, only_best_alignment: bool) -> pd.DataFrame:
+    """Filter and prepare V, D, J and C genes columns according to AIRR standards objects"""
     annotation.dropna(subset=['v_call', 'j_call'], inplace=True)
-    annotation['v_sequence_end'] = annotation['v_sequence_end'].fillna(-1).astype(int)
-    annotation['j_sequence_start'] = annotation['j_sequence_start'].fillna(-1).astype(int)
+    annotation.fillna({'d_call': '', 'c_call': ''}, inplace=True)
+
+    if only_best_alignment:
+        for gene in ['v_call', 'j_call', 'd_call', 'c_call']:
+            annotation[gene] = annotation[gene].str.split(',').str[0]
+
+    for column in ['v_sequence_end', 'j_sequence_start', 'd_sequence_end',
+                   'd_sequence_start', 'c_sequence_end', 'c_sequence_start']:
+        annotation[column] = annotation[column].fillna(-1).astype(int)
+
     return annotation
 
 
@@ -118,8 +134,8 @@ def _process_cdr3_sequences(annotation: pd.DataFrame) -> pd.DataFrame:
     annotation['cdr3_sequence_start'] = [cdr3markup.cdr3_sequence_start for cdr3markup in cdr3markup_list]
     annotation['cdr3_sequence_end'] = [cdr3markup.cdr3_sequence_end for cdr3markup in cdr3markup_list]
     annotation['junction_aa'] = [_translate_cdr3(junction) for junction in annotation['junction'].values]
-    annotation['cdr3aa'] = [junction_aa[1:-1] if junction_aa else '' for junction_aa in
-                            annotation['junction_aa'].values]
+    annotation['cdr3_aa'] = [junction_aa[1:-1] if junction_aa else '' for junction_aa in
+                             annotation['junction_aa'].values]
 
     return annotation
 

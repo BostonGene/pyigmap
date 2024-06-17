@@ -13,6 +13,8 @@ logger = set_logger(name=__file__)
 
 STEP_DIR = pathlib.Path(__file__).parents[1]
 
+container_engine = "podman" if os.environ.get("USE_PODMAN", False) else "docker"
+
 
 @fixture(scope="module")
 def annotation_tcr():
@@ -43,22 +45,34 @@ def annotation_tcr():
 def annotation_bcr():
     annotation = tempfile.NamedTemporaryFile().name
     pd.DataFrame(
-        data={'sequence': ['GTGCCAGACAGATTAGAGGGCAGTGGTATCAACGCAGAGTACGTGCCTACTGAGGTACAGATTCTTGGGGGATGCTTTCTGAGAGTCATGGATCTCATGTGCAAGAAAATGAAGCACCTGTGGTTCTTCCTCCTGCTGGTGGCGGCTCCCAGATGGGTCCTGTCCCAACTACAGTTGCAGGAGTCGGGCCCAGGACTGGTGAAGCCTTCGGAGACCCTGTCCCTCACCTGCAGTGTCTCTGTTGGCTTCATCGACATTGAAGGTTATCACTGGGGCTGGATCCGCCAGTCCCCAGGGGCGGCCCTGGAGGGGCTTGGGAGCATCGATTATCGTGACACTTCCTGGCACAACCCGTCCCTCGGGAGGCGAGTCGCCCTGTCCATGGACACGCCCAAGAACAACTTCTCTCTGCAGTTGACCTCCGTGACCGCCGCAGACACGGCTGTGTATTTCTGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGGGGCCAAGGAACCATGGTCACCGTCTCTTATCTGTCTGGCAC'],
-              'locus': ['IGH'],
-              'stop_codon': ['F'],
-              'vj_in_frame': ['T'],
-              'v_frameshift': ['F'],
-              'productive': ['T'],
-              'v_call': ['IGHV4-39*01'],
-              'j_call': ['IGHJ6*02'],
-              'junction': ['TGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGG'],
-              'junction_aa': ['CVRHKPMVQGGVDVW'],
-              'v_support': [9.911E-086],
-              'j_support': [0.000000000005645],
-              'v_sequence_start': [166],
-              'v_sequence_end': [464],
-              'j_sequence_start': [490],
-              'j_sequence_end': [524]
+        data={'sequence': ['GTGCCAGACAGATTAGAGGGCAGTGGTATCAACGCAGAGTACGTGCCTACTGAGGTACAGATTCTTGGGGGATGCTTTCTGAGAGTCATGGATCTCATGTGCAAGAAAATGAAGCACCTGTGGTTCTTCCTCCTGCTGGTGGCGGCTCCCAGATGGGTCCTGTCCCAACTACAGTTGCAGGAGTCGGGCCCAGGACTGGTGAAGCCTTCGGAGACCCTGTCCCTCACCTGCAGTGTCTCTGTTGGCTTCATCGACATTGAAGGTTATCACTGGGGCTGGATCCGCCAGTCCCCAGGGGCGGCCCTGGAGGGGCTTGGGAGCATCGATTATCGTGACACTTCCTGGCACAACCCGTCCCTCGGGAGGCGAGTCGCCCTGTCCATGGACACGCCCAAGAACAACTTCTCTCTGCAGTTGACCTCCGTGACCGCCGCAGACACGGCTGTGTATTTCTGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGGGGCCAAGGAACCATGGTCACCGTCTCTTATCTGTCTGGCAC',
+                           'ATTTTACACTGAAAGTCAGCCGAGGGGAGGCTGAGGATGTTGGACTTTATTACTGCGCACAAGATGCACAAGATCGTCCGCTCACTGTTGGCGGAGGGACCAAGGTGGAGATCAGACGTGAGTGCACTTTCCTAATGCTTTTCTTATACAG',
+                           'GAGGATGTTGGACTTTATTACTGCGCATAAGATGCACAAGATCGTCCGCTCACTGTTGGCGGAGGGACCAAGGTGGAGATCAGACGATTTTCTCTGCATCGGTCAGGTTAGTGATATTAACAGCGAAAAGAGACTTTTGTTAAGGACTC',
+                           'CAGGATGTTGGACTTTATTGCTGCGCATAAGATGCACAAGATCGTCCGCTCACTGTTGGCGGAGGGACCAAGGTGGAGATCAGACGATTTTCTCTGCATCGGTCAGGTTAGTGATATTAACAGCGAAAAGAGACTTTTGTTAAGGACTCAG'],
+              'locus': ['IGH', 'IGK', 'IGK', 'IGK'],
+              'stop_codon': ['F', 'F', 'F', 'F'],
+              'vj_in_frame': ['T', 'T', 'T', 'T'],
+              'v_frameshift': ['F', 'F', 'F', 'F'],
+              'productive': ['T', 'T', 'T', 'T'],
+              'v_call': ['IGHV4-39*01', 'IGKV2D-26*01', 'IGKV2D-26*01', 'IGKV2D-26*01'],
+              'j_call': ['IGHJ6*02', 'IGKJ4*01', 'IGKJ4*01', 'IGKJ4*01'],
+              'c_call': [None, 'IGHM', 'IGHM', 'IGHD'],
+              'd_call': [None, None, None, None],
+              'junction': ['TGTGTGAGACATAAACCTATGGTCCAGGGCGGCGTCGACGTCTGG',
+                           'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT',
+                           'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT',
+                           'TGCGCACAAGATGCACAAGATCGTCCGCTCACTGTT'],
+              'junction_aa': ['CVRHKPMVQGGVDVW', 'CAQDAQDRPLTV', 'CAQDAQDRPLTV', 'CAQDAQDRPLTV'],
+              'v_support': [9.911E-086, 0, 0, 0],
+              'j_support': [0.000000000005645, 0, 0, 0],
+              'v_sequence_start': [166, 1, 1, 1],
+              'v_sequence_end': [464, 79, 47, 47],
+              'j_sequence_start': [490, 80, 48, 48],
+              'j_sequence_end': [524, 114, 82, 82],
+              'd_sequence_start': [None, None, None, None],
+              'd_sequence_end': [None, None, None, None],
+              'c_sequence_start': [None, 153, 102, 100],
+              'c_sequence_end': [None, 298, 147, 145]
               }
     ).to_csv(annotation, sep='\t')
     return annotation
@@ -114,7 +128,7 @@ def docker_cmd(olga_models, annotation_bcr, annotation_tcr, input_json, output_a
     output_annotation_basename = "corrected_annotation.tsv"
     output_archive_basename = "pyigmap.tar.gz"
     return [
-        "docker", "run",
+        container_engine, "run",
         "-v", f"{olga_models}:/root/{olga_models_basename}",
         "-v", f"{annotation_tcr}:/root/{tcr_annotation_basename}",
         "-v", f"{annotation_bcr}:/root/{bcr_annotation_basename}",
@@ -122,13 +136,10 @@ def docker_cmd(olga_models, annotation_bcr, annotation_tcr, input_json, output_a
         "-v", f"{output_annotation_path}:/root/{output_annotation_basename}",
         "-v", f"{output_json_path}:/root/{output_json_basename}",
         "-v", f"{output_archive_path}:/root/{output_archive_basename}",
-        "cdr3nt-error-corrector-tool",
-        "--in-tcr-annotation", f"/root/{tcr_annotation_basename}",
-        "--in-bcr-annotation", f"/root/{bcr_annotation_basename}",
-        "--filter-pgen-singletons", str(0),
-        "--only-productive",
-        "--only-functional",
+        "cdr3nt_error_corrector-tool",
+        "--in-annotation", f"/root/{tcr_annotation_basename}", f"/root/{bcr_annotation_basename}",
         "--remove-chimeras",
+        "--top-c-call",
         "--clonotype-collapse-factor", str(0.05),
         "--olga-models", f"/root/{olga_models_basename}",
         "--out-corrected-annotation", f"/root/{output_annotation_basename}",
@@ -147,5 +158,10 @@ def test_run_with_calib(olga_models, annotation_bcr, annotation_tcr, calib_json,
                      output_json_path, output_archive_path)
     run_command(cmd)
     annotation = read_annotation(output_annotation_path)
+
     logger.info(f"{annotation['locus']}")
-    assert annotation['locus'].tolist() == ['IGH', 'TRB']
+    assert set(annotation['locus']) == {'IGH', 'IGK', 'TRB'}
+
+    annotation['c_call'] = annotation['c_call'].fillna('')
+    logger.info(f"{annotation['c_call']}")
+    assert set(annotation['c_call']) == {'', 'IGHM', 'IGHD'}

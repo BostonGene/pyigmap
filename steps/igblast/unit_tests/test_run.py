@@ -13,6 +13,9 @@ logger = set_logger(name=__file__)
 
 IGBLAST_STEP_DIR = pathlib.Path(__file__).parents[1]
 
+container_engine = "podman" if os.environ.get("USE_PODMAN", False) else "docker"
+
+
 @fixture(scope="module")
 def fasta_bcr_with_all_alleles():
     fasta_file = tempfile.NamedTemporaryFile().name
@@ -69,7 +72,7 @@ def docker_cmd(ref_with_major_allele, fasta_bcr_with_only_major_allele, output_a
     input_fasta_basename = "input.fasta.gz"
     output_annotation_basename = "annotation.tsv.gz"
     return [
-        "docker", "run",
+        container_engine, "run",
         "-v", f"{ref_with_major_allele}:/root/{ref_basename}",
         "-v", f"{fasta_bcr_with_only_major_allele}:/root/{input_fasta_basename}",
         "-v", f"{output_annotation_path}:/root/{output_annotation_basename}",

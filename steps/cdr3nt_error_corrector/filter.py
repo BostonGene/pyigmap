@@ -67,6 +67,14 @@ def _remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str):
     return filtered_annotation
 
 
+def remove_no_junction(annotation: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    """Removes clonotypes without junction region nucleotide sequence"""
+    filtered_annotation = annotation[~annotation['junction'].isna()]
+    no_junction_count = annotation.shape[0] - filtered_annotation.shape[0]
+    logger.info(f'Filtered out {no_junction_count} clones with junction == None.')
+    return filtered_annotation, {'no_junction': no_junction_count}
+
+
 def remove_chimeras(annotation: pd.DataFrame) -> pd.DataFrame:
     annotation = _remove_chimeras_by_segment(annotation, 'v')
     annotation = _remove_chimeras_by_segment(annotation, 'j')
@@ -93,7 +101,8 @@ def remove_non_productive(annotation: pd.DataFrame) -> pd.DataFrame:
 
 
 def remove_non_canonical(annotation: pd.DataFrame) -> pd.DataFrame:
-    filtered_canonical = annotation[annotation['junction_aa'].str.startswith('C', na=False) &
+    filtered_canonical = annotation[annotation['j_sequence_alignment_aa'].str.contains(r"[FW]G.G", na=False, regex=True) &
+                                    annotation['junction_aa'].str.startswith('C', na=False) &
                                     (annotation['junction_aa'].str.endswith('F', na=False) |
                                      annotation['junction_aa'].str.endswith('W', na=False))]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_canonical.shape[0]} non canonical clones.')
@@ -106,3 +115,11 @@ def remove_non_functional(annotation: pd.DataFrame) -> pd.DataFrame:
                                      ~annotation['junction_aa'].str.contains('\\*', na=False)]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_functional.shape[0]} non functional clones.')
     return filtered_functional
+
+
+def discard_junctions_with_n(annotation: pd.DataFrame) -> pd.DataFrame:
+    filtered_annotation = annotation[~annotation['junction'].str.contains('N', na=False) &
+                                     ~annotation['junction_aa'].str.contains('X', na=False)]
+    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} clones with undefined nucleotide '
+                f'and amino acid in CDR3.')
+    return filtered_annotation

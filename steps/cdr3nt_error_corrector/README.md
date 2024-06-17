@@ -32,11 +32,14 @@ By default, all the rules for filtering out spurious sequences are defined in th
 * `--only-functional` (**optional**): filter out non-functional clonotypes
 * `--only-canonical` (**optional**): filter out non-canonical clonotypes
 * `--only-productive` (**optional**): filter out non-productive clonotypes (if IgBlast fields are present, for Vidjil same as ``--only-functional``)
+* `--only-best-alignment` (**optional**): store the best aligned V, D, J and C genes call. Example: for IGHJ4-59*01,IGHJ4-59*02 returns IGHJ4-59*01 as the most aligned.
+* `--discard-junctions-with-N` (**optional**): discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence.
+* `--top-c-call` (**optional**): group clonotypes by the most weighted and frequent C-gene call
+* `--top-v-alignment-call` (**optional**): group clonotypes by the most weighted and frequent V-gene alignment call
 
 ## Input
 
-* `--in-tcr-annotation`: path to the raw TCR annotation, which we need to correct (`path/to/raw_annotation.TCR.tsv.gz`)
-* `--in-bcr-annotation`: path to the raw BCR annotation, which we need to correct (`path/to/raw_annotation.BCR.tsv.gz`)
+* `--in-annotation`: path to the raw TCR/BCR annotation, which we need to correct (`path/to/raw_annotation.tsv.gz`)
 * `--olga-models`: path to the archive with [OLGA](https://github.com/statbiophys/OLGA/tree/master/olga/default_models) models (`path/to/olga-models.tar.gz`)
 * `--in-json`: path to the json files with total reads count (`path/to/stat.json`)
 
@@ -53,7 +56,10 @@ By default, all the rules for filtering out spurious sequences are defined in th
            ..., // reads that aligned to ... locus
            "TRB_aligned_reads": 20, // reads that aligned to TRB locus
            "no_v_call": 10, // reads with v_call = None
-           "no_j_call": 100 // reads with j_call = None
+           "no_j_call": 100, // reads with j_call = None
+           "no_d_call": 10000, // reads with d_call = None
+           "no_c_call": 100000, // reads with c_call = None
+           "no_junction": 1000 // reads with junction = None
         }
       ```
 
@@ -89,8 +95,7 @@ docker run \
    -v ${FOLDER_WITH_DATA}:/root/ \
    -v ./olga-models.tar.gz:/root/olga-models.tar.gz \
    cdr3nt-error-corrector \
-   --in-tcr-annotation /root/raw_annotation.TCR.tsv.gz \
-   --in-bcr-annotation /root/raw_annotation.BCR.tsv.gz \
+   --in-annotation /root/raw_annotation.TCR.tsv.gz /root/raw_annotation.BCR.tsv.gz \
    --filter-pgen-all 0 \
    --only-functional \
    --remove-chimeras \

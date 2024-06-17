@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+* Implement `--only-best-alignment` flag to store clonotypes with the best alignment of V, D, J and C genes ([#93](https://github.com/BostonGene/pyigmap/issues/93))
+* Add a new flag `--discard-junctions-with-N` toto `cdr3nt-error-corrector` step ([#92](https://github.com/BostonGene/pyigmap/issues/92))
+* Podman support ([#69](https://github.com/BostonGene/pyigmap/issues/41))
 * Add a new flag `--only-canonical` to `cdr3nt-error-corrector` step ([#41](https://github.com/BostonGene/pyigmap/issues/41)) ([217c316](https://github.com/BostonGene/pyigmap/commit/217c316f82a9613a0b3e5994f90b50fbed3e37b6))
 * Add `--filter-pgen-singleton`, `--filter-pgen-all` and `--skip-pgen-calculation` flags to `cdr3nt-error-corrector` ([#48](https://github.com/BostonGene/pyigmap/issues/48)) ([f04b3cd](https://github.com/BostonGene/pyigmap/commit/f04b3cd36646e0a7272d3026794c4b726f59d7af))
 * Automate python, java and docker installation ([#53](https://github.com/BostonGene/pyigmap/issues/53)) ([25c8bf8](https://github.com/BostonGene/pyigmap/commit/25c8bf8e0dd68a872acd77f1648d2bc92ad15ec7))
@@ -18,6 +21,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+* Added a new rule with `[FW]G.G` for canonical filter to `cdr3nt-error-corrector` step ([#94](https://github.com/BostonGene/pyigmap/issues/94))
+* Implement `--top-c-call` and `--top-v-alignment-call` flags to keep C genes information ([#87](https://github.com/BostonGene/pyigmap/issues/87))
+* Consider mock merging reads for non-overlapped reads ([#84](https://github.com/BostonGene/pyigmap/issues/84))
+* Pgen calculation disabled for amplicon ([#76](https://github.com/BostonGene/pyigmap/issues/76))
+* Vidjil disabled for amplicon data ([#75](https://github.com/BostonGene/pyigmap/issues/75))
+* Optimized workflow: igblast processes TCR and BCR in one run ([#78](https://github.com/BostonGene/pyigmap/issues/78))
+* Now TCR and BCR run in one vidjil job ([#67](https://github.com/BostonGene/pyigmap/issues/67))
+* Remove clones with `junction == None` and disable `_process_cdr3_sequences()` function for annotation generated using IgBLAST ([#80](https://github.com/BostonGene/pyigmap/issues/80))
 * Remove the same filters in cdr3nt-error-corrector ([#60](https://github.com/BostonGene/pyigmap/issues/60)) ([fff8937](https://github.com/BostonGene/pyigmap/commit/fff8937f6e8c420b4cb2c3409dcd13c530e056ca))
 * Reference generation via Makefile ([#55](https://github.com/BostonGene/pyigmap/issues/55)) ([03824c](https://github.com/BostonGene/pyigmap/commit/803824ca3479fd121802281bea4071cd719230c0))
 * Move most of the functions from `run.py` to `utils.py` (for compatibility with internal bitbucket repository) ([#28](https://github.com/BostonGene/pyigmap/issues/28)) ([d3fdfd7](https://github.com/BostonGene/pyigmap/commit/d3fdfd71e33f2995bb349c7880bd9d5af06c4d7a))

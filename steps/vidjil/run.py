@@ -28,9 +28,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--mode',
                         help='Execution mode: "detect" - returns .fasta file with detected V(D)J segments, '
                              '"annotate" - returns .tsv table with annotated V(D)J segments '
-                             'or "all" - returns .fasta and .tsv', required=True)
-    parser.add_argument('--receptor', help="Receptor type: 'BCR', 'TCR' or 'all'", required=True)
-    parser.add_argument('--organism', help="Organism name: 'human', 'rat' or 'mouse'", default='human')
+                             'or "all" - returns .fasta and .tsv', choices=["detect", "annotate", "all"], default="detect")
+    parser.add_argument('--receptor', help="Receptor type: 'BCR', 'TCR' or 'all'",
+                        choices=["BCR", "TCR", "all"], default="all")
+    parser.add_argument('--organism', help="Organism name: 'human', 'rat' or 'mouse'",
+                        choices=["human", "rat", "mouse"], default="human")
     parser.add_argument('--logs', help='Output logs file', required=True)
 
     return parser.parse_args()
@@ -39,12 +41,6 @@ def parse_args() -> argparse.Namespace:
 def check_args(args: argparse.Namespace):
     if not (args.out_fasta or args.out_annotation):
         logger.critical('One of the arguments --out-fasta, --out-annotation is required.')
-        sys.exit(1)
-    if args.receptor not in RECEPTOR_GLOSSARY:
-        logger.critical(f"Invalid receptor name: {args.receptor}. Supported receptors: 'BCR', 'TCR' or 'all', exiting...")
-        sys.exit(1)
-    if args.organism not in ORGANISM_GLOSSARY:
-        logger.critical(f"Invalid organism name: {args.organism}. Supported organisms: 'human', 'mouse' or 'rat', exiting...")
         sys.exit(1)
 
 

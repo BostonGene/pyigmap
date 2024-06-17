@@ -33,9 +33,7 @@ def parse_args() -> argparse.Namespace:
     :return: argparse.Namespace object with parsed arguments
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in-tcr-annotation', help='Input raw TCR annotation', nargs='+',
-                        action='extend', required=True, type=str)
-    parser.add_argument('--in-bcr-annotation', help='Input raw BCR annotation', nargs='+',
+    parser.add_argument('--in-annotation', help='Input raw annotation', nargs='+',
                         action='extend', required=True, type=str)
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
@@ -47,10 +45,15 @@ def parse_args() -> argparse.Namespace:
                         help='Remove chimeras clonotypes, that have different locus in v-/j-genes')
     parser.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
     parser.add_argument('--only-canonical', help='Filter out non-canonical clonotypes', action='store_true')
+    parser.add_argument("--only-best-alignment", help="Store the best aligned V, D, J and C genes call", action="store_true")
+    parser.add_argument("--discard-junctions-with-N", help="Discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence",
+                        action="store_true")
     parser.add_argument("--filter-pgen-all", type=float,
                         help="All clonotypes with 'pgen <= pgen_threshold' will be removed")
     parser.add_argument("--filter-pgen-singletons", type=float,
                         help="All clonotypes with 'duplicate_count == 1 && pgen <= pgen_threshold' will be removed")
+    parser.add_argument('--top-c-call', help='Returns clonotypes with the most frequent c_call', action='store_true')
+    parser.add_argument('--top-v-alignment-call', help='Returns clonotypes with the most frequent v alignment', action='store_true')
     parser.add_argument('--olga-models', type=str, help='Archive with OLGA models')
     parser.add_argument('--out-corrected-annotation', type=str, help='Output corrected annotation', required=True)
     parser.add_argument('--out-json', type=str, help='Output json with metrics')
@@ -69,10 +72,12 @@ def run(args: argparse.Namespace) -> None:
     if not args.skip_pgen_calculation:
         decompress(args.olga_models)
 
-    annotation, metrics_dict = airr.read_annotation(*args.in_tcr_annotation, *args.in_bcr_annotation,
+    annotation, metrics_dict = airr.read_annotation(*args.in_annotation,
                                                     only_functional=args.only_functional,
                                                     only_canonical=args.only_canonical,
-                                                    remove_chimeras=args.remove_chimeras)
+                                                    remove_chimeras=args.remove_chimeras,
+                                                    only_best_alignment=args.only_best_alignment,
+                                                    discard_junctions_with_N=args.discard_junctions_with_N)
 
     pgen_threshold = args.filter_pgen_singletons \
         if args.filter_pgen_singletons is not None else args.filter_pgen_all
@@ -83,7 +88,7 @@ def run(args: argparse.Namespace) -> None:
         for annotation_by_locus, locus in zip(*airr.split_by_loci(annotation)):
             logger.info(f'Processing {locus} locus...')
 
-            corrector = ClonotypeCorrector(args.clonotype_collapse_factor)
+            corrector = ClonotypeCorrector(args.top_c_call, args.top_v_alignment_call, args.clonotype_collapse_factor)
             corrected_annotation = corrector.correct_full(annotation_by_locus)
 
             if not args.skip_pgen_calculation:

@@ -3,7 +3,7 @@ import pandas as pd
 
 from filter import (remove_non_canonical, remove_non_functional, remove_non_productive, filter_pgen,
                     _get_duplicates_in_different_loci, drop_duplicates_in_different_loci,
-                    _remove_chimeras_by_segment)
+                    _remove_chimeras_by_segment, remove_no_junction, discard_junctions_with_n)
 
 from logger import set_logger
 
@@ -44,8 +44,16 @@ def annotation_non_functional() -> pd.DataFrame:
 
 
 @fixture(scope='module')
+def annotation_junctions_with_n() -> pd.DataFrame:
+    return pd.DataFrame(data={"junction_aa": ["CXA", "KC", "CA", "KC"],
+                              "junction": ["TGTNGCG", "AAATGT", "TGTNGCG", "AAATGTN"]
+                              })
+
+
+@fixture(scope='module')
 def annotation_non_canonical() -> pd.DataFrame:
-    return pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF', 'CAAA', 'AAAF', 'AAAW']})
+    return pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF', 'CAAA', 'AAAF', 'AAAW'],
+                              'j_sequence_alignment_aa': ['FGGGG', 'CWGGG', 'FWGGG', None, 'WCCG']})
 
 
 @fixture(scope='module')
@@ -63,6 +71,17 @@ def annotation_with_v_chimeras() -> pd.DataFrame:
 def annotation_with_j_chimeras() -> pd.DataFrame:
     return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
                               'j_call': ['IGLJ3-25*03', 'IGHJ2-26*03', 'TRAJ4-2*01', 'IGLJ2-34*01,IGHJ4-34*02', 'TRAJ7-6*01,TRDJ7-6*02']})
+
+
+def test_remove_no_junction(annotation_non_functional):
+    filtered_annotation, no_junction_count = remove_no_junction(annotation_non_functional)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={'junction_aa': ['AAAA', 'AA*A', 'AA_A'],
+                           'junction': ['AAAA', 'AAAA', 'AAAA']
+                           },
+                     index=[1, 2, 3])
+    )
+    assert no_junction_count == {"no_junction": 1}
 
 
 def test_remove_non_functional(annotation_non_functional):
@@ -84,10 +103,12 @@ def test_remove_non_productive(annotation_non_productive):
                      index=[0, 2])
     )
 
+
 def test_remove_non_canonical(annotation_non_canonical):
     filtered_annotation = remove_non_canonical(annotation_non_canonical)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF']},
+        pd.DataFrame(data={'junction_aa': ['CAAW', 'CAAF'],
+                           'j_sequence_alignment_aa': ['FGGGG', 'CWGGG']},
                      index=[0, 1])
     )
 
@@ -165,4 +186,13 @@ def test_filter_pgen_default(annotation_pgen):
         pd.DataFrame(data={'duplicate_count': [2, 100, 2],
                            'pgen': [None, 0.9, 0.9]},
                      index=[2, 5, 6])
+    )
+
+
+def test_discard_junctions_with_n(annotation_junctions_with_n):
+    filtered_annotation = discard_junctions_with_n(annotation_junctions_with_n)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={"junction_aa": ["KC"],
+                           "junction": ["AAATGT"]},
+                     index=[1])
     )
