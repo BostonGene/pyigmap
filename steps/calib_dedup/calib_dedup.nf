@@ -18,7 +18,6 @@ process CalibDedup {
             --fq2-umi-length \${fq2_umi_len} \
             --out-fq1 ${params.out_calib_dedup_fq1} \
             --out-fq2 ${params.out_calib_dedup_fq2} \
-            --out-json ${params.out_calib_dedup_json} \
             --kmer-size ${params.kmer_size} \
             --minimizer-count ${params.minimizer_count} \
             --minimizer-threshold ${params.minimizer_threshold} \
