@@ -2,7 +2,7 @@ FROM python:3.9-bullseye AS image
 
 ENV SOFT_DIR=/usr/local
 
-RUN apt-get update && apt-get install -y cmake pigz
+RUN apt-get update && apt-get install -y cmake pigz jq
 
 ENV CALIB_VERSION=0.3.7
 RUN wget -q https://github.com/vpc-ccg/calib/archive/refs/tags/v${CALIB_VERSION}.tar.gz -O CALIB.tar.gz && \
@@ -11,11 +11,6 @@ RUN wget -q https://github.com/vpc-ccg/calib/archive/refs/tags/v${CALIB_VERSION}
     make && mv calib ${SOFT_DIR}/bin && \
     make -C consensus/ && mv consensus/calib_cons ${SOFT_DIR}/bin && cd .. && \
     rm CALIB.tar.gz && rm -r CALIB
-
-ENV SEQKIT_VERSION=2.8.0
-RUN wget https://github.com/shenwei356/seqkit/releases/download/v${SEQKIT_VERSION}/seqkit_linux_amd64.tar.gz -O seqkit.tar.gz && \
-    tar -xvzf seqkit.tar.gz --one-top-level=${SOFT_DIR}/bin/seqkit --strip-component 1 && \
-    rm seqkit.tar.gz
 
 COPY utils.py ${SOFT_DIR}/utils.py
 COPY run.py ${SOFT_DIR}/run.py
