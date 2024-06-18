@@ -123,13 +123,13 @@ def get_processed_reads(reads1: list[str], reads2: list[str], read1_pattern: str
 
 
 def get_fastq_reads(in_fq1_path: str, in_fq2_path: str) -> tuple[list[str], list[str]]:
-    logger.info(f'Reading fastq files...')
+    logger.info(f'Reading FASTQ files...')
 
     reads1 = [seq for seq in pyfastx.Fastq(in_fq1_path, build_index=False, full_name=True)]
     reads2 = [seq for seq in pyfastx.Fastq(in_fq2_path, build_index=False, full_name=True)]
 
-    logger.info(f'Initial read count in fastq: {len(reads1)}')
-    logger.info(f'Fastq files have been read.')
+    logger.info(f'Initial read count in FASTQ: {len(reads1)}')
+    logger.info(f'FASTQ files have been read.')
 
     return reads1, reads2
 
@@ -142,6 +142,6 @@ def get_processed_fastqs(raw_fq1_path: str, raw_fq2_path: str, read1_pattern: st
     out_fq1_path = write_new_reads_to_file(processed_reads1)
     out_fq2_path = write_new_reads_to_file(processed_reads2)
 
-    logger.info(f'Final read count in fastq: {len(processed_reads1)}')
+    logger.info(f'Final read count in FASTQ: {len(processed_reads1)}')
 
     return out_fq1_path, out_fq2_path, len(reads1), len(processed_reads1)

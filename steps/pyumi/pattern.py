@@ -8,6 +8,8 @@ NORMAL_NUCLEOTIDES = 'ATGC'
 IUPAC_WILDCARDS = 'RYSWKMBDHVN'
 ALLOWED_LETTERS_IN_UMI = NORMAL_NUCLEOTIDES + 'N'
 
+ADAPTER_PATTERN_REGEX = rf"(?<!\[)\b[{ALLOWED_LETTERS_IN_UMI}]+\b(?!\])"
+
 
 class ValidationError(Exception):
     pass
@@ -17,25 +19,21 @@ def parse_umi_length(pattern: str, barcode_type='UMI') -> int:
     """Parses the length of the specified barcode type from the pattern.
     Example: ^(UMI:N{12}) -> 12
     """
-    match = re.search(rf'{barcode_type}:(?:N{{(\d+)}}|([^)]+))', pattern)
+    match = re.search(rf'{barcode_type}:?(?:N?{{(\d+)}}|([^)]+))', pattern)
     if match:
         barcode_body = match.group(1) or match.group(2)
-        return int(barcode_body) if barcode_body.isdigit() else barcode_body.count('N')
+        return int(barcode_body) if barcode_body.isdigit() else len(barcode_body)
     return 0
 
 
-def add_nucleotide_cost(pattern: str, wildcard_cost=1, normal_cost=2, max_error=2) -> str:
-    """Adds costs to nucleotide patterns in the given pattern to allow for a certain number of mismatches.
-
-    Example:
-    ^[ATGCN]{0:2}TGGTATCAACGCAGAGT(?P<UMI>[ATGCN]{14}) -> ^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){2s<=2}(?P<UMI>[ATGCN]{14}),
-    where 2s<=2: s - single nucleotide substitution, 2 - cost of one substitution, 2 - max mismatches count
-    """
-    pattern = re.sub(rf'(?<![\w([])([{IUPAC_WILDCARDS}]+)(?![\w\])])',
-                     rf'(\1){{{wildcard_cost}s<={max_error}}}', pattern)
-    pattern = re.sub(rf'(?<![\w([])([{NORMAL_NUCLEOTIDES}]+)(?![\w\])])',
-                     rf'(\1){{{normal_cost}s<={max_error}}}', pattern)
-    return pattern
+def add_nucleotide_cost(pattern: str, max_error=2) -> str:
+    """Adds mismatch cost"""
+    new_pattern = pattern
+    for adapter in re.findall(ADAPTER_PATTERN_REGEX, pattern):
+        adapter_max_error = len(adapter) * max_error // 10
+        new_pattern = re.sub(rf'(?<![\w([])([{adapter}]+)(?![\w\])])',
+                             rf'(\1){{s<={adapter_max_error}}}', pattern)
+    return new_pattern
 
 
 def replace_nucleotide_patterns(pattern: str) -> str:
@@ -67,6 +65,7 @@ def validate_pattern(pattern: str, umi_len: int):
         raise ValidationError(f'UMI placeholder does not found in {pattern}, exiting...')
     if not umi_len:
         raise ValidationError(f'UMI length in the pattern {pattern} should be > 0, exiting...')
+    # TODO! invalid patterns: '^UMI{12}' -> ^(UMI:N{12}); '^UMI:N{12}' -> '^(UMI:N{12})'
 
 
 def get_prepared_pattern_and_umi_len(pattern: str, max_error=2, wildcard_cost=1, normal_cost=2) -> tuple[str, int]:
@@ -83,7 +82,7 @@ def get_prepared_pattern_and_umi_len(pattern: str, max_error=2, wildcard_cost=1,
     pattern = add_brackets_around_barcode(pattern, 'UMI')
     pattern = replace_barcode_type_to_regex_group(pattern, 'UMI')
     pattern = replace_nucleotide_patterns(pattern)
-    pattern = add_nucleotide_cost(pattern, wildcard_cost, normal_cost, max_error)
+    pattern = add_nucleotide_cost(pattern, max_error)
     pattern = pattern.replace('{*}', '*')
 
     logger.info(f"Pattern has been converted into '{pattern}'...")

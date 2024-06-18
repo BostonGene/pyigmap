@@ -16,12 +16,12 @@ def check_argument_consistency(args: argparse.Namespace) -> list[str]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in-fq1', help='Input forward fastq(.gz)', required=True)
-    parser.add_argument('--in-fq2', help='Input reverse fastq(.gz)', required=True)
-    parser.add_argument('--fq1-pattern', type=str)
-    parser.add_argument('--fq2-pattern', type=str)
+    parser.add_argument('--in-fq1', help='Input forward FASTQ', required=True)
+    parser.add_argument('--in-fq2', help='Input reverse FASTQ', required=True)
+    parser.add_argument('--fq1-pattern', help='Barcode pattern of forward FASTQ', type=str)
+    parser.add_argument('--fq2-pattern', help='Barcode pattern of reverse FASTQ', type=str)
     parser.add_argument('--find-in-reverse-complement', action='store_true')
-    parser.add_argument('--max-error', type=int, default=10)
+    parser.add_argument('--max-error', help='Max error (mismatch) per ten nucleotides', type=int, default=1)
     parser.add_argument('--out-fq1', help='Output forward fastq without PCR duplicates', required=True)
     parser.add_argument('--out-fq2', help='Output reverse fastq without PCR duplicates', required=True)
     parser.add_argument('--out-json', help='Output json with umi metrics', required=True)

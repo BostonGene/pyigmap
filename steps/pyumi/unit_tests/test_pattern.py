@@ -1,11 +1,9 @@
 import pytest
 from pytest import fixture
 
-from pattern import (add_nucleotide_cost, replace_nucleotide_patterns,
-                     replace_barcode_type_to_regex_group, add_brackets_around_barcode,
-                     validate_pattern, parse_umi_length, add_nucleotide_cost,
-                     NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS, ValidationError,
-                     get_prepared_pattern_and_umi_len)
+from pattern import (add_nucleotide_cost, replace_nucleotide_patterns, replace_barcode_type_to_regex_group,
+                     add_brackets_around_barcode, validate_pattern, parse_umi_length, add_nucleotide_cost,
+                     NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS, ValidationError, get_prepared_pattern_and_umi_len)
 
 
 @fixture(scope='module')
@@ -25,7 +23,7 @@ def pattern3() -> str:
 
 @fixture(scope='module')
 def pattern5() -> str:
-    return "^N{0:2}TGGTATCAACGCAGAGT(UMI:TNNNTNNNTNNNN)"
+    return "^N{0:2}TGGTATCAACGCAGAGT(UMI:TNNNTNNNTNNNT)"
 
 
 @fixture(scope='module')
@@ -43,13 +41,31 @@ def pattern8() -> str:
     return "^?P<UMI>[ATGCN]{12}"
 
 
-def test_parse_barcode_length_when_present(pattern2):
+@fixture(scope='module')
+def pattern9() -> str:
+    return "UMI{9}"
+
+
+@fixture(scope='module')
+def pattern10() -> str:
+    return "(UMI{10})"
+
+
+@fixture(scope='module')
+def pattern11() -> str:
+    return "(UMI:N{11})"
+
+
+def test_parse_barcode_length_when_present(pattern2, pattern9, pattern10, pattern11):
     assert parse_umi_length(pattern2) == 14
+    assert parse_umi_length(pattern9) == 9
+    assert parse_umi_length(pattern10) == 10
+    assert parse_umi_length(pattern11) == 11
 
 
 def test_parse_barcode_length_when_missing(pattern3, pattern5):
-    assert parse_umi_length(pattern3)== 9
-    assert parse_umi_length(pattern5) == 10
+    assert parse_umi_length(pattern3) == 11
+    assert parse_umi_length(pattern5) == 13
 
 
 def test_validate_pattern_when_pass(pattern2):
@@ -80,7 +96,7 @@ def test_replace_nucleotide_patterns(pattern2, pattern3):
 
 
 def test_add_nucleotide_cost(pattern7):
-    assert add_nucleotide_cost(pattern=pattern7) == "^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){2s<=2}(?P<UMI>[ATGCN]{14})"
+    assert add_nucleotide_cost(pattern=pattern7) == "^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=3}(?P<UMI>[ATGCN]{14})"
 
 
 def test_without_add_nucleotide_cost(pattern8):
@@ -89,7 +105,7 @@ def test_without_add_nucleotide_cost(pattern8):
 
 def test_get_prepared_pattern_and_umi_len(pattern2):
     assert (get_prepared_pattern_and_umi_len(pattern=pattern2)
-            == ("^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){2s<=2}(?P<UMI>[ATGCN]{14})", 14))
+            == ("^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=3}(?P<UMI>[ATGCN]{14})", 14))
 
     # TODO!
     # assert (BarcodePattern(pattern='^N{13}').get_prepared_pattern()

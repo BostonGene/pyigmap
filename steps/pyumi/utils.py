@@ -143,10 +143,10 @@ def extract_umi(fq12_chunks: list[str], read1_pattern: str,
 
         remove(fq1_chunk, fq2_chunk)
 
-    logger.info('UMI successfully extracted.')
-
     processed_fq1 = concat_files(processed_fq1_chunks)
     processed_fq2 = concat_files(processed_fq2_chunks)
+
+    logger.info(f'UMI successfully extracted. R2 FASTQ: {processed_fq1}, R2 FASTQ: {processed_fq2}')
 
     return processed_fq1, processed_fq2, total_reads_count
 
