@@ -6,5 +6,5 @@
 #
 pyfastx==2.1.0
     # via -r requirements.in
-regex==2023.12.25
+regex==2024.5.15
     # via -r requirements.in
