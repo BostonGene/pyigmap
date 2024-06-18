@@ -4,19 +4,12 @@ This step is a wrapping of [calib](https://github.com/vpc-ccg/calib) alignment-f
 
 ## Parameters
 
-### UMI-extraction params
-
-Works something like [mixcr barcode pattern extraction](https://mixcr.com/mixcr/reference/ref-tag-pattern/).
-
-* `--fq1-barcode-pattern` — barcode pattern of the fq1
-* `--fq2-barcode-pattern` — barcode pattern of the fq2
-* `--pattern-max-error-budget` — maximum error size (budget) between pattern and read substring
-* `--find-umi-in-reverse-complement` — enable finding umi in reverse complement reads
-
 ### UMI-clustering params
 
 See [here](https://github.com/vpc-ccg/calib?tab=readme-ov-file#clustering-parameters) for more information.
 
+* `--fq1-umi-length` — length of UMI barcode in forward FASTQ
+* `--fq2-umi-length` — length of UMI barcode in reverse FASTQ
 * `--kmer-size`
 * `--minimizer-count`
 * `--minimizer-threshold`
@@ -31,14 +24,13 @@ See [here](https://github.com/vpc-ccg/calib?tab=readme-ov-file#error-correction-
 
 ## Input
 
-* `--in-fq1`: path to the forward fastq (`path/to/R1.fastq.gz`)
-* `--in-fq2`: path to the reverse fastq (`path/to/R2.fastq.gz`)
+* `--in-fq1`: path to the forward FASTQ (`path/to/R1.fastq.gz`)
+* `--in-fq2`: path to the reverse FASTQ (`path/to/R2.fastq.gz`)
 
 ## Output
 
-* `--out-fq1`: path to the output deduplicated forward fastq (`path/to/cR1.fastq.gz`)
-* `--out-fq2`: path to the output deduplicated reverse fastq (`path/to/cR2.fastq.gz`)
-* `--out-json`: path to the output json with metrics (`path/to/calib.json`)
+* `--out-fq1`: path to the output deduplicated forward FASTQ (`path/to/cR1.fastq.gz`)
+* `--out-fq2`: path to the output deduplicated reverse FASTQ (`path/to/cR2.fastq.gz`)
 
 ## How to run
 
@@ -52,20 +44,5 @@ docker run \
    --in-fq2 /root/age_ig_s1_R2_rc_umi.fastq.gz \
    --out-fq1 /root/cR1.fastq.gz \
    --out-fq2 /root/cR2.fastq.gz \
-   --out-json /root/calib.json \
-   --kmer-size 8 \
-   --minimizer-count 7 \
-   --minimizer-threshold 7 \
-   --error-tolerance 2 \
-   --fq1-barcode-pattern "^UMI:N{13}" # UMI - the first 13 nucleotides
-```
-
-## Run tests
-
-```bash
-python3 -m venv env
-. env/bin/activate
-pip3 install -r requirements.txt
-
-pytest unit_tests/ -v
+   --fq1-umi-length 13
 ```
