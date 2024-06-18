@@ -1,11 +1,11 @@
 # pyumi step
 
-This step is a Python-based tool to preprocess UMI and CELL barcodes in FASTQ reads.
+This step to preprocess FASTQ with UMI and/or CELL barcodes.
 
 ## Parameters
 
-* `--fq1-pattern`: barcode pattern of the first FASTQ
-* `--fq2-pattern`: barcode pattern of the second FASTQ
+* `--fq1-pattern` — barcode pattern of the forward FASTQ
+* `--fq2-pattern` — barcode pattern of the reverse FASTQ
 * `--max-error`: maximum error size (budget) between pattern and read substring
 * `--find-in-reverse-complement`: enable finding umi in reverse complement reads
 
@@ -26,12 +26,12 @@ This step is a Python-based tool to preprocess UMI and CELL barcodes in FASTQ re
 docker build -t pyumi .
 
 docker run \
-   -v ./unit_tests/test_data:/root/ \
+   -v ./data:/tmp \
    pyumi \
    --in-fq1 /root/age_ig_s1_R1_umi.fastq.gz \
    --in-fq2 /root/age_ig_s1_R2_rc_umi.fastq.gz \
    --out-fq1 /root/bR1.fastq.gz \
    --out-fq2 /root/bR2.fastq.gz \
-   --out-json /root/calib.json \
+   --out-json /root/pyumi.json \
    --fq1-pattern "^UMI:N{13}" # UMI - the first 13 nucleotides
 ```
