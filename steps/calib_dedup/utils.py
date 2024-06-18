@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from typing import Optional, Union
@@ -11,19 +10,6 @@ from logger import set_logger
 logger = set_logger(name=__file__)
 
 TMP_DIR = '/tmp'
-FASTQ_CHUNK_SIZE = 2_000_000  # reads count in one fastq chunk
-
-
-def save_total_read_count(total_reads_count: int, out_json_path: str):
-    json_content = json.dumps({
-        "summary": {
-            "before_filtering": {
-                "total_reads": int(total_reads_count)
-            }
-        }
-    })
-    save_to_file(json_content, out_json_path)
-    logger.info(f'Total read count has been saved into {out_json_path}.')
 
 
 def exit_with_error(message: Optional[str]):
@@ -33,42 +19,17 @@ def exit_with_error(message: Optional[str]):
     sys.exit(1)
 
 
-def run_command(command: list[str], stdin=None, stdout=False) -> Union[str, None]:
+def run_command(command: Union[list[str], str], stdin=None, shell=False):
     logger.info(f'Running {command}...')
 
     try:
-        command_process = subprocess.run(command, text=True, capture_output=True, stdin=stdin, check=True)
+        _ = subprocess.run(command, text=True, capture_output=True, shell=shell, stdin=stdin, check=True)
     except subprocess.CalledProcessError as e:
         logger.critical(e.stderr)
         logger.critical(e.stdout)
         exit_with_error(f"Failed to run {command}")
     except Exception as e:
         exit_with_error(f"Undefined error: {e}")
-
-    if stdout:
-        return command_process.stdout
-
-
-def concat_files(files: list[str]) -> str:
-    output_file = tempfile.NamedTemporaryFile().name
-    with open(output_file, 'w') as out_f:
-        for file in files:
-            with open(file, 'r') as f:
-                out_f.write(f.read())
-    remove(*files)
-    return output_file
-
-
-def remove(*file: str):
-    for f in file:
-        os.remove(f)
-
-
-def save_to_file(data: str, file_path=None) -> str:
-    file_path = file_path or tempfile.NamedTemporaryFile().name
-    with open(file_path, 'w') as f:
-        f.write(data)
-    return file_path
 
 
 def compress(file: str):
@@ -169,47 +130,17 @@ def cluster_umi(in_fq1: str, in_fq2: str, fq1_umi_len: int, fq2_umi_len: int,
     return cluster_file
 
 
-def split_by_chunks(fq1_path: str, fq2_path: str) -> list[str]:
-    logger.info(f'Splitting {fq1_path} and {fq2_path} into chunks by {FASTQ_CHUNK_SIZE} reads...')
-
-    fq1_outdir = os.path.join(TMP_DIR, 'chunks', 'fq1')
-    fq2_outdir = os.path.join(TMP_DIR, 'chunks', 'fq2')
-
-    for fq_path, output_dir in [(fq1_path, fq1_outdir), (fq2_path, fq2_outdir)]:
-        cmd = ['seqkit', 'split2', fq_path, '--by-size', str(FASTQ_CHUNK_SIZE),
-               '--by-size-prefix', '', '--out-dir', output_dir]
-        run_command(cmd)
-
-    fq1_chunks = sorted([entry.path for entry in os.scandir(fq1_outdir)])
-    fq2_chunks = sorted([entry.path for entry in os.scandir(fq2_outdir)])
-
-    logger.info(f'Splitting {fq1_path} and {fq2_path} has been done.')
-
-    return zip(fq1_chunks, fq2_chunks)
-
-
-def keep_only_paired_reads(fq1: str, fq2: str, clear=False):
-    logger.info('Filter out unpaired reads...')
-
-    outdir = os.path.join(TMP_DIR, 'paired')
-    cmd = ['seqkit', 'pair', '-1', fq1, '-2', fq2, '--out-dir', outdir]
-
-    run_command(cmd)
-
-    new_fq1 = os.path.join(outdir, os.path.basename(fq1))
-    new_fq2 = os.path.join(outdir, os.path.basename(fq2))
-
-    if clear:
-        remove(fq1, fq2)
-
-    logger.info('Filtering unpaired reads has been done.')
-
-    return new_fq1, new_fq2
-
-
 def check_error_tolerance_size(umi_len: int, error_tolerance: int):
     if umi_len and error_tolerance > umi_len:
         logger.critical(
             f'Error tolerance size (={error_tolerance}) should be no larger than the umi length (={umi_len}), exiting...'
         )
         sys.exit(1)
+
+
+def decompress(gz_file: str) -> str:
+    """Decompresses gzipped file"""
+    output_file = tempfile.NamedTemporaryFile().name
+    cmd = ' '.join(['pigz', '-dck', gz_file, '>', output_file])
+    run_command(cmd, shell=True)
+    return output_file
