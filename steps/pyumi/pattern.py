@@ -68,7 +68,7 @@ def validate_pattern(pattern: str, umi_len: int):
     # TODO! invalid patterns: '^UMI{12}' -> ^(UMI:N{12}); '^UMI:N{12}' -> '^(UMI:N{12})'
 
 
-def get_prepared_pattern_and_umi_len(pattern: str, max_error=2, wildcard_cost=1, normal_cost=2) -> tuple[str, int]:
+def get_prepared_pattern_and_umi_len(pattern: str, max_error=2) -> tuple[str, int]:
     """Prepares a pattern for barcode matching by applying various transformations."""
 
     if not pattern:
