@@ -1,5 +1,5 @@
 - name: test_main_rnaseq_sample_id
-  command: ./pyigmap --mode rnaseq
+  command: ./pyigmap --library rnaseq
                      --sample_id SRR3743469
                      --reads_to_process 10000
                      --outdir ./
@@ -7,7 +7,7 @@
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
-  command: ./pyigmap --mode amplicon
+  command: ./pyigmap --library amplicon
                      --sample_id ERR7425614
                      --fq1_pattern '^UMI:N{12}'
                      --reads_to_process 10

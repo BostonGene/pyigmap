@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+* Renamed --mode to --library in nf pipeline ([#58](https://github.com/BostonGene/pyigmap/issues/58))
 * Added a new rule with `[FW]G.G` for canonical filter to `cdr3nt-error-corrector` step ([#94](https://github.com/BostonGene/pyigmap/issues/94))
 * Implement `--top-c-call` and `--top-v-alignment-call` flags to keep C genes information ([#87](https://github.com/BostonGene/pyigmap/issues/87))
 * Consider mock merging reads for non-overlapped reads ([#84](https://github.com/BostonGene/pyigmap/issues/84))
