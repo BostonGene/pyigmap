@@ -136,9 +136,9 @@ $(VIRTUAL_ENV): ## >> setup the virtual environment
 
 update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
-	$(PYTHON_ENV) -m pip install -r $(pwd)/steps/calib_dedup/requirements.txt
-	$(PYTHON_ENV) -m pip install -r $(pwd)/steps/igblast/requirements.txt
-	$(PYTHON_ENV) -m pip install -r $(pwd)/steps/cdr3nt_error_corrector/requirements.txt
+	$(PYTHON_ENV) -m pip install -r steps/calib_dedup/requirements.txt
+	$(PYTHON_ENV) -m pip install -r steps/igblast/requirements.txt
+	$(PYTHON_ENV) -m pip install -r steps/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
 install-python: ## >> install a python
