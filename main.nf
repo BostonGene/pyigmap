@@ -11,7 +11,7 @@ if (params.help) { exit 0, help_message() }
 log.info ""
 log.info "                     P Y I G M A P                     "
 log.info "======================================================="
-log.info "Mode                 : ${params.mode}"
+log.info "Library type         : ${params.library}"
 log.info "Sample               : ${params.sample_id}"
 log.info "Enable zenodo        : ${params.zenodo}"
 log.info "Reads to process     : ${params.reads_to_process}"
@@ -107,12 +107,12 @@ workflow {
         }
     }
 
-    if (params.mode == "amplicon") {
+    if (params.library == "amplicon") {
         PYIGMAP_AMPLICON(fq1, fq2)
-    } else if (params.mode == "rnaseq") {
+    } else if (params.library == "rnaseq") {
         PYIGMAP_RNASEQ(fq1, fq2)
     } else {
-        error "Error: unexpected --mode '${params.mode}'. Supported only two modes: --mode 'amplicon' and --mode 'rnaseq'."
+        error "Error: unexpected --library '${params.library}'. Supported only two libraries: 'amplicon' and 'rnaseq'."
     }
 }
 
