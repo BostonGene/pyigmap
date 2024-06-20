@@ -85,12 +85,12 @@ build-ref-image:
 build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
-	$(ENGINE) run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
+	$(ENGINE) run --rm -v $(pwd)/steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
 
 build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01, *02, etc.) for igblast $(ccend)"
-	$(ENGINE) run --rm -v ./steps/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
+	$(ENGINE) run --rm -v $(pwd)/steps/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
@@ -136,9 +136,9 @@ $(VIRTUAL_ENV): ## >> setup the virtual environment
 
 update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
-	$(PYTHON_ENV) -m pip install -r ./steps/calib_dedup/requirements.txt
-	$(PYTHON_ENV) -m pip install -r ./steps/igblast/requirements.txt
-	$(PYTHON_ENV) -m pip install -r ./steps/cdr3nt_error_corrector/requirements.txt
+	$(PYTHON_ENV) -m pip install -r $(pwd)/steps/calib_dedup/requirements.txt
+	$(PYTHON_ENV) -m pip install -r $(pwd)/steps/igblast/requirements.txt
+	$(PYTHON_ENV) -m pip install -r $(pwd)/steps/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
 install-python: ## >> install a python
@@ -168,6 +168,8 @@ install-java: ## >> install a java
 	sudo mv /tmp/java-${JAVA_VERSION} /usr/local/bin/
 	@echo "export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}" >> ~/.bashrc
 	@echo 'export PATH=$$JAVA_HOME/bin:$$PATH' >> ~/.bashrc
+	export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}
+	export PATH=$$JAVA_HOME/bin:$$PATH
 	@java -version
 	rm /tmp/java.tar.gz
 
