@@ -47,7 +47,7 @@ make
 
 ```bash
 ./pyigmap -profile <docker/podman> \
-    --mode <amplicon/rnaseq> \
+    --library <amplicon/rnaseq> \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \
     --outdir "./results"
