@@ -37,7 +37,7 @@ def help_message() {
     ./pyigmap --library rnaseq --sample_id SRR3743469 --reads_to_process 200000
 
     4. To process RNASeq data downloaded by HTTP/HTTPS/FTP link
-    ./pyigmap --library rnaseq --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --reads_to_process 200000
+    ./pyigmap --library rnaseq --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R2.fastq.gz --reads_to_process 200000
 
         Optional input:
     --fq1                       path to the forward FASTQ (default: none)
