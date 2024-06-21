@@ -14,8 +14,8 @@ process CalibDedup {
         python3.9 /usr/local/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
-            --fq1-umi-length \${fq1_umi_len} \
-            --fq2-umi-length \${fq2_umi_len} \
+            --fq1-umi-length \$fq1_umi_len \
+            --fq2-umi-length \$fq2_umi_len \
             --out-fq1 ${params.out_calib_dedup_fq1} \
             --out-fq2 ${params.out_calib_dedup_fq2} \
             --kmer-size ${params.kmer_size} \
