@@ -1,6 +1,6 @@
 # calib-dedup step
 
-This step is a wrapping of [calib](https://github.com/vpc-ccg/calib) alignment-free UMI-based deduplication tool.
+This step is a wrapping of [Calib](https://github.com/vpc-ccg/calib) alignment-free UMI-based deduplication tool.
 
 ## Parameters
 
@@ -13,7 +13,7 @@ See [here](https://github.com/vpc-ccg/calib?tab=readme-ov-file#clustering-parame
 * `--kmer-size`
 * `--minimizer-count`
 * `--minimizer-threshold`
-* `--error-tolerance`
+* `--error-tolerance` — a [Hamming distance](https://en.wikipedia.org/wiki/Hamming_distance) between two barcodes
 
 ### UMI error correction params
 

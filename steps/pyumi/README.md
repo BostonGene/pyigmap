@@ -1,6 +1,6 @@
 # pyumi step
 
-This step to preprocess FASTQ with UMI and/or CELL barcodes.
+This step to pre-process UMI and/or CELL barcodes in the FASTQ files based on the approximate regular expression matching (fuzzy RegEx).
 
 ## Parameters
 
@@ -33,5 +33,5 @@ docker run \
    --out-fq1 /root/bR1.fastq.gz \
    --out-fq2 /root/bR2.fastq.gz \
    --out-json /root/pyumi.json \
-   --fq1-pattern "^UMI:N{13}" # UMI - the first 13 nucleotides
+   --fq1-pattern "^UMI:N{13}" # UMI - the first 13 nucleotides of the forward FASTQ
 ```
