@@ -8,7 +8,7 @@ logger = set_logger(name=__file__)
 
 def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     msg_list = []
-    if not args.fq1_umi_length and not args.fq1_umi_length:
+    if args.fq1_umi_length is None and args.fq1_umi_length is None:
         msg_list += ['One of the arguments --fq1-umi-length or --fq2-umi-length must be provided.']
     return msg_list
 
