@@ -90,7 +90,7 @@ workflow {
             fq1 = DOWNLOAD_FASTQ_BY_LINK.out.fq1
             fq2 = DOWNLOAD_FASTQ_BY_LINK.out.fq2
         } else if (params.reads_to_process.toString().isInteger()) {
-            DOWNSAMPLE_FASTQ(fq1, fq2)
+            DOWNSAMPLE_FASTQ(params.fq1, params.fq2)
             fq1 = DOWNSAMPLE_FASTQ.out.fq1
             fq2 = DOWNSAMPLE_FASTQ.out.fq2
         }
