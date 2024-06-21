@@ -1,9 +1,9 @@
 import pytest
 from pytest import fixture
 
-from pattern import (add_nucleotide_cost, replace_nucleotide_patterns, replace_barcode_type_to_regex_group,
-                     add_brackets_around_barcode, validate_pattern, parse_umi_length, add_nucleotide_cost,
-                     NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS, ValidationError, get_prepared_pattern_and_umi_len)
+from pattern import (add_nucleotide_cost, replace_barcode_type_to_regex_group,add_brackets_around_barcode,
+                     validate_pattern, parse_umi_length, add_nucleotide_cost, NORMAL_NUCLEOTIDES, IUPAC_WILDCARDS,
+                     ValidationError, get_prepared_pattern_and_umi_len)
 
 
 @fixture(scope='module')
@@ -90,14 +90,6 @@ def test_add_brackets_around_barcode(pattern1):
 def test_replace_umi_barcode_to_regex_group(pattern2):
     assert (replace_barcode_type_to_regex_group(pattern2, barcode_type='UMI')
             == "^N{0:2}TGGTATCAACGCAGAGT(?P<UMI>N{14})")
-
-
-def test_replace_nucleotide_patterns(pattern2, pattern3):
-    assert (replace_nucleotide_patterns(pattern2)
-            == "^[ATGCN]{0:2}TGGTATCAACGCAGAGT(UMI:[ATGCN]{14})")
-
-    assert (replace_nucleotide_patterns(pattern3)
-            == "^[ATGCN]{0:2}TGGTATCAACGCAGAGT(UMI:[ATGCN][ATGCN][ATGCN]T[ATGCN][ATGCN][ATGCN]T[ATGCN][ATGCN][ATGCN])")
 
 
 def test_add_nucleotide_cost(pattern7):

@@ -18,7 +18,7 @@ class ValidationError(Exception):
 
 def parse_umi_length(pattern: str, barcode_type='UMI') -> int:
     """Parses the length of the specified barcode type from the pattern.
-    Example: ^(UMI:N{12}) -> 12
+    Example: for ^(UMI:N{12}) returns 12
     """
     match = re.search(rf'{barcode_type}:?(?:N?{{(\d+)}}|([^)]+))', pattern)
     if match:
@@ -28,20 +28,13 @@ def parse_umi_length(pattern: str, barcode_type='UMI') -> int:
 
 
 def add_nucleotide_cost(pattern: str, max_error=2) -> str:
-    """Adds mismatch cost"""
+    """Adds mismatch cost for fuzzy matched patterns (adapters)"""
     new_pattern = pattern
     for adapter in set(re.findall(ADAPTER_PATTERN_REGEX, pattern)):
         adapter_max_error = math.ceil(len(adapter) * max_error / 10)
         new_pattern = re.sub(rf'(?<![\w\[(])({adapter})(?![\w\])])',
                              rf'(\1){{s<={adapter_max_error}}}', new_pattern)
     return new_pattern
-
-
-def replace_nucleotide_patterns(pattern: str) -> str:
-    """Replaces 'N' nucleotide patterns in the given pattern with a character class of allowed letters in the UMI.
-    Example: ^(UMI:N{12}) -> ^(UMI:[ATGCN]{12})
-    """
-    return pattern.replace('N', f'[{ALLOWED_LETTERS_IN_UMI}]')
 
 
 def replace_barcode_type_to_regex_group(pattern: str, barcode_type: str) -> str:
@@ -82,7 +75,7 @@ def get_prepared_pattern_and_umi_len(pattern: str, max_error=2) -> tuple[str, in
     pattern = pattern.upper()
     pattern = add_brackets_around_barcode(pattern, 'UMI')
     pattern = replace_barcode_type_to_regex_group(pattern, 'UMI')
-    pattern = replace_nucleotide_patterns(pattern)
+    pattern = pattern.replace('N', f'[{ALLOWED_LETTERS_IN_UMI}]')
     pattern = add_nucleotide_cost(pattern, max_error)
     pattern = pattern.replace('{*}', '*')
 
