@@ -15,8 +15,10 @@ workflow DOWNLOAD_FASTQ_BY_LINK {
 }
 
 workflow DOWNLOAD_FASTQ_BY_SAMPLE_ID {
+    take:
+        sample_id
     main:
-        GetLinks(params.sample_id)
+        GetLinks(sample_id)
         DOWNLOAD_FASTQ_BY_LINK(GetLinks.out.link_1, GetLinks.out.link_2)
 
     emit:

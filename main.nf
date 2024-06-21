@@ -40,8 +40,8 @@ def help_message() {
     ./pyigmap --library rnaseq --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --reads_to_process 200000
 
         Optional input:
-    --fq1                       path to the read1 fastq (default: none)
-    --fq2                       path to the read2 fastq (default: none)
+    --fq1                       path to the forward FASTQ (default: none)
+    --fq2                       path to the reverse FASTQ (default: none)
 
     or
 
@@ -54,11 +54,11 @@ def help_message() {
 
     pyigmap.tar.gz archive that contains:
     * corrected_annotation.tsv  corrected AIRR-formatted annotation
-    * stat.json                 file with different statistics
+    * stat.json                 file with common statistics
 
 
         Workflow Options:
-    --mode                      the mode of pipeline "rnaseq" (RNASeq-bulk) or "amplicon" (AIRR-Seq target)
+    --library                   the library type of input data: "rnaseq" (RNASeq-bulk) or "amplicon" (AIRR-Seq target)
     --all_alleles               will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT);
                                 only major (*01) allele for each gene will be used otherwise (default: false)
 
@@ -73,7 +73,7 @@ def help_message() {
 workflow {
     if (params.sample_id && !params.fq1 && !params.fq2) {
 
-        DOWNLOAD_FASTQ_BY_SAMPLE_ID()
+        DOWNLOAD_FASTQ_BY_SAMPLE_ID(params.sample_id)
 
         fq1 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq1
         fq2 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq2
