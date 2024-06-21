@@ -1,3 +1,4 @@
+include { PyUMI } from '../steps/pyumi/pyumi.nf'
 include { CalibDedup } from '../steps/calib_dedup/calib_dedup.nf'
 include { FastpMerge; FastpMockMerge } from '../steps/fastp/fastp.nf'
 include { IgBlastFASTQ; IgBlastMockFASTQ } from '../steps/igblast/igblast.nf'
@@ -9,7 +10,8 @@ workflow PYIGMAP_AMPLICON {
         fq2
 
     main:
-        CalibDedup(fq1, fq2)
+        PyUMI(fq1, fq2)
+        CalibDedup(PyUMI.out.fq1, PyUMI.out.fq2, PyUMI.out.json)
 
         igblast_ref = file(params.igblast_ref)
 
@@ -24,5 +26,5 @@ workflow PYIGMAP_AMPLICON {
         }
 
         olga_models = file(params.olga_models)
-        CDR3ErrorCorrector(raw_annotation, olga_models, CalibDedup.out.json)
+        CDR3ErrorCorrector(raw_annotation, olga_models, PyUMI.out.json)
 }

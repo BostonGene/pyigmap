@@ -1,77 +1,42 @@
-import json
 import os
 import sys
-import logging
-from tqdm import tqdm
+from typing import Optional, Union
 import shutil
 import subprocess
 import tempfile
 
-from barcode import BarcodeExtractor, BarcodePattern
-from logger import set_logger, TqdmToLogger
+from logger import set_logger
 
 logger = set_logger(name=__file__)
-tqdm_out = TqdmToLogger(logger, level=logging.INFO)
 
 TMP_DIR = '/tmp'
-FASTQ_CHUNK_SIZE = 2_000_000  # reads count in one fastq chunk
 
 
-def save_total_read_count(total_reads_count: int, out_json_path: str):
-    json_content = json.dumps({
-        "summary": {
-            "before_filtering": {
-                "total_reads": int(total_reads_count)
-            }
-        }
-    })
-    save_to_file(json_content, out_json_path)
-    logger.info(f'Total read count has been saved into {out_json_path}.')
+def exit_with_error(message: Optional[str]):
+    if message is None:
+        message = "Empty message for error!"
+    logger.critical(message)
+    sys.exit(1)
 
 
-def run_command(command: list[str], stdin=None) -> str:
+def run_command(command: Union[list[str], str], stdin=None, shell=False):
     logger.info(f'Running {command}...')
+
     try:
-        command_process = subprocess.run(command, text=True, capture_output=True, stdin=stdin, check=True)
+        _ = subprocess.run(command, text=True, capture_output=True, shell=shell, stdin=stdin, check=True)
     except subprocess.CalledProcessError as e:
         logger.critical(e.stderr)
         logger.critical(e.stdout)
-        logger.critical(f"Failed to run {command}")
-        sys.exit(1)
+        exit_with_error(f"Failed to run {command}")
     except Exception as e:
-        logger.critical(f"Undefined error: {e}")
-        sys.exit(1)
-
-    return command_process.stdout
-
-
-def concat_files(files: list[str]) -> str:
-    output_file = tempfile.NamedTemporaryFile().name
-    with open(output_file, 'w') as out_f:
-        for file in files:
-            with open(file, 'r') as f:
-                out_f.write(f.read())
-    remove(*files)
-    return output_file
-
-
-def remove(*file: str):
-    for f in file:
-        os.remove(f)
-
-
-def save_to_file(data: str, file_path=None) -> str:
-    file_path = file_path or tempfile.NamedTemporaryFile().name
-    with open(file_path, 'w') as f:
-        f.write(data)
-    return file_path
+        exit_with_error(f"Undefined error: {e}")
 
 
 def compress(file: str):
     logger.info(f'Compressing {file} into {file}.gz...')
 
     pigz_cmd = ['pigz', file]
-    _ = run_command(pigz_cmd)
+    run_command(pigz_cmd)
 
     file_gz = file + '.gz'
     check_if_exist(file_gz)
@@ -129,9 +94,7 @@ def generate_consensus(in_fq1: str, in_fq2: str, cluster_file: str,
                       '--min-reads-per-cluster', str(min_reads_per_cluster),
                       '--max-reads-per-cluster', str(max_reads_per_cluster)]
 
-    calib_cons_stdout = run_command(calib_cons_cmd)
-
-    logger.info(calib_cons_stdout)
+    run_command(calib_cons_cmd)
     logger.info('Consensus generation has been done.')
 
     fq1_cons = fq1_cons_prefix + '.fastq'
@@ -157,7 +120,7 @@ def cluster_umi(in_fq1: str, in_fq2: str, fq1_umi_len: int, fq2_umi_len: int,
                  '--minimizer-threshold', str(minimizer_threshold),
                  '--error-tolerance', str(error_tolerance)]
 
-    _ = run_command(calib_cmd)
+    run_command(calib_cmd)
 
     cluster_file = output_prefix + 'cluster'
     check_if_exist(cluster_file)
@@ -165,73 +128,6 @@ def cluster_umi(in_fq1: str, in_fq2: str, fq1_umi_len: int, fq2_umi_len: int,
     logger.info('UMI clustering has been done.')
 
     return cluster_file
-
-
-def extract_umi(fq12_chunks: list[str], read1_pattern: str,
-                read2_pattern: str, find_umi_in_rc: bool) -> tuple[str, str, int]:
-    total_reads_count, initial_reads_count = 0, 0
-    processed_fq1_chunks, processed_fq2_chunks = [], []
-
-    logger.info(f'Extracting UMI...')
-    for fq1_chunk, fq2_chunk in tqdm(fq12_chunks, file=tqdm_out, mininterval=1):
-        umi_extractor = BarcodeExtractor(fq1_chunk, fq2_chunk, read1_pattern,
-                                         read2_pattern, find_umi_in_rc=find_umi_in_rc)
-
-        chunk_reads1, chunk_reads2 = umi_extractor.get_fastq_reads()
-        processed_fq1_chunk, processed_fq2_chunk = umi_extractor.process_in_parallel(chunk_reads1, chunk_reads2)
-
-        processed_fq1_chunks.append(processed_fq1_chunk)
-        processed_fq2_chunks.append(processed_fq2_chunk)
-
-        total_reads_count += umi_extractor.get_initial_reads_count()
-        initial_reads_count += umi_extractor.get_final_reads_count()
-
-        remove(fq1_chunk, fq2_chunk)
-
-    logger.info('UMI successfully extracted.')
-
-    processed_fq1 = concat_files(processed_fq1_chunks)
-    processed_fq2 = concat_files(processed_fq2_chunks)
-
-    return processed_fq1, processed_fq2, total_reads_count
-
-
-def split_by_chunks(fq1_path: str, fq2_path: str) -> list[str]:
-    logger.info(f'Splitting {fq1_path} and {fq2_path} into chunks by {FASTQ_CHUNK_SIZE} reads...')
-
-    fq1_outdir = os.path.join(TMP_DIR, 'chunks', 'fq1')
-    fq2_outdir = os.path.join(TMP_DIR, 'chunks', 'fq2')
-
-    for fq_path, output_dir in [(fq1_path, fq1_outdir), (fq2_path, fq2_outdir)]:
-        cmd = ['seqkit', 'split2', fq_path, '--by-size', str(FASTQ_CHUNK_SIZE),
-               '--by-size-prefix', '', '--out-dir', output_dir]
-        _ = run_command(cmd)
-
-    fq1_chunks = sorted([entry.path for entry in os.scandir(fq1_outdir)])
-    fq2_chunks = sorted([entry.path for entry in os.scandir(fq2_outdir)])
-
-    logger.info(f'Splitting {fq1_path} and {fq2_path} has been done.')
-
-    return zip(fq1_chunks, fq2_chunks)
-
-
-def keep_only_paired_reads(fq1: str, fq2: str, clear=False):
-    logger.info('Filter out unpaired reads...')
-
-    outdir = os.path.join(TMP_DIR, 'paired')
-    cmd = ['seqkit', 'pair', '-1', fq1, '-2', fq2, '--out-dir', outdir]
-
-    _ = run_command(cmd)
-
-    new_fq1 = os.path.join(outdir, os.path.basename(fq1))
-    new_fq2 = os.path.join(outdir, os.path.basename(fq2))
-
-    if clear:
-        remove(fq1, fq2)
-
-    logger.info('Filtering unpaired reads has been done.')
-
-    return new_fq1, new_fq2
 
 
 def check_error_tolerance_size(umi_len: int, error_tolerance: int):
@@ -242,8 +138,9 @@ def check_error_tolerance_size(umi_len: int, error_tolerance: int):
         sys.exit(1)
 
 
-def get_prepared_pattern(pattern: str, max_error: int) -> tuple[str, int]:
-    barcode_pattern = BarcodePattern(pattern, max_error=max_error)
-    umi_length = barcode_pattern.get_umi_length()
-    prepared_pattern = barcode_pattern.get_prepared_pattern()
-    return prepared_pattern, umi_length
+def decompress(gz_file: str) -> str:
+    """Decompresses gzipped file"""
+    output_file = tempfile.NamedTemporaryFile().name
+    cmd = ' '.join(['pigz', '-dck', gz_file, '>', output_file])
+    run_command(cmd, shell=True)
+    return output_file

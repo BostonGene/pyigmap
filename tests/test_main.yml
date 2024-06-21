@@ -9,7 +9,7 @@
 - name: test_main_amplicon_sample_id
   command: ./pyigmap --library amplicon
                      --sample_id ERR7425614
-                     --fq1_barcode_pattern '^UMI:N{12}'
+                     --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
                      --reads_to_process 10
                      --outdir ./
                      -profile docker
