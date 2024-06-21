@@ -106,5 +106,8 @@ workflow {
 }
 
 workflow.onComplete {
-  log.info ( workflow.success ? "\nDone! Results are stored here --> ${params.outdir}/${params.out_archive} \n": "Oops .. something went wrong" )
+    def message = workflow.success
+        ? "\nDone! Results are stored here --> ${params.outdir.endsWith('/') ? params.outdir[0..-2] : params.outdir}/${params.out_archive} \n"
+        : "Oops .. something went wrong"
+    log.info(message)
 }
