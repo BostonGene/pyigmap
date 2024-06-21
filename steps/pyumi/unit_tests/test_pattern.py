@@ -56,6 +56,11 @@ def pattern11() -> str:
     return "(UMI:N{11})"
 
 
+@fixture(scope='module')
+def pattern12() -> str:
+    return "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
+
+
 def test_parse_barcode_length_when_present(pattern2, pattern9, pattern10, pattern11):
     assert parse_umi_length(pattern2) == 14
     assert parse_umi_length(pattern9) == 9
@@ -96,16 +101,18 @@ def test_replace_nucleotide_patterns(pattern2, pattern3):
 
 
 def test_add_nucleotide_cost(pattern7):
-    assert add_nucleotide_cost(pattern=pattern7) == "^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=3}(?P<UMI>[ATGCN]{14})"
+    assert add_nucleotide_cost(pattern=pattern7) == "^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=4}(?P<UMI>[ATGCN]{14})"
 
 
 def test_without_add_nucleotide_cost(pattern8):
     assert add_nucleotide_cost(pattern=pattern8) == pattern8
 
 
-def test_get_prepared_pattern_and_umi_len(pattern2):
+def test_get_prepared_pattern_and_umi_len(pattern2, pattern12):
     assert (get_prepared_pattern_and_umi_len(pattern=pattern2)
-            == ("^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=3}(?P<UMI>[ATGCN]{14})", 14))
+            == ("^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=4}(?P<UMI>[ATGCN]{14})", 14))
+    assert (get_prepared_pattern_and_umi_len(pattern=pattern12)
+            == ("^(TGGTATCAACGCAGAGTAC){s<=4}(?P<UMI>[ATGCN]{19})(TCTTGGGGG){s<=2}", 19))
 
     # TODO!
     # assert (BarcodePattern(pattern='^N{13}').get_prepared_pattern()

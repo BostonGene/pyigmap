@@ -1,3 +1,4 @@
+import math
 import re
 
 from logger import set_logger
@@ -29,10 +30,10 @@ def parse_umi_length(pattern: str, barcode_type='UMI') -> int:
 def add_nucleotide_cost(pattern: str, max_error=2) -> str:
     """Adds mismatch cost"""
     new_pattern = pattern
-    for adapter in re.findall(ADAPTER_PATTERN_REGEX, pattern):
-        adapter_max_error = len(adapter) * max_error // 10
-        new_pattern = re.sub(rf'(?<![\w([])([{adapter}]+)(?![\w\])])',
-                             rf'(\1){{s<={adapter_max_error}}}', pattern)
+    for adapter in set(re.findall(ADAPTER_PATTERN_REGEX, pattern)):
+        adapter_max_error = math.ceil(len(adapter) * max_error / 10)
+        new_pattern = re.sub(rf'(?<![\w\[(])({adapter})(?![\w\])])',
+                             rf'(\1){{s<={adapter_max_error}}}', new_pattern)
     return new_pattern
 
 
