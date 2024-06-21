@@ -53,8 +53,8 @@ def help_message() {
         Output file:
 
     pyigmap.tar.gz archive that contains:
-    * corrected_annotation.tsv  corrected AIRR-formatted annotation
-    * stat.json                 file with common statistics
+    * corrected_annotation.tsv  output corrected AIRR-formatted annotation
+    * stat.json                 output file with common metrics
 
 
         Workflow Options:
