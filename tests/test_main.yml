@@ -3,7 +3,6 @@
                      --sample_id SRR3743469
                      --reads_to_process 10000
                      --outdir ./
-                     -profile docker
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
@@ -12,6 +11,13 @@
                      --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
                      --reads_to_process 10
                      --outdir ./
-                     -profile docker
+  files:
+    - path: "pyigmap.tar.gz"
+- name: test_main_amplicon_zenodo
+  command: ./pyigmap --library amplicon
+                     --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz
+                     --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R2.fastq.gz
+                     --reads_to_process 5000
+                     --outdir ./
   files:
     - path: "pyigmap.tar.gz"
