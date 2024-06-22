@@ -27,7 +27,7 @@ def help_message() {
     pyIgMap is a workflow for extracting and summarizing antigen receptor gene rearrangements from sequencing data.
 
         Usage example:
-    1. To process AIRR-Seq target data with UMI in the first twelve letters of the forward read
+    1. To process AIRR-Seq target data with UMI
     ./pyigmap --library amplicon --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz --fq1_pattern "^UMI:N{12}"
 
     2. To process RNASeq-bulk data
