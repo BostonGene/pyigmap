@@ -3,7 +3,6 @@
                      --sample_id SRR3743469
                      --reads_to_process 10000
                      --outdir ./
-                     -profile docker
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
@@ -12,6 +11,5 @@
                      --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
                      --reads_to_process 10
                      --outdir ./
-                     -profile docker
   files:
     - path: "pyigmap.tar.gz"
