@@ -1,5 +1,5 @@
 process IgBlastFASTA {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_medium"
 
     input:
@@ -19,7 +19,7 @@ process IgBlastFASTA {
 }
 
 process IgBlastFASTQ {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_medium"
 
     input:
@@ -43,7 +43,7 @@ process IgBlastFASTQ {
 }
 
 process IgBlastMockFASTQ {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_medium"
 
     input:

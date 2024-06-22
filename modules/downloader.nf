@@ -1,5 +1,5 @@
 process GetLinks {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_single"
 
     input:
@@ -26,7 +26,7 @@ process GetLinks {
 }
 
 process Download {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_single"
 
     input:
@@ -49,7 +49,7 @@ process Download {
 }
 
 process Downsample {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_single"
 
     input:

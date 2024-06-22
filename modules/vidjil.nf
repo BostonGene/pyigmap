@@ -1,5 +1,5 @@
 process Vidjil {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_medium"
 
     input:

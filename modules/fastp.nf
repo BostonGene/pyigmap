@@ -1,5 +1,5 @@
 process FastpMerge {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_low"
 
     input:
@@ -27,7 +27,7 @@ process FastpMerge {
 }
 
 process FastpMockMerge {
-    // labels are defined in conf/base.conf
+    // labels are defined in conf/base.config
     label "process_low"
 
     input:
