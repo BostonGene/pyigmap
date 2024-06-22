@@ -15,11 +15,9 @@
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_zenodo
   command: ./pyigmap --library amplicon
-                     --zenodo
-                     --fq1 fmba_TRAB_R1.fastq.gz
-                     --fq2 fmba_TRAB_R2.fastq.gz
+                     --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz
+                     --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R2.fastq.gz
                      --reads_to_process 5000
                      --outdir ./
-                     -profile docker
   files:
     - path: "pyigmap.tar.gz"
