@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+* Disabled pyUMI and Calib steps for an amplicon sequencing data without barcodes ([#103](https://github.com/BostonGene/pyigmap/issues/103))
 * Fix a bug with chimeras removing ([#49](https://github.com/BostonGene/pyigmap/issues/49)) ([f80356d](https://github.com/BostonGene/pyigmap/commit/f80356de9d3ed37dad42d2c554f76c488050760c))
 * Fix a bug with dataframe index in `drop_duplicates_in_different_loci` ([#29](https://github.com/BostonGene/pyigmap/issues/29)) ([dda232c](https://github.com/BostonGene/pyigmap/commit/dda232c20c28c72403cc3a08db90d6fe33620c85))
 * Fix a bug with `total_reads` calculation for fastp.json in `cdr3nt-error-corrector` step ([#16](https://github.com/BostonGene/pyigmap/issues/16)) ([16fb28b](https://github.com/BostonGene/pyigmap/commit/16fb28b81477545fb392d96b05d431b85bd2a0d4))
