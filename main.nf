@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 
-include { PYIGMAP_AMPLICON } from './workflows/pyigmap_amplicon.nf'
-include { PYIGMAP_RNASEQ } from './workflows/pyigmap_rnaseq.nf'
-include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK; DOWNSAMPLE_FASTQ } from './workflows/download_fastq.nf'
+include { PYIGMAP_AMPLICON } from './subworkflows/pyigmap_amplicon.nf'
+include { PYIGMAP_RNASEQ } from './subworkflows/pyigmap_rnaseq.nf'
+include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK; DOWNSAMPLE_FASTQ } from './subworkflows/download_fastq.nf'
 
 
 if (params.help) { exit 0, help_message() }
