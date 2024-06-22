@@ -1,4 +1,7 @@
 process Vidjil {
+    // labels are defined in conf/base.conf
+    label "process_medium"
+
     input:
         path fq12
         path ref

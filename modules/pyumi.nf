@@ -1,4 +1,7 @@
 process PyUMI {
+    // labels are defined in conf/base.conf
+    label "process_low"
+
     input:
         path fq1
         path fq2

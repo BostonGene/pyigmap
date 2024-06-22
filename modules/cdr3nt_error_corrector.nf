@@ -1,4 +1,7 @@
 process CDR3ErrorCorrector {
+    // labels are defined in conf/base.conf
+    label "process_low"
+
     input:
         path raw_annotation
         path olga_models
