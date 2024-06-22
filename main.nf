@@ -2,8 +2,7 @@
 
 include { PYIGMAP_AMPLICON } from './workflows/pyigmap_amplicon.nf'
 include { PYIGMAP_RNASEQ } from './workflows/pyigmap_rnaseq.nf'
-include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK } from './workflows/download_fastq.nf'
-include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from './steps/downloader/downloader.nf'
+include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK; DOWNSAMPLE_FASTQ } from './workflows/download_fastq.nf'
 
 
 if (params.help) { exit 0, help_message() }
@@ -13,11 +12,10 @@ log.info "                     P Y I G M A P                     "
 log.info "======================================================="
 log.info "Library type         : ${params.library}"
 log.info "Sample               : ${params.sample_id}"
-log.info "Enable zenodo        : ${params.zenodo}"
 log.info "Reads to process     : ${params.reads_to_process}"
 log.info "All alleles          : ${params.all_alleles}"
-log.info "Fastq1               : ${params.fq1}"
-log.info "Fastq2               : ${params.fq2}"
+log.info "Forward FASTQ        : ${params.fq1}"
+log.info "Reverse FASTQ        : ${params.fq2}"
 log.info "Output directory     : ${params.outdir}"
 log.info "Vidjil reference     : ${params.vidjil_ref}"
 log.info "IgBLAST reference    : ${params.igblast_ref}"
@@ -29,41 +27,40 @@ def help_message() {
     pyIgMap is a workflow for extracting and summarizing antigen receptor gene rearrangements from sequencing data.
 
         Usage example:
-    1. For amplicon data
-    ./pyigmap --mode amplicon --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+    1. To process AIRR-Seq target data with UMI
+    ./pyigmap --library amplicon --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz --fq1_pattern "^UMI:N{12}"
 
-    2. For RNASeq data
-    ./pyigmap --mode rnaseq --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
+    2. To process RNASeq-bulk data
+    ./pyigmap --library rnaseq --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
 
-    3. For public data by sample id
-    ./pyigmap --mode rnaseq --sample_id SRR3743469 --reads 200000
+    3. To process public RNASeq data by sample id
+    ./pyigmap --library rnaseq --sample_id SRR3743469 --reads_to_process 200000
 
-    4. For public data from ZENODO
-    ./pyigmap --mode rnaseq --zenodo --fq1 SRR3743469_R1.fastq.gz --fq2 SRR3743469_R2.fastq.gz --reads 200000
+    4. To process RNASeq data downloaded by HTTP/HTTPS/FTP link
+    ./pyigmap --library rnaseq --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R2.fastq.gz --reads_to_process 200000
 
         Optional input:
-    --fq1                       path to the read1 fastq (default: none)
-    --fq2                       path to the read2 fastq (default: none)
-    --zenodo                    enables downloading from ZENODO (default: false)
+    --fq1                       path to the forward FASTQ (default: ${params.fq1})
+    --fq2                       path to the reverse FASTQ (default: ${params.fq2})
 
     or
 
-    --sample_id                    sample id name (default: none)
+    --sample_id                 sample id name (default: ${params.sample_id})
 
         Output:
     --outdir                    path to the output directory (default: ${params.outdir})
 
         Output file:
 
-    pyigmap.tar.gz archive that contains:
-    * corrected_annotation.tsv  the corrected annotation in AIRR-format
-    * stat.json                 the file with different statistics
+      ${params.out_archive} archive that contains:
+      ${params.out_corrected_annotation}  output corrected AIRR-formatted annotation
+      ${params.out_stat_json}                 output JSON with common metrics
 
 
         Workflow Options:
-    --mode                      the mode of pipeline "rnaseq" (without umi-preprocessing) or "amplicon" (with umi-preprocessing)
+    --library                   the library type of input data: "rnaseq" (RNASeq-bulk) or "amplicon" (AIRR-Seq target)
     --all_alleles               will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT);
-                                only major (*01) allele for each gene will be used otherwise (default: false)
+                                only major (*01) allele for each gene will be used otherwise (default: ${params.all_alleles})
 
         Nextflow options:
     -resume                     resume the workflow where it stopped
@@ -74,13 +71,9 @@ def help_message() {
 }
 
 workflow {
-    if (params.sample_id) {
+    if (params.sample_id && !params.fq1 && !params.fq2) {
 
-        if (params.fq1 || params.fq2) {
-            error "Error: --sample_id cannot be used with --fq1 and --fq2 at the same time, exiting..."
-        }
-
-        DOWNLOAD_FASTQ_BY_SAMPLE_ID()
+        DOWNLOAD_FASTQ_BY_SAMPLE_ID(params.sample_id)
 
         fq1 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq1
         fq2 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq2
@@ -90,20 +83,16 @@ workflow {
             error "Error: single-end is not supported, exiting..."
         }
 
-        if (params.zenodo) {
-            DOWNLOAD_FASTQ_BY_LINK()
+        def urlPatterns = ["ftp://", "http://", "https://"]
+
+        if (urlPatterns.any { params.fq1.startsWith(it) } || urlPatterns.any { params.fq2.startsWith(it) }) {
+            DOWNLOAD_FASTQ_BY_LINK(params.fq1, params.fq2)
             fq1 = DOWNLOAD_FASTQ_BY_LINK.out.fq1
             fq2 = DOWNLOAD_FASTQ_BY_LINK.out.fq2
-        } else {
-            fq1 = Channel.fromPath(params.fq1)
-            fq2 = Channel.fromPath(params.fq2)
-        }
-
-        if (params.reads_to_process.toString().isInteger()) {
-            DownsampleRead1(fq1, Channel.from("1"))
-            DownsampleRead2(fq2, Channel.from("2"))
-            fq1 = DownsampleRead1.out.fq
-            fq2 = DownsampleRead2.out.fq
+        } else if (params.reads_to_process.toString().isInteger()) {
+            DOWNSAMPLE_FASTQ(params.fq1, params.fq2)
+            fq1 = DOWNSAMPLE_FASTQ.out.fq1
+            fq2 = DOWNSAMPLE_FASTQ.out.fq2
         }
     }
 
@@ -117,5 +106,7 @@ workflow {
 }
 
 workflow.onComplete {
-  log.info ( workflow.success ? "\nDone! Results are stored here --> ${params.outdir} \n": "Oops .. something went wrong" )
+    def outDir = params.outdir.endsWith('/') ? params.outdir[0..-2] : params.outdir
+    def message = workflow.success ? "\nDone! Results are stored here --> ${outDir}/${params.out_archive} \n" : "Oops .. something went wrong"
+    log.info(message)
 }

@@ -18,7 +18,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * New metrics: `no_v_call` and `no_j_call` in `stat.json` (`cdr3nt-error-corrector` step) ([#40](https://github.com/BostonGene/pyigmap/issues/40)) ([c064525](https://github.com/BostonGene/pyigmap/commit/c0645254485e62a26f6d17aa913d632bc751a8d7))
 * Use `nextflow` to build pipeline ([#2](https://github.com/BostonGene/pyigmap/issues/2)) ([b575887](https://github.com/BostonGene/pyigmap/commit/b57588781ea7cd4aaaaac869d6fe4df041159da1))
 * Support `pre-commit` hooks and `Makefile` shortcuts ([#27](https://github.com/BostonGene/pyigmap/issues/27)) ([c1ec4be](https://github.com/BostonGene/pyigmap/commit/c1ec4be848a875335f6aaa03535eeeca9ee734a1))
-* Support downloading test datasets from [zenodo](https://zenodo.org/records/11103555) by `--zenodo` flag ([#38](https://github.com/BostonGene/pyigmap/issues/38)) ([77bdf8c](https://github.com/BostonGene/pyigmap/commit/77bdf8c5381370a40daabaa09ff1760b1ea36770))
 
 ### Changed
 
