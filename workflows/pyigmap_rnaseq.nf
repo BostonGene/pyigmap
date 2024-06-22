@@ -1,7 +1,7 @@
-include { FastpMockMerge } from '../steps/fastp/fastp.nf'
-include { Vidjil } from '../steps/vidjil/vidjil.nf'
-include { IgBlastFASTA } from '../steps/igblast/igblast.nf'
-include { CDR3ErrorCorrector } from '../steps/cdr3nt_error_corrector/cdr3nt_error_corrector.nf'
+include { FastpMockMerge } from '../modules/fastp.nf'
+include { Vidjil } from '../modules/vidjil.nf'
+include { IgBlastFASTA } from '../modules/igblast.nf'
+include { CDR3ErrorCorrector } from '../modules/cdr3nt_error_corrector.nf'
 
 workflow PYIGMAP_RNASEQ {
     take:

@@ -1,5 +1,5 @@
-include { GetLinks; Download as DownloadRead1; Download as DownloadRead2 } from '../steps/downloader/downloader.nf'
-include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from '../steps/downloader/downloader.nf'
+include { GetLinks; Download as DownloadRead1; Download as DownloadRead2 } from '../modules/downloader.nf'
+include { Downsample as DownsampleRead1; Downsample as DownsampleRead2 } from '../modules/downloader.nf'
 
 workflow DOWNLOAD_FASTQ_BY_LINK {
     take:
