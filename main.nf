@@ -45,16 +45,16 @@ def help_message() {
 
     or
 
-    --sample_id                    sample id name (default: ${params.sample_id})
+    --sample_id                 sample id name (default: ${params.sample_id})
 
         Output:
     --outdir                    path to the output directory (default: ${params.outdir})
 
         Output file:
 
-    pyigmap.tar.gz archive that contains:
-    * corrected_annotation.tsv  output corrected AIRR-formatted annotation
-    * stat.json                 output JSON with common metrics
+      ${params.out_archive} archive that contains:
+      ${params.out_corrected_annotation}  output corrected AIRR-formatted annotation
+      ${params.out_stat_json}                 output JSON with common metrics
 
 
         Workflow Options:
