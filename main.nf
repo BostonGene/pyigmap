@@ -40,12 +40,12 @@ def help_message() {
     ./pyigmap --library rnaseq --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R2.fastq.gz --reads_to_process 200000
 
         Optional input:
-    --fq1                       path to the forward FASTQ (default: none)
-    --fq2                       path to the reverse FASTQ (default: none)
+    --fq1                       path to the forward FASTQ (default: ${params.fq1})
+    --fq2                       path to the reverse FASTQ (default: ${params.fq2})
 
     or
 
-    --sample_id                    sample id name (default: none)
+    --sample_id                    sample id name (default: ${params.sample_id})
 
         Output:
     --outdir                    path to the output directory (default: ${params.outdir})
@@ -60,7 +60,7 @@ def help_message() {
         Workflow Options:
     --library                   the library type of input data: "rnaseq" (RNASeq-bulk) or "amplicon" (AIRR-Seq target)
     --all_alleles               will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT);
-                                only major (*01) allele for each gene will be used otherwise (default: false)
+                                only major (*01) allele for each gene will be used otherwise (default: ${params.all_alleles})
 
         Nextflow options:
     -resume                     resume the workflow where it stopped
