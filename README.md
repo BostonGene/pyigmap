@@ -106,7 +106,7 @@ A typical command to run the pipeline from **RNASeq-bulk** sequencing data is:
 
 For common **AIRR-Seq targeted** sequencing protocols we provide pre-set parameters, including a parameter for specifying a UMI barcode pattern.  
 
-Here is an example command to process the **AIRR-Seq targeted** sequencing data with 19-base pair UMI between two adapters in the reverse FASTQ file:
+Here is an example command to process the data from the **AIRR-Seq targeted** protocol, where there is a 19-base pair UMI located between two adapters in the reverse FASTQ file:
 
 ```bash
 ./pyigmap -profile <docker/podman> \
