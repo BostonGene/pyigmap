@@ -70,7 +70,7 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
 * AIRR-Seq (target):
   * Extracting the UMI from the reads (`PyUMI`).
   * Alignment-free clustering of UMI tagged reads with subsequent consensus generation (`Calib`).
-  * Merging overlapping reads, saving not-overlapped reads, and raw read quality control (`Fastp`).
+  * Merging overlapping reads, saving not-overlapping reads, and raw read quality control (`Fastp`).
 
 ### 2. V(D)J mapping
 
