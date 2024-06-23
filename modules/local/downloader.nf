@@ -1,4 +1,6 @@
 process GetLinks {
+    // labels are defined in conf/base.config
+    label "process_single"
 
     input:
         val sample_id
@@ -24,6 +26,9 @@ process GetLinks {
 }
 
 process Download {
+    // labels are defined in conf/base.config
+    label "process_single"
+
     input:
         val sample_id
         val link
@@ -38,12 +43,15 @@ process Download {
             wget "${link}" -O "${sample_id}_R${read}.fastq.gz"
         else
             let lines_to_save=${params.reads_to_process}*4
-            wget -O - "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz"
+            wget -O - "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz" || true
         fi
         """
 }
 
 process Downsample {
+    // labels are defined in conf/base.config
+    label "process_single"
+
     input:
         path fastq
         val read

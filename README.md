@@ -53,14 +53,94 @@ make
     --outdir "./results"
 ```
 
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
+> see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
+
 ## Pipeline summary
 
-...
+`pyigmap` allows the processing of raw BCR/TCR sequencing data from **bulk** and **targeted** sequencing protocols.
+For more details on the supported protocols, please refer to the [usage](#Usage) documentation.
 
-## Pipeline parameters
+### 1. FASTQ pre-processing
 
-...
+* RNASeq-bulk:
+  * Merging overlapping reads, joining non-overlapping reads with a selected insert size, and raw read quality control (`Fastp`).
+
+* AIRR-Seq (target):
+  * Extracting the UMI from the reads (`PyUMI`).
+  * Alignment-free clustering of UMI tagged reads with subsequent consensus generation (`Calib`).
+  * Merging overlapping reads, saving not-overlapping reads, and raw read quality control (`Fastp`).
+
+### 2. V(D)J mapping
+
+* RNASeq-bulk:
+  * Fast detecting V(D)J junctions from FASTQ reads using a seed-based heuristic without initial alignment to database germline sequences (`Vidjil`).
+  * Mapping previously identified junctions against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`).
+
+* AIRR-Seq (target):
+  * Mapping FASTQ reads against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`).
+
+### 3. Aggregating and filtering spurious clonotypes
+
+* RNASeq-bulk and AIRR-Seq (target):
+  * Filter out chimeric clonotypes, that have different locus in V-/J-segments (except for TRA and TRD).
+  * Store the best aligned V, D, J and C genes call.
+  * Discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence.
+  * Aggregate clonotypes based on [Levenstein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) of 1 and read count ratio and subsequent `duplicate_count` column calculation.
+
+* Only RNASeq-bulk:
+  * Compute generation probabilities (`pgen` column) of CDR3 amino acid sequences and remove clonotypes with selected `pgen` threshold (`OLGA`).
+  * Store clonotypes with the most weighted and frequent C-gene call and V-gene alignment call.
+
+## Usage
+
+A typical command to run the pipeline from **RNASeq-bulk** sequencing data is:
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library rnaseq \
+    --fq1 "R1.fastq.gz" \
+    --fq2 "R2.fastq.gz" \
+    --outdir "./results"
+```
+
+For common **AIRR-Seq targeted** sequencing protocols we provide pre-set parameters, including a parameter for specifying a UMI barcode pattern.  
+
+Here is an example command to process the data from the **AIRR-Seq targeted** protocol, where there is a 19-base pair UMI located between two adapters in the reverse FASTQ file:
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library amplicon \
+    --fq1 "R1.fastq.gz" \
+    --fq2 "R2.fastq.gz" \
+    --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG" \
+    --outdir "./results"
+```
+
+You can also use public data from these databases by using a sample ID: [GEO](https://www.ncbi.nlm.nih.gov/geo/), [SRA](https://www.ncbi.nlm.nih.gov/sra), [EMBL-EBI](https://www.ebi.ac.uk/), [DDBJ](https://www.ddbj.nig.ac.jp/index-e.html), [NIH Biosample](https://www.ncbi.nlm.nih.gov/biosample) and [ENCODE](https://www.encodeproject.org/):
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library rnaseq \
+    --sample_id SRR3743469 \
+    --outdir "./results"
+```
+
+Alternatively, you can provide an HTTP/HTTPS/FTP link to your FASTQ files.
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library amplicon \
+    --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz \
+    --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz \
+    --outdir "./results"
+```
 
 ## Contributing
 
 Contributions are more than welcome. See the [`CONTRIBUTING`](CONTRIBUTING.md) for details.
+
+## Citations
+
+An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.

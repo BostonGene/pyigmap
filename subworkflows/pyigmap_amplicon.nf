@@ -1,8 +1,8 @@
-include { PyUMI } from '../steps/pyumi/pyumi.nf'
-include { CalibDedup } from '../steps/calib_dedup/calib_dedup.nf'
-include { FastpMerge; FastpMockMerge } from '../steps/fastp/fastp.nf'
-include { IgBlastFASTQ; IgBlastMockFASTQ } from '../steps/igblast/igblast.nf'
-include { CDR3ErrorCorrector } from '../steps/cdr3nt_error_corrector/cdr3nt_error_corrector.nf'
+include { PyUMI } from '../modules/local/pyumi.nf'
+include { CalibDedup } from '../modules/local/calib_dedup.nf'
+include { FastpMerge; FastpMockMerge } from '../modules/local/fastp.nf'
+include { IgBlastFASTQ; IgBlastMockFASTQ } from '../modules/local/igblast.nf'
+include { CDR3ErrorCorrector } from '../modules/local/cdr3nt_error_corrector.nf'
 
 workflow PYIGMAP_AMPLICON {
     take:

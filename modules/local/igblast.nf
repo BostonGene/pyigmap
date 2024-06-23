@@ -1,4 +1,7 @@
 process IgBlastFASTA {
+    // labels are defined in conf/base.config
+    label "process_medium"
+
     input:
         path fasta
         path ref
@@ -16,6 +19,9 @@ process IgBlastFASTA {
 }
 
 process IgBlastFASTQ {
+    // labels are defined in conf/base.config
+    label "process_medium"
+
     input:
         path fq1
         path fq2
@@ -37,6 +43,9 @@ process IgBlastFASTQ {
 }
 
 process IgBlastMockFASTQ {
+    // labels are defined in conf/base.config
+    label "process_medium"
+
     input:
         path fq12
         path ref

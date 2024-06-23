@@ -28,21 +28,21 @@ ccso = $(shell tput smso)
 mypy: venv ## >> run mypy type checker
 	@echo ""
 	@echo "$(ccso)--> Running mypy $(ccend)"
-	$(PYTHON_ENV) -m mypy steps/calib_dedup/
-	$(PYTHON_ENV) -m mypy steps/fastp/
-	$(PYTHON_ENV) -m mypy steps/vidjil/
-	$(PYTHON_ENV) -m mypy steps/igblast/
-	$(PYTHON_ENV) -m mypy steps/cdr3nt_error_corrector/
+	$(PYTHON_ENV) -m mypy bin/calib_dedup/
+	$(PYTHON_ENV) -m mypy bin/fastp/
+	$(PYTHON_ENV) -m mypy bin/vidjil/
+	$(PYTHON_ENV) -m mypy bin/igblast/
+	$(PYTHON_ENV) -m mypy bin/cdr3nt_error_corrector/
 
 check: venv ## >> run ruff linter
 	@echo ""
 	@echo "$(ccso)--> Running ruff check $(ccend)"
-	$(PYTHON_ENV) -m ruff check steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
+	$(PYTHON_ENV) -m ruff check bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
 
 format: venv ## >> run ruff formatter
 	@echo ""
 	@echo "$(ccso)--> Running ruff format $(ccend)"
-	$(PYTHON_ENV) -m ruff format steps/calib_dedup/ steps/fastp/ steps/vidjil/ steps/igblast/ steps/cdr3nt_error_corrector/
+	$(PYTHON_ENV) -m ruff format bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
 
 integration-tests: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
 	@echo ""
@@ -52,12 +52,12 @@ integration-tests: venv ## >> run tests for all workflows via pytest and pytest-
 unit-tests: venv ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
-	$(PYTHON_ENV) -m pytest steps/pyumi/unit_tests -vv
-#	$(PYTHON_ENV) -m pytest steps/calib_dedup/unit_tests -vv
-	$(PYTHON_ENV) -m pytest steps/fastp/unit_tests -vv
-#	$(PYTHON_ENV) -m pytest steps/vidjil/unit_tests -vv
-	$(PYTHON_ENV) -m pytest steps/igblast/unit_tests -vv
-	$(PYTHON_ENV) -m pytest steps/cdr3nt_error_corrector/unit_tests -vv
+	$(PYTHON_ENV) -m pytest bin/pyumi/unit_tests -vv
+#	$(PYTHON_ENV) -m pytest bin/calib_dedup/unit_tests -vv
+	$(PYTHON_ENV) -m pytest bin/fastp/unit_tests -vv
+#	$(PYTHON_ENV) -m pytest bin/vidjil/unit_tests -vv
+	$(PYTHON_ENV) -m pytest bin/igblast/unit_tests -vv
+	$(PYTHON_ENV) -m pytest bin/cdr3nt_error_corrector/unit_tests -vv
 
 tests: venv ##@main >> run integration and unit tests
 	@echo ""
@@ -82,29 +82,29 @@ clean: ## >> remove docker images, python environment and nextflow build files
 build-ref-image:
 	@echo ""
 	@echo "$(ccso)--> Build images of reference generators $(ccend)"
-	$(ENGINE) build --target build-ref -t $(STEP)-$(BUILD_REF_STAGE) $(PODMAN_PARAM) steps/$(STEP)/
+	$(ENGINE) build --target build-ref -t $(STEP)-$(BUILD_REF_STAGE) $(PODMAN_PARAM) bin/$(STEP)/
 
 build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
-	$(ENGINE) run --rm -v $(pwd)/steps/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
+	$(ENGINE) run --rm -v $(pwd)/bin/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
 
 build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01, *02, etc.) for igblast $(ccend)"
-	$(ENGINE) run --rm -v $(pwd)/steps/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
+	$(ENGINE) run --rm -v $(pwd)/bin/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference for vidjil $(ccend)"
-	bash steps/vidjil/build_ref.sh
-	mv /tmp/vidjil.germline.tar.gz steps/vidjil/
+	bash bin/vidjil/build_ref.sh
+	mv /tmp/vidjil.germline.tar.gz bin/vidjil/
 
 build-olga-models: ## >> build an archive with olga models
 	@echo ""
 	@echo "$(ccso)--> Build olga models for cdr3nt-error-corrector $(ccend)"
-	bash steps/cdr3nt_error_corrector/build_ref.sh
-	mv /tmp/olga-models.tar.gz steps/cdr3nt_error_corrector/
+	bash bin/cdr3nt_error_corrector/build_ref.sh
+	mv /tmp/olga-models.tar.gz bin/cdr3nt_error_corrector/
 
 build-ref: ##@main >> build all references
 	@echo ""
@@ -138,10 +138,10 @@ $(VIRTUAL_ENV): ## >> setup the virtual environment
 
 update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
-	$(PYTHON_ENV) -m pip install -r steps/pyumi/requirements.txt
-	$(PYTHON_ENV) -m pip install -r steps/fastp/requirements.txt
-	$(PYTHON_ENV) -m pip install -r steps/igblast/requirements.txt
-	$(PYTHON_ENV) -m pip install -r steps/cdr3nt_error_corrector/requirements.txt
+	$(PYTHON_ENV) -m pip install -r bin/pyumi/requirements.txt
+	$(PYTHON_ENV) -m pip install -r bin/fastp/requirements.txt
+	$(PYTHON_ENV) -m pip install -r bin/igblast/requirements.txt
+	$(PYTHON_ENV) -m pip install -r bin/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
 
 install-python: ## >> install a python
@@ -182,7 +182,7 @@ install-nextflow: ## >> install a NextFlow
 
 build-step-image:
 	@$(ENGINE) version
-	$(ENGINE) build --target $(STAGE) -t $(STEP)-$(STAGE) $(PODMAN_PARAM) steps/$(STEP)
+	$(ENGINE) build --target $(STAGE) -t $(STEP)-$(STAGE) $(PODMAN_PARAM) bin/$(STEP)
 
 install: ## Install and check dependencies
 	$(MAKE) install-nextflow
