@@ -9,11 +9,12 @@ process CDR3ErrorCorrector {
     output:
         path params.out_archive, emit: archive
     script:
+        def librarySpecifiedOptions = params.library == "rnaseq" ? params.rnaseq_corrector_options : params.amplicon_corrector_options
         """
         python3.9 /usr/local/run.py \
             --in-annotation $raw_annotation \
-            ${params.enabled_filters} \
-            --clonotype-collapse-factor ${params.clonotype_collapse_factor} \
+            ${params.default_corrector_options} \
+            $librarySpecifiedOptions \
             --olga-models $olga_models \
             --out-corrected-annotation ${params.out_corrected_annotation} \
             --in-json $json \

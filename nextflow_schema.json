@@ -167,17 +167,6 @@
       "type": "string",
       "default": "./bin/igblast/igblast.reference.major_allele.tar.gz"
     },
-    "filter_pgen_singletons": {
-      "type": "integer",
-      "default": 0
-    },
-    "filter_pgen_all": {
-      "type": "string"
-    },
-    "clonotype_collapse_factor": {
-      "type": "number",
-      "default": 0.05
-    },
     "olga_models": {
       "type": "string",
       "default": "./bin/cdr3nt_error_corrector/olga-models.tar.gz"
@@ -194,29 +183,17 @@
       "type": "string",
       "default": "pyigmap.tar.gz"
     },
-    "only_functional": {
-      "type": "boolean",
-      "default": true
-    },
-    "only_canonical": {
-      "type": "boolean",
-      "default": true
-    },
-    "only_best_alignment": {
-      "type": "boolean",
-      "default": true
-    },
-    "remove_chimeras": {
-      "type": "boolean",
-      "default": true
-    },
-    "discard_junctions_with_N": {
-      "type": "boolean",
-      "default": true
-    },
-    "enabled_filters": {
+    "default_corrector_options": {
       "type": "string",
-      "default": "--remove-chimeras --only-best-alignment --discard-junctions-with-N --filter-pgen-singletons 0"
+      "default": "--clonotype-collapse-factor 0 --discard-junctions-with-N --only-best-alignment --remove-chimeras"
+    },
+    "rnaseq_corrector_options": {
+      "type": "string",
+      "default": "--filter-pgen-singletons 0 --top-c-call --top-v-alignment-call"
+    },
+    "amplicon_corrector_options": {
+      "type": "string",
+      "default": "--skip-pgen-calculation"
     }
   }
 }
