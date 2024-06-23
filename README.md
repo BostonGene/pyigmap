@@ -68,29 +68,29 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
   * Merging overlapping reads, joining non-overlapping reads with a selected insert size, and raw read quality control (`Fastp`).
 
 * AIRR-Seq (target):
-  * Extracting the UMI from the reads (`PyUMI`)
-  * Alignment-free clustering of UMI tagged reads with subsequent consensus generation (`Calib`)
+  * Extracting the UMI from the reads (`PyUMI`).
+  * Alignment-free clustering of UMI tagged reads with subsequent consensus generation (`Calib`).
   * Merging overlapping reads, saving reads that cannot be successfully merged, and raw read quality control (`Fastp`).
 
 ### 2. V(D)J mapping
 
 * RNASeq-bulk:
-  * Fast identifing V(D)J junctions and gather them into clones using a seed-based heuristic without initial alignment to database [germline sequences](https://www.vidjil.org/doc/dev-germline/) (`Vidjil`)
-  * Mapping previously identified junctions (FASTA sequences) against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`)
+  * Fast identifing V(D)J junctions and gather them into clones using a seed-based heuristic without initial alignment to database [germline sequences](https://www.vidjil.org/doc/dev-germline/) (`Vidjil`).
+  * Mapping previously identified junctions (FASTA sequences) against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`).
 * AIRR-Seq (target):
-  * Mapping FASTQ reads against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`)
+  * Mapping FASTQ reads against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`).
 
 ### 3. Aggregating and filtering spurious clonotypes
 
 * RNASeq-bulk and AIRR-Seq (target):
-  * Filter out chimeric clonotypes, that have different locus in V-/J-segments (except for TRA and TRD)
-  * Store the best aligned V, D, J and C genes call
-  * Discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence
+  * Filter out chimeric clonotypes, that have different locus in V-/J-segments (except for TRA and TRD).
+  * Store the best aligned V, D, J and C genes call.
+  * Discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence.
   * Aggregate clonotypes based on [Levenstein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) of 1 and read count ratio and subsequent `duplicate_count` column calculation.
 
 * Only RNASeq-bulk:
-  * Compute generation probabilities (`pgen`) of CDR3 amino acid sequences and remove clonotypes with selected `pgen` threshold (`OLGA`)
-  * Store clonotypes with the most weighted and frequent C-gene call and V-gene alignment call
+  * Compute generation probabilities (`pgen`) of CDR3 amino acid sequences and remove clonotypes with selected `pgen` threshold (`OLGA`).
+  * Store clonotypes with the most weighted and frequent C-gene call and V-gene alignment call.
 
 ## Usage
 
