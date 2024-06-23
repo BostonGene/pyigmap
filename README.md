@@ -62,7 +62,7 @@ make
 `pyigmap` allows the processing of raw BCR/TCR sequencing data from **bulk** and **targeted** protocols.
 For more details on the supported protocols, please refer to the [usage](#Usage) documentation.
 
-1. Sequence assembly:
+### 1. Sequence assembly
 
 * RNASeq-bulk:
   * Merging overlapping reads, joining non-overlapping reads with a selected insert size, and raw read quality control (`Fastp`).
@@ -72,7 +72,7 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
   * Alignment-free clustering of UMI tagged reads with subsequent consensus generation (`Calib`)
   * Merging overlapping reads, saving reads that cannot be successfully merged, and raw read quality control (`Fastp`).
 
-2. V(D)J mapping:
+### 2. V(D)J mapping
 
 * RNASeq-bulk:
   * Fast identifing V(D)J junctions and gather them into clones using a seed-based heuristic without initial alignment to database [germline sequences](https://www.vidjil.org/doc/dev-germline/) (`Vidjil`)
@@ -80,7 +80,7 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
 * AIRR-Seq (target):
   * Mapping FASTQ reads against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`)
 
-3. Aggregating and filtering spurious clonotypes:
+### 3. Aggregating and filtering spurious clonotypes
 
 * RNASeq-bulk and AIRR-Seq (target):
   * Filter out chimeric clonotypes, that have different locus in V-/J-segments (except for TRA and TRD)
