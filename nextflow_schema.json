@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/bostongene/pyigmap/master/nextflow_schema.json",
+  "title": "bostongene/pyigmap pipeline parameters",
+  "description": "A pipeline for extracting and summarizing TCR and BCR gene rearrangements from sequencing data",
+  "type": "object",
+  "definitions": {
+    "input_output_options": {
+      "title": "Input/output options",
+      "type": "object",
+      "fa_icon": "fas fa-terminal",
+      "description": "Define where the pipeline should find input data and save output data.",
+      "required": ["outdir"],
+      "properties": {
+        "outdir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
+          "fa_icon": "fas fa-folder-open",
+          "default": "./results"
+        }
+      }
+    },
+    "generic_options": {
+      "title": "Generic options",
+      "type": "object",
+      "fa_icon": "fas fa-file-import",
+      "description": "Less common options for the pipeline, typically set in a config file.",
+      "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
+      "properties": {
+        "help": {
+          "type": "boolean",
+          "description": "Display help text.",
+          "fa_icon": "fas fa-question-circle",
+          "hidden": true
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/input_output_options"
+    },
+    {
+      "$ref": "#/definitions/generic_options"
+    }
+  ],
+  "properties": {
+    "fq1": {
+      "type": "string"
+    },
+    "fq2": {
+      "type": "string"
+    },
+    "sample_id": {
+      "type": "string",
+      "default": "sample"
+    },
+    "library": {
+      "type": "string"
+    },
+    "reads_to_process": {
+      "type": "string",
+      "default": "all"
+    },
+    "mock_merge_amplicon": {
+      "type": "boolean"
+    },
+    "fq1_pattern": {
+      "type": "string"
+    },
+    "fq2_pattern": {
+      "type": "string"
+    },
+    "out_pyumi_fq1": {
+      "type": "string",
+      "default": "pR1.fastq.gz"
+    },
+    "out_pyumi_fq2": {
+      "type": "string",
+      "default": "pR2.fastq.gz"
+    },
+    "out_pyumi_json": {
+      "type": "string",
+      "default": "pyumi.json"
+    },
+    "out_calib_dedup_fq1": {
+      "type": "string",
+      "default": "cR1.fastq.gz"
+    },
+    "out_calib_dedup_fq2": {
+      "type": "string",
+      "default": "cR2.fastq.gz"
+    },
+    "kmer_size": {
+      "type": "integer",
+      "default": 7
+    },
+    "minimizer_count": {
+      "type": "integer",
+      "default": 6
+    },
+    "minimizer_threshold": {
+      "type": "integer",
+      "default": 6
+    },
+    "error_tolerance": {
+      "type": "integer",
+      "default": 2
+    },
+    "out_fastp_fq1": {
+      "type": "string",
+      "default": "mR1.fastq.gz"
+    },
+    "out_fastp_fq2": {
+      "type": "string",
+      "default": "mR2.fastq.gz"
+    },
+    "out_fastp_fq12": {
+      "type": "string",
+      "default": "mR12.fastq.gz"
+    },
+    "out_fastp_json": {
+      "type": "string",
+      "default": "fastp.json"
+    },
+    "out_fastp_html": {
+      "type": "string",
+      "default": "fastp.html"
+    },
+    "insert_size": {
+      "type": "integer",
+      "default": 1
+    },
+    "disable": {
+      "type": "string",
+      "default": "length_filtering adapter_trimming quality_filtering"
+    },
+    "vidjil_ref": {
+      "type": "string",
+      "default": "./bin/vidjil/vidjil.germline.tar.gz"
+    },
+    "out_vidjil_fasta": {
+      "type": "string",
+      "default": "vidjil.fasta.gz"
+    },
+    "out_vidjil_logs": {
+      "type": "string",
+      "default": "vidjil.log"
+    },
+    "igblast_receptor": {
+      "type": "string",
+      "default": "all"
+    },
+    "igblast_organism": {
+      "type": "string",
+      "default": "human"
+    },
+    "all_alleles": {
+      "type": "boolean"
+    },
+    "out_igblast_annotation": {
+      "type": "string",
+      "default": "raw_annotation.tsv.gz"
+    },
+    "igblast_ref": {
+      "type": "string",
+      "default": "./bin/igblast/igblast.reference.major_allele.tar.gz"
+    },
+    "filter_pgen_singletons": {
+      "type": "integer",
+      "default": 0
+    },
+    "filter_pgen_all": {
+      "type": "string"
+    },
+    "clonotype_collapse_factor": {
+      "type": "number",
+      "default": 0.05
+    },
+    "olga_models": {
+      "type": "string",
+      "default": "./bin/cdr3nt_error_corrector/olga-models.tar.gz"
+    },
+    "out_corrected_annotation": {
+      "type": "string",
+      "default": "corrected_annotation.tsv"
+    },
+    "out_stat_json": {
+      "type": "string",
+      "default": "stat.json"
+    },
+    "out_archive": {
+      "type": "string",
+      "default": "pyigmap.tar.gz"
+    },
+    "only_functional": {
+      "type": "boolean",
+      "default": true
+    },
+    "only_canonical": {
+      "type": "boolean",
+      "default": true
+    },
+    "only_best_alignment": {
+      "type": "boolean",
+      "default": true
+    },
+    "remove_chimeras": {
+      "type": "boolean",
+      "default": true
+    },
+    "discard_junctions_with_N": {
+      "type": "boolean",
+      "default": true
+    },
+    "enabled_filters": {
+      "type": "string",
+      "default": "--remove-chimeras --only-best-alignment --discard-junctions-with-N --filter-pgen-singletons 0"
+    }
+  }
+}
