@@ -81,7 +81,7 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
 * AIRR-Seq (target):
   * Mapping FASTQ reads against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`).
 
-### 3. Aggregating and filtering spurious clonotypes
+### 3. Cleansing and aggregating clonotypes
 
 * RNASeq-bulk and AIRR-Seq (target):
   * Filter out chimeric clonotypes, that have different locus in V-/J-segments (except for TRA and TRD).
