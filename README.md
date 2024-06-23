@@ -62,7 +62,7 @@ make
 `pyigmap` allows the processing of raw BCR/TCR sequencing data from **bulk** and **targeted** sequencing protocols.
 For more details on the supported protocols, please refer to the [usage](#Usage) documentation.
 
-### 1. Sequence assembly
+### 1. FASTQ pre-processing
 
 * RNASeq-bulk:
   * Merging overlapping reads, joining non-overlapping reads with a selected insert size, and raw read quality control (`Fastp`).
