@@ -104,7 +104,7 @@ A typical command to run the pipeline from **RNASeq-bulk** raw FASTQ files is:
     --outdir "./results"
 ```
 
-For common **targeted amplicon** sequencing protocols we provide pre-set parameters, including a parameter for specifying a UMI barcode pattern.  
+For common **AIRR-Seq targeted** sequencing protocols we provide pre-set parameters, including a parameter for specifying a UMI barcode pattern.  
 
 Here is an example command to process the **AIRR-Seq targeted** sequencing data with 19-base pair UMI between two adapters in the reverse FASTQ file:
 
