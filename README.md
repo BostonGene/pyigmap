@@ -126,6 +126,16 @@ You can also use public data from these databases by using a sample ID: [GEO](ht
     --outdir "./results"
 ```
 
+Alternatively, you can provide an HTTP/HTTPS/FTP link to your FASTQ files.
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library amplicon \
+    --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz \
+    --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz \
+    --outdir "./results"
+```
+
 ## Contributing
 
 Contributions are more than welcome. See the [`CONTRIBUTING`](CONTRIBUTING.md) for details.
