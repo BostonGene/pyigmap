@@ -94,7 +94,7 @@ Several protocols are supported. For more details on the supported protocols, pl
 
 ## Usage
 
-A typical command to run the pipeline from **RNASeq-bulk** raw FASTQ files is:
+A typical command to run the pipeline from **RNASeq-bulk** FASTQ files is:
 
 ```bash
 ./pyigmap -profile <docker/podman> \
