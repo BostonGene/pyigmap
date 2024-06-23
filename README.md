@@ -75,7 +75,7 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
 ### 2. V(D)J mapping
 
 * RNASeq-bulk:
-  * Fast identifing V(D)J junctions and gather them into clones using a seed-based heuristic without initial alignment to [database germline sequences](https://www.vidjil.org/doc/dev-germline/) (`Vidjil`).
+  * Fast identifing V(D)J junctions and gather them into clones using a seed-based heuristic without initial alignment to database germline sequences (`Vidjil`).
   * Mapping previously identified junctions (FASTA sequences) against [IMGT reference](https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/) and producing AIRR-formatted table (`IgBLAST`).
 
 * AIRR-Seq (target):
