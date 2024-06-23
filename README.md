@@ -140,3 +140,7 @@ Alternatively, you can provide an HTTP/HTTPS/FTP link to your FASTQ files.
 ## Contributing
 
 Contributions are more than welcome. See the [`CONTRIBUTING`](CONTRIBUTING.md) for details.
+
+## Citations
+
+An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
