@@ -59,7 +59,7 @@ make
 
 ## Pipeline summary
 
-`pyigmap` allows the processing of raw BCR/TCR sequencing data from **bulk** and **targeted** protocols.
+`pyigmap` allows the processing of raw BCR/TCR sequencing data from **bulk** and **targeted** sequencing protocols.
 For more details on the supported protocols, please refer to the [usage](#Usage) documentation.
 
 ### 1. Sequence assembly
