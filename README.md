@@ -59,6 +59,9 @@ make
 
 ## Pipeline summary
 
+`pyigmap` allows the processing of raw BCR and TCR bulk and targeted sequencing data.
+Several protocols are supported. For more details on the supported protocols, please refer to the [usage](#Usage) documentation.
+
 1. Sequence assembly:
 
 * RNASeq-bulk:
@@ -89,9 +92,39 @@ make
   * Compute generation probabilities (`pgen`) of CDR3 amino acid sequences and remove clonotypes with selected `pgen` threshold (`OLGA`)
   * Store clonotypes with the most weighted and frequent C-gene call and V-gene alignment call
 
-## Pipeline parameters
+## Usage
 
-...
+A typical command to run the pipeline from **RNASeq-bulk** raw FASTQ files is:
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library rnaseq \
+    --fq1 "R1.fastq.gz" \
+    --fq2 "R2.fastq.gz" \
+    --outdir "./results"
+```
+
+For common **targeted amplicon** sequencing protocols we provide pre-set parameters, including a parameter for specifying a UMI barcode pattern.  
+
+Here is an example command to process the **AIRR-Seq targeted** sequencing data with 19-base pair UMI between two adapters in the reverse FASTQ file:
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library amplicon \
+    --fq1 "R1.fastq.gz" \
+    --fq2 "R2.fastq.gz" \
+    --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG" \
+    --outdir "./results"
+```
+
+You can also use public data from these databases by using a sample ID: [GEO](https://www.ncbi.nlm.nih.gov/geo/), [SRA](https://www.ncbi.nlm.nih.gov/sra), [EMBL-EBI](https://www.ebi.ac.uk/), [DDBJ](https://www.ddbj.nig.ac.jp/index-e.html), [NIH Biosample](https://www.ncbi.nlm.nih.gov/biosample), [ENCODE](https://www.encodeproject.org/):
+
+```bash
+./pyigmap -profile <docker/podman> \
+    --library rnaseq \
+    --sample_id SRR3743469 \
+    --outdir "./results"
+```
 
 ## Contributing
 
