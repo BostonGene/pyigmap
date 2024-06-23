@@ -90,7 +90,7 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
   * Aggregate clonotypes based on [Levenstein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) of 1 and read count ratio and subsequent `duplicate_count` column calculation.
 
 * Only RNASeq-bulk:
-  * Compute generation probabilities (`pgen` column) of CDR3 amino acid sequences and remove clonotypes with selected `pgen` threshold (`OLGA`).
+  * Compute generation probabilities (`pgen` column) of CDR3 amino acid sequences and remove clonotypes with `pgen` values less than or equal to the selected threshold (`OLGA`).
   * Store clonotypes with the most weighted and frequent C-gene call and V-gene alignment call.
 
 ## Usage
