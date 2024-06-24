@@ -137,9 +137,13 @@ Alternatively, you can provide an HTTP/HTTPS/FTP link to your FASTQ files.
     --outdir "./results"
 ```
 
+## Benchmark datasets
+
+Datasets for testing data processing of various AIRR-seq protocols can be found here: [10.5281/zenodo.11103555](https://doi.org/10.5281/zenodo.11103555)
+
 ## Contributing
 
-Contributions are more than welcome. See the [`CONTRIBUTING`](CONTRIBUTING.md) for details.
+Contributions are more than welcome. See the [`CONTRIBUTING.md`](CONTRIBUTING.md) file for details.
 
 ## Citations
 
