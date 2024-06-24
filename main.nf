@@ -58,9 +58,10 @@ def help_message() {
 
 
         Workflow Options:
-    --library                   the library type of input data: "rnaseq" (RNASeq-bulk) or "amplicon" (AIRR-Seq target)
-    --all_alleles               will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT);
-                                only major (*01) allele for each gene will be used otherwise (default: ${params.all_alleles})
+    --library                   The library type of input data: "rnaseq" (RNASeq-bulk) or "amplicon" (AIRR-Seq target).
+    --all_alleles               Will use all alleles provided in the antigen receptor segment database (*01, *02, etc. according to IMGT);
+                                only major (*01) allele for each gene will be used otherwise (default: ${params.all_alleles}).
+    --save_all                  Enable saving the results of each step into an output directory (default: ${params.save_all}).
 
         Nextflow options:
     -resume                     resume the workflow where it stopped
