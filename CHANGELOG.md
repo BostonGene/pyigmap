@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+* Implemented a `--save_all` flag ([#108](https://github.com/BostonGene/pyigmap/issues/1))
 * Create a new pyumi step to pre-process umi barcodes alone. ([#1](https://github.com/BostonGene/pyigmap/issues/1))
 * Implement `--only-best-alignment` flag to store clonotypes with the best alignment of V, D, J and C genes ([#93](https://github.com/BostonGene/pyigmap/issues/93))
 * Add a new flag `--discard-junctions-with-N` toto `cdr3nt-error-corrector` step ([#92](https://github.com/BostonGene/pyigmap/issues/92))
