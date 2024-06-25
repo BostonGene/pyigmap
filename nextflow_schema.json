@@ -185,7 +185,7 @@
     },
     "default_corrector_options": {
       "type": "string",
-      "default": "--clonotype-collapse-factor 0 --discard-junctions-with-N --only-best-alignment --remove-chimeras"
+      "default": "--clonotype-collapse-factor 0.05 --discard-junctions-with-N --only-best-alignment --remove-chimeras"
     },
     "rnaseq_corrector_options": {
       "type": "string",
@@ -194,6 +194,9 @@
     "amplicon_corrector_options": {
       "type": "string",
       "default": "--skip-pgen-calculation"
+    },
+    "save_all": {
+      "type": "boolean"
     }
   }
 }

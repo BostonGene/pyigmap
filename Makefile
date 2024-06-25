@@ -126,6 +126,7 @@ build: ##@main >> build docker images, the virtual environment and install requi
     	$(MAKE) build-step-image STEP=$$step STAGE=tool ; \
 	done
 	$(MAKE) update
+	nf-core schema build --no-prompts
 	chmod +x pyigmap
 
 venv: $(VIRTUAL_ENV)
@@ -142,7 +143,7 @@ update: venv ## >> update requirements.txt inside the virtual environment
 	$(PYTHON_ENV) -m pip install -r bin/fastp/requirements.txt
 	$(PYTHON_ENV) -m pip install -r bin/igblast/requirements.txt
 	$(PYTHON_ENV) -m pip install -r bin/cdr3nt_error_corrector/requirements.txt
-	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0
+	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0 nf-core==2.14.1
 
 install-python: ## >> install a python
 	curl -fL http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz > /tmp/python.tgz
