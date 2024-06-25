@@ -53,17 +53,21 @@ def _filter_cdr3_duplicates_by_metrics(annotation: pd.DataFrame) -> pd.DataFrame
 
 
 def _remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str):
-    """Removes chimeras: sequences, that have different locus in 'locus' and 'v_call' or 'j_call' columns"""
-    not_chimera_mask = []
-    for locus, segment_call in zip(annotation['locus'].values, annotation[f'{segment}_call'].values):
-        if all(call[:3].upper() == locus or call[:3].upper() in ALLOWED_LOCUS_CHIMERAS for call in
-               segment_call.split(',')):
-            not_chimera_mask.append(True)
-        else:
-            not_chimera_mask.append(False)
-    filtered_annotation = annotation[not_chimera_mask]
-    logger.info(
-        f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} chimeras in {segment.upper()} segment.')
+    """Removes chimeras: sequences that have different locus in 'locus' and 'v_call' or 'j_call' columns"""
+    if annotation.empty:
+        return annotation
+
+    locus_values = annotation['locus'].values
+    segment_calls = annotation[f'{segment}_call'].str.split(',')
+
+    not_chimeric_clonotypes = [
+        all(call[:3].upper() == locus or call[:3].upper() in ALLOWED_LOCUS_CHIMERAS for call in calls)
+        for locus, calls in zip(locus_values, segment_calls)
+    ]
+
+    filtered_annotation = annotation[not_chimeric_clonotypes]
+    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} chimeras in {segment.upper()} segment.')
+
     return filtered_annotation
 
 
