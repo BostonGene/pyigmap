@@ -73,16 +73,6 @@ def annotation_with_j_chimeras() -> pd.DataFrame:
                               'j_call': ['IGLJ3-25*03', 'IGHJ2-26*03', 'TRAJ4-2*01', 'IGLJ2-34*01,IGHJ4-34*02', 'TRAJ7-6*01,TRDJ7-6*02']})
 
 
-@fixture(scope='module')
-def empty_annotation() -> pd.DataFrame:
-    columns = [
-        'sequence', 'locus', 'stop_codon', 'vj_in_frame', 'v_frameshift', 'productive', 'v_call', 'j_call', 'junction',
-        'junction_aa', 'v_support', 'j_support', 'v_sequence_start', 'v_sequence_end', 'j_sequence_start',
-        'j_sequence_end', 'j_sequence_alignment_aa', 'pgen', 'duplicate_count'
-    ]
-    return pd.DataFrame(columns=columns)
-
-
 def test_remove_no_junction(annotation_non_functional):
     filtered_annotation, no_junction_count = remove_no_junction(annotation_non_functional)
     assert filtered_annotation.equals(
