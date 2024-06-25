@@ -3,7 +3,7 @@ import pandas as pd
 
 from filter import (remove_non_canonical, remove_non_functional, remove_non_productive, filter_pgen,
                     _get_duplicates_in_different_loci, drop_duplicates_in_different_loci,
-                    _remove_chimeras_by_segment, remove_no_junction, discard_junctions_with_n)
+                    _remove_chimeras_by_segment, remove_chimeras, remove_no_junction, discard_junctions_with_n)
 
 from logger import set_logger
 
@@ -71,6 +71,16 @@ def annotation_with_v_chimeras() -> pd.DataFrame:
 def annotation_with_j_chimeras() -> pd.DataFrame:
     return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
                               'j_call': ['IGLJ3-25*03', 'IGHJ2-26*03', 'TRAJ4-2*01', 'IGLJ2-34*01,IGHJ4-34*02', 'TRAJ7-6*01,TRDJ7-6*02']})
+
+
+@fixture(scope='module')
+def empty_annotation() -> pd.DataFrame:
+    columns = [
+        'sequence', 'locus', 'stop_codon', 'vj_in_frame', 'v_frameshift', 'productive',
+        'v_call', 'j_call', 'junction', 'junction_aa', 'v_support', 'j_support',
+        'v_sequence_start', 'v_sequence_end', 'j_sequence_start', 'j_sequence_end'
+    ]
+    return pd.DataFrame(columns=columns)
 
 
 def test_remove_no_junction(annotation_non_functional):
@@ -169,6 +179,12 @@ def test_remove_j_chimeras(annotation_with_j_chimeras):
                            'j_call': ['TRAJ4-2*01', 'TRAJ7-6*01,TRDJ7-6*02']},
                      index=[2, 4])
     )
+
+
+def test_remove_chimeras_on_empty_annotation(empty_annotation):
+    filtered_annotation = remove_chimeras(empty_annotation)
+    logger.info(filtered_annotation)
+    assert filtered_annotation.empty
 
 
 def test_filter_pgen_singletons(annotation_pgen):
