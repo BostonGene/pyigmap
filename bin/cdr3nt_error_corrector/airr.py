@@ -88,7 +88,9 @@ def read_annotation(*annotation_paths: str, only_functional: bool, only_canonica
 
     annotation = _prepare_duplicate_count_column(annotation)
 
-    annotation = filter.remove_chimeras(annotation) if remove_chimeras else annotation
+    if remove_chimeras and len(annotation):
+        annotation = filter.remove_chimeras(annotation)
+
     loci_count = get_loci_count(annotation)
     metrics_dict.update(loci_count)
     annotation = filter.remove_non_canonical(annotation) if only_canonical else annotation
