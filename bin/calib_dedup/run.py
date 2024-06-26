@@ -21,8 +21,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--minimizer-count', type=int, default=7)
     parser.add_argument('--fq1-umi-length', type=int)
     parser.add_argument('--fq2-umi-length', type=int)
-    parser.add_argument('--find-umi-in-reverse-complement', action='store_true')
-    parser.add_argument('--pattern-max-error-budget', type=int, default=10)
     parser.add_argument('--minimizer-threshold', type=int, default=7,
                         help='Error threshold between reads (without UMI)')
     parser.add_argument('--error-tolerance', help='Hamming distance between UMIs', type=int, default=2)
