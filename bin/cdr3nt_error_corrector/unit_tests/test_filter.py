@@ -3,7 +3,7 @@ import pandas as pd
 
 from filter import (remove_non_canonical, remove_non_functional, remove_non_productive, filter_pgen,
                     _get_duplicates_in_different_loci, drop_duplicates_in_different_loci,
-                    _remove_chimeras_by_segment, remove_no_junction, discard_junctions_with_n)
+                    _remove_chimeras_by_segment, remove_chimeras, remove_no_junction, discard_junctions_with_n)
 
 from logger import set_logger
 
@@ -84,6 +84,11 @@ def test_remove_no_junction(annotation_non_functional):
     assert no_junction_count == {"no_junction": 1}
 
 
+def test_remove_no_junction_on_empty_annotation(empty_annotation):
+    filtered_annotation, no_junction_count = remove_no_junction(empty_annotation)
+    assert filtered_annotation.empty and no_junction_count == {'no_junction': 0}
+
+
 def test_remove_non_functional(annotation_non_functional):
     filtered_annotation = remove_non_functional(annotation_non_functional)
     assert filtered_annotation.equals(
@@ -91,6 +96,11 @@ def test_remove_non_functional(annotation_non_functional):
                            'junction': ['AAAA']},
                      index=[1])
     )
+
+
+def test_remove_non_functional_on_empty_annotation(empty_annotation):
+    filtered_annotation = remove_non_functional(empty_annotation)
+    assert filtered_annotation.empty
 
 
 def test_remove_non_productive(annotation_non_productive):
@@ -104,6 +114,11 @@ def test_remove_non_productive(annotation_non_productive):
     )
 
 
+def test_remove_non_productive_on_empty_annotation(empty_annotation):
+    filtered_annotation = remove_non_productive(empty_annotation)
+    assert filtered_annotation.empty
+
+
 def test_remove_non_canonical(annotation_non_canonical):
     filtered_annotation = remove_non_canonical(annotation_non_canonical)
     assert filtered_annotation.equals(
@@ -111,6 +126,11 @@ def test_remove_non_canonical(annotation_non_canonical):
                            'j_sequence_alignment_aa': ['FGGGG', 'CWGGG']},
                      index=[0, 1])
     )
+
+
+def test_remove_non_canonical_on_empty_annotation(empty_annotation):
+    filtered_annotation = remove_non_canonical(empty_annotation)
+    assert filtered_annotation.empty
 
 
 def test_get_duplicates_in_different_loci(annotation_with_duplicates_in_different_loci):
@@ -171,6 +191,11 @@ def test_remove_j_chimeras(annotation_with_j_chimeras):
     )
 
 
+def test_remove_chimeras_on_empty_annotation(empty_annotation):
+    filtered_annotation = remove_chimeras(empty_annotation)
+    assert filtered_annotation.empty
+
+
 def test_filter_pgen_singletons(annotation_pgen):
     filtered_annotation = filter_pgen(annotation_pgen, pgen_threshold=0, filter_pgen_singletons=True)
     assert filtered_annotation.equals(
@@ -178,6 +203,11 @@ def test_filter_pgen_singletons(annotation_pgen):
                            'pgen': [None, 0, 0, 0.9, 0.9]},
                      index=[2, 3, 4, 5, 6])
     )
+
+
+def test_filter_pgen_singletons_on_empty_annotation(empty_annotation):
+    filtered_annotation = filter_pgen(empty_annotation, pgen_threshold=0, filter_pgen_singletons=True)
+    assert filtered_annotation.empty
 
 
 def test_filter_pgen_default(annotation_pgen):
@@ -189,6 +219,11 @@ def test_filter_pgen_default(annotation_pgen):
     )
 
 
+def test_filter_pgen_default_on_empty_annotation(empty_annotation):
+    filtered_annotation = filter_pgen(empty_annotation, pgen_threshold=0, filter_pgen_singletons=False)
+    assert filtered_annotation.empty
+
+
 def test_discard_junctions_with_n(annotation_junctions_with_n):
     filtered_annotation = discard_junctions_with_n(annotation_junctions_with_n)
     assert filtered_annotation.equals(
@@ -196,3 +231,8 @@ def test_discard_junctions_with_n(annotation_junctions_with_n):
                            "junction": ["AAATGT"]},
                      index=[1])
     )
+
+
+def test_discard_junctions_with_n_on_empty_annotation(empty_annotation):
+    filtered_annotation = discard_junctions_with_n(empty_annotation)
+    assert filtered_annotation.empty

@@ -1,7 +1,7 @@
 from pytest import fixture
 import pandas as pd
 
-from airr import get_no_call_count, _prepare_vdjc_genes_columns
+from airr import get_no_call_count, _prepare_vdjc_genes_columns, read_annotation
 
 
 @fixture(scope="function")
@@ -60,3 +60,13 @@ def test__prepare_vdjc_genes_columns_without_best_alignment(annotation_with_no_c
                            "c_sequence_start": [-1]},
                      index=[3])
     )
+
+
+def test_read_annotation_on_empty_annotation(empty_annotation_file):
+    filtered_annotation, metrics_dict = read_annotation(empty_annotation_file,
+                                                        only_functional=True,
+                                                        only_canonical=True,
+                                                        remove_chimeras=True,
+                                                        only_best_alignment=True,
+                                                        discard_junctions_with_N=True)
+    assert filtered_annotation.empty, not metrics_dict
