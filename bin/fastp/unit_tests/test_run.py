@@ -43,7 +43,7 @@ def docker_cmd(in_fq1, in_fq2, out_fq12_path, output_html_path, output_json_path
         "-v", f"{out_fq12_path}:/root/{out_fq12_basename}",
         "-v", f"{output_html_path}:/root/{out_html_basename}",
         "-v", f"{output_json_path}:/root/{out_json_basename}",
-        "fastp",
+        "fastp-tool",
         "--in-fq1", in_fq1,
         "--in-fq2", in_fq2,
         "--out-fq12", f"/root/{out_fq12_basename}",
