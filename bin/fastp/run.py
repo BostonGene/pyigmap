@@ -1,51 +1,36 @@
 import argparse
-import gzip
 import shutil
 import subprocess
 import os
 import sys
 import tempfile
 
-from mock_merge import mock_merge_reads
+from mock_merge import run_mock_merge_reads
 
 from logger import set_logger
 
 logger = set_logger(name=__file__)
 
 
-def check_argument_consistency(args: argparse.Namespace) -> list[str]:
-    msg_list = []
-    if args.insert_size and not args.mock_merge:
-        msg_list += ["--insert-size cannot be provided without --mock-merge"]
-    if args.mock_merge and (args.out_fq1 or args.out_fq2):
-        msg_list += ["--out-fq1 or --out-fq2 cannot be used with --mock-merge"]
-    return msg_list
-
-
-def parse_args() -> argparse.Namespace:
+def parse_args() -> dict:
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-fq1', help='Input fastq.gz file, SE or PE pair 1', required=True)
     parser.add_argument('--in-fq2', help='Input fastq.gz file, PE pair 2')
     parser.add_argument('--trimq',
                         help='Reads trimming: minimal base quality for 5'' & 3'' read ends to keep them', type=int)
-    parser.add_argument('--disable', help='Mode(s) to disable',
-                        choices=["length_filtering", "quality_filtering", "adapter_trimming"], nargs='+', action='extend')
-    parser.add_argument('--merge', help='Merge reads', action='store_true')
-    parser.add_argument('--mock-merge', help='Enable mock merging of reads', action='store_true')
-    parser.add_argument('--insert-size', help='Insert size for mock merging', type=int)
+    parser.add_argument('--disable-filters', help='Mode(s) to disable',
+                        choices=["length_filtering", "quality_filtering", "adapter_trimming"], nargs='+',
+                        action='extend')
+    parser.add_argument('--merge-reads', help='Enable merge reads of overlapped reads', action='store_true')
+    parser.add_argument('--mock-merge-reads', help='Enable mock merging of non-overlapped reads', action='store_true')
+    parser.add_argument('--inner-distance-size', help='Insert size for mock merging', type=int)
     parser.add_argument('--out-fq1', help='Output fastq file, SE or PE pair 1')
     parser.add_argument('--out-fq2', help='Output fastq file, PE pair 2')
     parser.add_argument('--out-fq12', help='Output merged fastq file, PE pairs 1 and 2')
-    parser.add_argument('--out-html', help='Output html file', required=True)
-    parser.add_argument('--out-json', help='Output json file', required=True)
+    parser.add_argument('--html', help='Output html file', required=True)
+    parser.add_argument('--json', help='Output json file', required=True)
 
-    args = parser.parse_args()
-
-    error_message_list = check_argument_consistency(args)
-    if error_message_list:
-        parser.error("\n".join(error_message_list))
-
-    return args
+    return vars(parser.parse_args())
 
 
 def replace_file(src_file: str, dst_file: str):
@@ -92,7 +77,7 @@ def run_command(command: list[str], stdin=None):
     logger.info(command_process.stderr)
 
 
-def run_fastp(in_fq1: str, in_fq2: str, trimq: int, disable: str, merge: bool, out_json: str, out_html: str,
+def run_fastp(in_fq1: str, in_fq2: str, trimq: int, disable_filters: list[str], merge: bool, json: str, html: str,
               out_fq1: str, out_fq2: str, out_fq12: str):
     cmd = ['fastp', '-i', in_fq1]
     cmd += ['-o', out_fq1]
@@ -105,53 +90,48 @@ def run_fastp(in_fq1: str, in_fq2: str, trimq: int, disable: str, merge: bool, o
 
     cmd += ['--cut_tail', '--cut_front', '--cut_window_size', str(1), '--cut_mean_quality',
             str(trimq)] if trimq else []
-    cmd += [f'--disable_{mode}' for mode in disable] if disable else []
-    cmd += ['--thread', str(os.cpu_count()), '--html', out_html, '--json', out_json]
+    cmd += [f'--disable_{mode}' for mode in disable_filters] if disable_filters else []
+    cmd += ['--thread', str(os.cpu_count()), '--html', html, '--json', json]
 
     run_command(cmd)
 
 
-def concat_gz_files(gz_files: list[str]) -> str:
-    """Concatenates gz files into one file"""
-    out_file_path = tempfile.NamedTemporaryFile(suffix=".gz").name
-    with gzip.open(out_file_path, "ab") as concat_file:
-        for gz_file in gz_files:
-            with gzip.open(gz_file, "rb") as f:
-                concat_file.write(f.read())
-                logger.info(f"{gz_file} appended to {out_file_path}")
-    check_if_exist(out_file_path)
-    logger.info(f"{out_file_path} concatenation has been done.")
-    return out_file_path
+def save_final_fastq_by_mode(merge_reads: bool, mock_merge_reads: bool, in_fq2_path: str, processed_fq1_path: str,
+                             processed_fq2_path: str, processed_fq12_path: str, out_fq1_path: str, out_fq2_path: str,
+                             out_fq12_path: str):
+    """Saves final FASTQ files by provided modes"""
+    if not mock_merge_reads:
+        replace_file(processed_fq1_path, out_fq1_path)
+
+    if in_fq2_path and not mock_merge_reads:
+        replace_file(processed_fq2_path, out_fq2_path)
+
+    if merge_reads or mock_merge_reads:
+        replace_file(processed_fq12_path, out_fq12_path)
 
 
-def run(args: argparse.Namespace) -> None:
+def run(in_fq1: str, in_fq2: str, trimq: int, disable_filters: list[str], merge_reads: bool, mock_merge_reads: bool,
+        inner_distance_size: int, out_fq1: str, out_fq2: str, out_fq12: str, html: str, json: str) -> None:
+    merge_reads = True if mock_merge_reads else merge_reads
 
-    merge = True if args.mock_merge else args.merge
+    processed_fq1_path = tempfile.NamedTemporaryFile(suffix=".gz").name
+    processed_fq2_path = tempfile.NamedTemporaryFile(suffix=".gz").name
+    processed_fq12_path = tempfile.NamedTemporaryFile(suffix=".gz").name
 
-    out_fq1 = tempfile.NamedTemporaryFile(suffix=".gz").name
-    out_fq2 = tempfile.NamedTemporaryFile(suffix=".gz").name
-    out_fq12 = tempfile.NamedTemporaryFile(suffix=".gz").name
+    run_fastp(in_fq1, in_fq2, trimq, disable_filters, merge_reads, json, html,
+              processed_fq1_path, processed_fq2_path, processed_fq12_path)
 
-    run_fastp(args.in_fq1, args.in_fq2, args.trimq, args.disable, merge, args.out_json, args.out_html,
-              out_fq1, out_fq2, out_fq12)
+    if mock_merge_reads:
+        run_mock_merge_reads(processed_fq1_path, processed_fq2_path, inner_distance_size, processed_fq12_path)
 
-    if args.mock_merge and os.path.getsize(out_fq1) != 0 and os.path.getsize(out_fq2) != 0:
-        fq12_mock = mock_merge_reads(out_fq1, out_fq2, args.insert_size)
-        out_fq12 = concat_gz_files([out_fq12, fq12_mock])
-
-    if args.out_fq1:
-        replace_file(out_fq1, args.out_fq1)
-
-    if args.out_fq2:
-        replace_file(out_fq2, args.out_fq2)
-
-    if args.out_fq12:
-        replace_file(out_fq12, args.out_fq12)
+    save_final_fastq_by_mode(merge_reads, mock_merge_reads, in_fq2, processed_fq1_path, processed_fq2_path,
+                             processed_fq12_path,
+                             out_fq1, out_fq2, out_fq12)
 
 
 if __name__ == "__main__":
     args = parse_args()
-    logger.info(f"Starting program with the following arguments: {vars(args)}")
+    logger.info(f"Starting program with the following arguments: {args}")
 
-    run(args)
+    run(**args)
     logger.info("Run is completed successfully.")

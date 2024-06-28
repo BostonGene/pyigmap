@@ -19,10 +19,10 @@ process FastpMerge {
             --out-fq1 ${params.out_fastp_fq1} \
             --out-fq2 ${params.out_fastp_fq2} \
             --out-fq12 ${params.out_fastp_fq12} \
-            --disable ${params.disable} \
-            --merge \
-            --out-html ${params.out_fastp_html} \
-            --out-json ${params.out_fastp_json}
+            --disable-filters ${params.disable} \
+            --merge-reads \
+            --html ${params.out_fastp_html} \
+            --json ${params.out_fastp_json}
         """
 }
 
@@ -43,10 +43,10 @@ process FastpMockMerge {
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
             --out-fq12 ${params.out_fastp_fq12} \
-            --disable ${params.disable} \
-            --mock-merge \
-            --insert-size ${params.insert_size} \
-            --out-html ${params.out_fastp_html} \
-            --out-json ${params.out_fastp_json}
+            --disable-filters ${params.disable} \
+            --mock-merge-reads \
+            --inner-distance-size ${params.insert_size} \
+            --html ${params.out_fastp_html} \
+            --json ${params.out_fastp_json}
         """
 }

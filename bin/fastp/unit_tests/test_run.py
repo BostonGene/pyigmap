@@ -43,14 +43,14 @@ def docker_cmd(in_fq1, in_fq2, out_fq12_path, output_html_path, output_json_path
         "-v", f"{out_fq12_path}:/root/{out_fq12_basename}",
         "-v", f"{output_html_path}:/root/{out_html_basename}",
         "-v", f"{output_json_path}:/root/{out_json_basename}",
-        "fastp-tool",
+        "fastp",
         "--in-fq1", in_fq1,
         "--in-fq2", in_fq2,
         "--out-fq12", f"/root/{out_fq12_basename}",
-        "--out-html", f"/root/{out_html_basename}",
-        "--out-json", f"/root/{out_json_basename}",
-        "--disable", "length_filtering", "quality_filtering", "adapter_trimming",
-        "--mock-merge", "--insert-size", str(1)
+        "--html", f"/root/{out_html_basename}",
+        "--json", f"/root/{out_json_basename}",
+        "--disable-filters", "length_filtering", "quality_filtering", "adapter_trimming",
+        "--mock-merge-reads", "--inner-distance-size", str(1)
     ]
 
 

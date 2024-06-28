@@ -3,26 +3,32 @@
 This step is a wrapping of [fastp](https://github.com/OpenGene/fastp) tool designed to provide fast all-in-one preprocessing for FASTQ files.
 
 ## Parameters:
-* `--merge`: merges forward and reverse FASTQ.
-* `--disable`: disables modes. Example:
+* `--merge-reads`: merges forward and reverse FASTQ.
+* `--disable-filters`: disables modes. Example:
     ```bash
-    --disable "length_filtering" # disables filtering reads shorter than 15bp
-    --disable "quality_filtering" # disables quality filtering (if >40% bases have quality <20)
-    --disable "adapter_trimming" # disables trimming Illumina adapters
+    --disable-filters "length_filtering" # disables filtering reads shorter than 15bp
+    --disable-filters "quality_filtering" # disables quality filtering (if >40% bases have quality <20)
+    --disable-filters "adapter_trimming" # disables trimming Illumina adapters
     ```
-* `--mock-merge`: enables mock merging of not overlapped forward and reverse reads with a selected insert size (distance)
-    * `--insert-size`: insert distance between reads in mock merge 
+* `--mock-merge-reads`: enables mock merging of not overlapped forward and reverse reads with a selected insert size (distance)
+    * `--inner-distance-size`: inner distance between reads (used in mock merging) 
 
-Example:
+Example of mering overlapped reads:
 
-There are such not overlapped forward and reverse reads:
 ```
-CCCAAA ->
-          <- GGGTTT
+|------------------------| Full sequence
+|----------ATG>            R1
+          <ATG-----------| R2
+|----------ATG-----------| Concatenated (overlap)
 ```
-After mock merging them with `--insert-size 1` you get such read:
+
+Example of mock mering not-overlapped reads with `--insert-distance-size 3`:
+
 ```
-CCCAAANAAACCC
+|------------------------| Full sequence
+|--------->                R1
+              <----------| R2
+|----------NNN-----------| Concatenated (no overlap)
 ```
 
 ## Input
@@ -35,26 +41,15 @@ CCCAAANAAACCC
   * `--out-fq1` (**optional**): output forward fastq
   * `--out-fq2` (**optional**): output reverse fastq
   * `--out-fq12` (**optional**): output merged fastq
-  * `--out-json`: output json with metrics
-  * `--out-html`: output html with metrics
+  * `--json`: output json with metrics
+  * `--html`: output html with metrics
 
-## How to run
+## Testing
+
+To run unit tests, execute:
 
 ```bash
-docker build --target tool -t fastp .
-
-FOLDER_WITH_DATA=path/to/your/folder # should contain: R1.fastq.gz (or cR1.fastq.gz) and R2.fastq.gz (or cR2.fastq.gz)
-
-docker run \
-   -v ${FOLDER_WITH_DATA}:/root/ \
-   fastp \
-   --in-fq1 /root/R1.fastq.gz \
-   --in-fq2 /root/R2.fastq.gz \
-   --out-fq1 /root/mR1.fastq.gz \
-   --out-fq2 /root/mR2.fastq.gz \
-   --out-fq12 /root/mR12.fastq.gz \
-   --disable "length_filtering" "adapter_trimming" "quality_filtering" \
-   --merge \
-   --out-html /root/fastp.html \
-   --out-json /root/fastp.json
+pip install pytest
+docker build -t fastp .
+pytest unit_tests -vv
 ```

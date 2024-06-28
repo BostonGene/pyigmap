@@ -1,10 +1,12 @@
 import gzip
+import tempfile
 
-from mock_merge import mock_merge_reads
+from mock_merge import run_mock_merge_reads
 
 
 def test_mock_merge_reads(fastq1, fastq2):
-    merged_fastq = mock_merge_reads(fastq1, fastq2, insert_size=1)
+    merged_fastq = tempfile.NamedTemporaryFile(prefix=".fastq.gz").name
+    run_mock_merge_reads(fastq1, fastq2, inner_distance_size=1, out_fq12=merged_fastq)
     with gzip.open(merged_fastq, "rb") as f:
         reads = [line.strip() for line in f.readlines()]
     assert reads == [b'@1/1 mock_merged_15_15',
