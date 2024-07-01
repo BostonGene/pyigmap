@@ -140,6 +140,7 @@ $(VIRTUAL_ENV): ## >> setup the virtual environment
 update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(PYTHON_ENV) -m pip install -r bin/pyumi/requirements.txt
+	$(PYTHON_ENV) -m pip install -r bin/fastp/requirements.txt
 	$(PYTHON_ENV) -m pip install -r bin/igblast/requirements.txt
 	$(PYTHON_ENV) -m pip install -r bin/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0 nf-core==2.14.1

@@ -50,7 +50,7 @@ def docker_cmd(in_fq1, in_fq2, out_fq12_path, output_html_path, output_json_path
         "--html", f"/root/{out_html_basename}",
         "--json", f"/root/{out_json_basename}",
         "--disable-filters", "length_filtering", "quality_filtering", "adapter_trimming",
-        "--mock-merge-reads", "--inner-distance-size", str(1)
+        "--mock-merge-reads", "--inner-distance-size", str(1), '--reads-chunk-size', str(5_000_000)
     ]
 
 

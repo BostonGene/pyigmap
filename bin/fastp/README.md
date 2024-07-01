@@ -22,7 +22,7 @@ Example of mering overlapped reads:
 |----------ATG-----------| Concatenated (overlap)
 ```
 
-Example of mock mering not-overlapped reads with `--insert-distance-size 3`:
+Example of mock mering not-overlapped reads with `--inner-distance-size 3`:
 
 ```
 |------------------------| Full sequence
