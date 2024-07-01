@@ -80,6 +80,9 @@ workflow {
         fq2 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq2
     } else {
 
+        fq1 = Channel.fromPath(params.fq1)
+        fq2 = Channel.fromPath(params.fq2)
+
         if (!params.fq1 || !params.fq2) {
             error "Error: single-end is not supported, exiting..."
         }

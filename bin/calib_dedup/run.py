@@ -17,13 +17,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-fq1', help='Input first FASTQ', required=True)
     parser.add_argument('--in-fq2', help='Input second FASTQ', required=True)
-    parser.add_argument('--kmer-size', type=int, default=8)
+    parser.add_argument('--kmer-size', type=int, default=4)
     parser.add_argument('--minimizer-count', type=int, default=7)
     parser.add_argument('--fq1-umi-length', type=int)
     parser.add_argument('--fq2-umi-length', type=int)
-    parser.add_argument('--find-umi-in-reverse-complement', action='store_true')
-    parser.add_argument('--pattern-max-error-budget', type=int, default=10)
-    parser.add_argument('--minimizer-threshold', type=int, default=7,
+    parser.add_argument('--minimizer-threshold', type=int, default=3,
                         help='Error threshold between reads (without UMI)')
     parser.add_argument('--error-tolerance', help='Hamming distance between UMIs', type=int, default=2)
     parser.add_argument('--min-reads-per-cluster', type=int, default=1)

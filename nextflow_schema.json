@@ -94,15 +94,15 @@
     },
     "kmer_size": {
       "type": "integer",
-      "default": 7
+      "default": 4
     },
     "minimizer_count": {
       "type": "integer",
-      "default": 6
+      "default": 7
     },
     "minimizer_threshold": {
       "type": "integer",
-      "default": 6
+      "default": 3
     },
     "error_tolerance": {
       "type": "integer",
@@ -197,6 +197,14 @@
     },
     "save_all": {
       "type": "boolean"
+    },
+    "min_reads_per_cluster": {
+      "type": "integer",
+      "default": 1
+    },
+    "max_reads_per_cluster": {
+      "type": "integer",
+      "default": 50000
     }
   }
 }
