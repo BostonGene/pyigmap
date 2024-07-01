@@ -46,6 +46,7 @@ process FastpMockMerge {
             --disable-filters ${params.disable} \
             --mock-merge-reads \
             --inner-distance-size ${params.insert_size} \
+            --reads-chunk-size 5000000 \
             --html ${params.out_fastp_html} \
             --json ${params.out_fastp_json}
         """
