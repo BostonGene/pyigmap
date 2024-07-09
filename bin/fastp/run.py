@@ -17,6 +17,12 @@ def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     msg_list = []
     if args.merge_reads and args.mock_merge_reads:
         msg_list += ["--merge-reads and --mock-merge-reads cannot be used at the same time"]
+    if args.inner_distance_size and not args.mock_merge_reads:
+        msg_list += ["--inner-distance-size cannot be provided without --mock-merge-reads"]
+    if args.mock_merge_reads and (args.out_fq1 or args.out_fq2):
+        msg_list += ["--out-fq1 or --out-fq2 cannot be used with --mock-merge-reads"]
+    if args.reads_chunk_size and not args.mock_merge_reads:
+        msg_list += ["--insert-size cannot be provided without --mock-merge-reads"]
     return msg_list
 
 
