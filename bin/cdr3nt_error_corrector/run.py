@@ -38,7 +38,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--in-json', help='Input json(s) with total reads', nargs='+',
                         action='extend', type=str)
     parser.add_argument('--skip-pgen-calculation', action='store_true', help='Skip pgen calculation via OLGA tool')
-    parser.add_argument('--clonotype-collapse-factor', type=float, default=0.05,
+    parser.add_argument('--clonotype-collapse-factor', type=float, default=0.001, # TODO: rename to error rate
                         help='Factor value, that involved in collapsing of clonotype duplicates')
     parser.add_argument('--only-productive', help='Filter out non-productive clonotypes', action='store_true')
     parser.add_argument('--remove-chimeras', action='store_true',

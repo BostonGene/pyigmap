@@ -16,13 +16,14 @@ class ClonotypeCounter:
         self.count = count
         self.parent = junction
         # probabiliy to get single error according to Binomial distr
-        self.factor = error_rate * len(junction) * (1 - error_rate * len(junction))
+        self.factor = min(0.1, error_rate * len(junction) )
+        self.factor = self.factor * (1.0 - self.factor)
         # 95% CI ~ confidence / sqrt(N), confidence intervals for proportion
-        self.confidence = 1.96 * math.sqrt(self.factor * (1 - self.factor)) 
+        self.confidence = 1.96 * math.sqrt(self.factor * (1.0 - self.factor)) 
 
     def reassign_parent(self, v_call: str, j_call: str, junction: str, count: int, matchVJ: bool = False):
         if not matchVJ or (v_call == self.v_call and j_call == self.j_call):
-            if self.parent == self.junction and self.count / count <= self.factor + self.confidence / math.sqrt(count):
+            if self.parent == self.junction and self.count / count < self.factor + self.confidence / math.sqrt(count):
                 self.parent = junction
 
     def __repr__(self):
