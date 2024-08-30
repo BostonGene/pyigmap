@@ -27,7 +27,7 @@ class ClonotypeCounter:
 
 class ClonotypeCorrector:
     CLONOTYPE_COLUMNS = ['v_call', 'j_call', 'junction']
-    V_ALIGN_COLUMNS = ['v_sequence_alignment', 'v_germline_alignment', 'v_cigar']
+    V_ALIGN_COLUMN = 'v_sequence_alignment'
     C_CALL_COLUMN = 'c_call'
     JUNCTION_COLUMN = 'junction'
     COUNT_COLUMN = 'duplicate_count'
@@ -82,7 +82,7 @@ class ClonotypeCorrector:
         if group_filtered.empty:
             return group
 
-        value_counts = group_filtered[columns].value_counts().reset_index(name='count')
+        value_counts = group_filtered[columns].value_counts().reset_index(name='count')        
         most_frequent_row = value_counts.loc[value_counts['count'].idxmax()]
         most_frequent_values = most_frequent_row[columns].to_dict()
 
@@ -94,17 +94,24 @@ class ClonotypeCorrector:
 
     def _aggregate_clonotypes_group(self, group: pd.DataFrame) -> pd.Series:
         """Select the most weighted clonotype with the most frequent values"""
-        weighted_group = self._most_weighted(group)
-
-        top_clonotypes = weighted_group
+        if self.top_v_alignment_call:
+            v_alns = group.dropna(subset=self.V_ALIGN_COLUMN)            
+            if not v_alns.empty:
+                v_alns['bases_count'] = v_alns[self.V_ALIGN_COLUMN].str.len() * v_alns[self.COUNT_COLUMN]
+                clonotype = v_alns.nlargest(1, 'bases_count').drop('bases_count', axis=1)
+            else:
+                clonotype = group.nlargest(1, self.COUNT_COLUMN)
+        else:
+            clonotype = group.nlargest(1, self.COUNT_COLUMN)
 
         if self.top_c_call:
-            top_clonotypes = self._most_frequent(weighted_group, [self.C_CALL_COLUMN])
+            c_calls = group.dropna(subset=self.C_CALL_COLUMN)
+            if not c_calls.empty:
+                c_calls = c_calls.groupby(self.C_CALL_COLUMN)[self.COUNT_COLUMN].sum()
+                clonotype[self.C_CALL_COLUMN] = c_calls.nlargest(1).index[0]
+                # TODO: also select other C-alignment-related columns
 
-        if self.top_v_alignment_call:
-            top_clonotypes = self._most_frequent(top_clonotypes, self.V_ALIGN_COLUMNS)
-
-        return top_clonotypes.head(1)
+        return clonotype
 
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list[str]) -> pd.DataFrame:
         annotation = annotation.reset_index(drop=True)
