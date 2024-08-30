@@ -1,4 +1,5 @@
 import pandas as pd
+import math
 from typing import Generator
 from logger import set_logger
 
@@ -8,17 +9,20 @@ pd.options.mode.copy_on_write = True
 
 
 class ClonotypeCounter:
-    def __init__(self, v_call: str, j_call: str, junction: str, count: int, factor: float):
+    def __init__(self, v_call: str, j_call: str, junction: str, count: int, error_rate: float):
         self.junction = junction
         self.v_call = v_call
         self.j_call = j_call
         self.count = count
         self.parent = junction
-        self.factor = factor * len(junction) # num errors ~ error rate * len (Poisson)
+        # probabiliy to get single error according to Binomial distr
+        self.factor = error_rate * len(junction) * (1 - error_rate * len(junction))
+        # 95% CI ~ confidence / sqrt(N), confidence intervals for proportion
+        self.confidence = 1.96 * math.sqrt(self.factor * (1 - self.factor)) 
 
     def reassign_parent(self, v_call: str, j_call: str, junction: str, count: int, matchVJ: bool = False):
         if not matchVJ or (v_call == self.v_call and j_call == self.j_call):
-            if self.parent == self.junction and (self.count + 1) / (count + 1) < self.factor:
+            if self.parent == self.junction and self.count / count <= self.factor + self.confidence / math.sqrt(count):
                 self.parent = junction
 
     def __repr__(self):
@@ -34,8 +38,8 @@ class ClonotypeCorrector:
     COUNT_COLUMN = 'duplicate_count'
     BASES_GAP = ['A', 'T', 'G', 'C', '']
 
-    def __init__(self, top_c_call: bool, top_v_alignment_call: bool, collapse_factor=0.001):
-        self.factor = collapse_factor # 0.001 - Phred Q30
+    def __init__(self, top_c_call: bool, top_v_alignment_call: bool, error_rate=0.001):
+        self.error_rate = error_rate # 0.001 - Phred Q30
         self.top_c_call = top_c_call
         self.top_v_alignment_call = top_v_alignment_call
 
@@ -140,7 +144,7 @@ class ClonotypeCorrector:
         clonotype_count_list = []
 
         for clonotype, count in zip(annotation[self.CLONOTYPE_COLUMNS].values, annotation[self.COUNT_COLUMN].values):
-            counter = ClonotypeCounter(*clonotype, count, factor=self.factor)
+            counter = ClonotypeCounter(*clonotype, count, error_rate=self.error_rate)
             clonotype_count_dict[counter.junction] = clonotype_count_dict.get(counter.junction, []) + [counter]
             clonotype_count_list.append(counter)
 
