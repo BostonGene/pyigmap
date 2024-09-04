@@ -44,21 +44,12 @@ class ClonotypeCorrector:
         self.top_c_call = top_c_call
         self.top_v_alignment_call = top_v_alignment_call
 
-    def _correct_c_call(self, c_call: str, j_call: str) -> str:
-        if j_call.startswith("TR"):
-            c_call = j_call[0:3] + "C"
-            if c_call == "TRBC":
-                c_call = c_call + j_call[4]
-        return c_call
-
     def correct_full(self, annotation: pd.DataFrame) -> pd.DataFrame:
         """
         Aggregates clonotypes and summarizes their duplicate count. Corrects errors in junction. 
         Selects optimal C call (isotype) and top V alignment by coverage if requested.
         """
         annotation = annotation.reset_index(drop=True)
-        annotation[self.C_CALL_COLUMN] = annotation.apply(lambda x: self._correct_c_call(x[self.C_CALL_COLUMN], x[self.J_CALL_COLUMN]), 
-                                                          axis=1) # simple fix for lack of TRxC genes
         aggregated_annotation = self.aggregate_clonotypes(annotation, self.CLONOTYPE_COLUMNS)
         fetched_annotation = self.fetch_clonotypes(aggregated_annotation)
         corrected_annotation = (self.correct_clonotypes(fetched_annotation)

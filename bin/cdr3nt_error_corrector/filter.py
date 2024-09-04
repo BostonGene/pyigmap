@@ -58,10 +58,10 @@ def _remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str):
         return annotation
 
     locus_values = annotation['locus'].values
-    segment_calls = annotation[f'{segment}_call'].str.split(',')
+    segment_calls = annotation[f'{segment}_call'].str.split(',').values
 
     not_chimeric_clonotypes = [
-        all(call[:3].upper() == locus or call[:3].upper() in ALLOWED_LOCUS_CHIMERAS for call in calls)
+        all(not call or call[:3].upper() == locus or call[:3].upper() in ALLOWED_LOCUS_CHIMERAS for call in calls)
         for locus, calls in zip(locus_values, segment_calls)
     ]
 
@@ -82,6 +82,7 @@ def remove_no_junction(annotation: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
 def remove_chimeras(annotation: pd.DataFrame) -> pd.DataFrame:
     annotation = _remove_chimeras_by_segment(annotation, 'v')
     annotation = _remove_chimeras_by_segment(annotation, 'j')
+    annotation = _remove_chimeras_by_segment(annotation, 'c')
     return annotation
 
 

@@ -109,6 +109,15 @@ def _prepare_duplicate_count_column(annotation: pd.DataFrame):
     return annotation
 
 
+def _correct_c_call(c_call: str, j_call: str) -> str:
+    """Corrects TRxC gene names"""
+    if j_call.startswith("TR"):
+        c_call = j_call[:3] + "C"
+        if c_call == "TRBC":
+            c_call = c_call + j_call[4]
+    return c_call
+
+
 def _prepare_vdjc_genes_columns(annotation: pd.DataFrame, only_best_alignment: bool) -> pd.DataFrame:
     """Filter and prepare V, D, J and C genes columns according to AIRR standards objects"""
     annotation.dropna(subset=['v_call', 'j_call'], inplace=True)
@@ -121,6 +130,10 @@ def _prepare_vdjc_genes_columns(annotation: pd.DataFrame, only_best_alignment: b
     for column in ['v_sequence_end', 'j_sequence_start', 'd_sequence_end',
                    'd_sequence_start', 'c_sequence_end', 'c_sequence_start']:
         annotation[column] = annotation[column].fillna(-1).astype(int)
+
+    annotation["c_call"] = [_correct_c_call(c_call, v_call)
+                            for c_call, v_call in zip(annotation["c_call"].values,
+                                                      annotation["j_call"].values)]
 
     return annotation
 
