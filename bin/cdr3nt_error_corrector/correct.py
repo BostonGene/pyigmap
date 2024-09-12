@@ -65,25 +65,25 @@ class ClonotypeCorrector:
     def _aggregate_clonotypes_group(self, group: pd.DataFrame) -> pd.Series:
         """
         Selects annotation with highest read count among all annotations for a given clonotype.
-        Selects optimal C call (isotype) and top V alignment by coverage if requested.         
+        Selects optimal C call (isotype) and top V alignment by coverage if requested.  
+        Optimal C call and V alignment are added as separate columns not included in AIRR format prefixed with 'best_'
         """
+        clonotype = group.nlargest(1, self.COUNT_COLUMN)       
         if self.top_v_alignment_call:
             v_alns = group.dropna(subset=self.V_ALIGN_COLUMN)            
             if not v_alns.empty:
                 v_alns['bases_count'] = v_alns[self.V_ALIGN_COLUMN].str.len() * v_alns[self.COUNT_COLUMN]
-                clonotype = v_alns.nlargest(1, 'bases_count').drop('bases_count', axis=1)
-            else:
-                clonotype = group.nlargest(1, self.COUNT_COLUMN)
-        else:
-            clonotype = group.nlargest(1, self.COUNT_COLUMN)
-
+                best_v_aln = v_alns.nlargest(1, 'bases_count').drop('bases_count', axis=1)
+                clonotype['best_v_call'] = best_v_aln['v_call']
+                clonotype['best_v_sequence_alignment'] = best_v_aln['v_sequence_alignment']
+                clonotype['best_v_sequence_alignment_aa'] = best_v_aln['v_sequence_alignment_aa']
+                clonotype['best_v_germline_alignment'] = best_v_aln['v_germline_alignment']
+                clonotype['best_v_germline_alignment_aa'] = best_v_aln['v_germline_alignment_aa']
         if self.top_c_call:
             c_calls = group.dropna(subset=self.C_CALL_COLUMN)
             if not c_calls.empty:
                 c_calls = c_calls.groupby(self.C_CALL_COLUMN)[self.COUNT_COLUMN].sum()
-                clonotype[self.C_CALL_COLUMN] = c_calls.nlargest(1).index[0]
-                # TODO: also select other C-alignment-related columns
-
+                clonotype['best_c_call'] = c_calls.nlargest(1).index[0]
         return clonotype
 
     def aggregate_clonotypes(self, annotation: pd.DataFrame, grouping_columns: list[str]) -> pd.DataFrame:
