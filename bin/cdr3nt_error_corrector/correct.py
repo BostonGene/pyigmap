@@ -68,12 +68,12 @@ class ClonotypeCorrector:
         Selects optimal C call (isotype) and top V alignment by coverage if requested.  
         Optimal C call and V alignment are added as separate columns not included in AIRR format prefixed with 'best_'
         """
-        clonotype = group.nlargest(1, self.COUNT_COLUMN)       
+        clonotype = group.nlargest(1, self.COUNT_COLUMN)
         if self.top_v_alignment_call:
             v_alns = group.dropna(subset=self.V_ALIGN_COLUMN)            
             if not v_alns.empty:
                 v_alns['bases_count'] = v_alns[self.V_ALIGN_COLUMN].str.len() * v_alns[self.COUNT_COLUMN]
-                best_v_aln = v_alns.nlargest(1, 'bases_count').drop('bases_count', axis=1)
+                best_v_aln = v_alns.nlargest(1, 'bases_count').drop('bases_count', axis=1).iloc[0]
                 clonotype['best_v_call'] = best_v_aln['v_call']
                 clonotype['best_v_sequence_alignment'] = best_v_aln['v_sequence_alignment']
                 clonotype['best_v_sequence_alignment_aa'] = best_v_aln['v_sequence_alignment_aa']
