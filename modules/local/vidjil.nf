@@ -11,9 +11,10 @@ process Vidjil {
     script:
         """
         python3.9 /usr/local/src/run.py \
-            --in-fq12 $fq12 \
+            --in-fastq $fq12 \
             --vdj-ref $ref \
             --out-fasta ${params.out_vidjil_fasta} \
+            --debug \
             --logs ${params.out_vidjil_logs}
         """
 }
