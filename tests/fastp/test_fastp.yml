@@ -1,0 +1,45 @@
+- name: test_fastp_mock_merge
+  tags:
+    - unit-tests
+  command: docker run --rm
+    -v ./:/tmp/
+    fastp-tool
+    --in-fq1 /tmp/tests/fastp/in_R1.fastq.gz
+    --in-fq2 /tmp/tests/fastp/in_R2.fastq.gz
+    --out-fq12 /tmp/out_R12.fastq.gz
+    --html /tmp/fastp.html
+    --json /tmp/fastp.json
+    --disable-filters length_filtering quality_filtering adapter_trimming
+    --mock-merge-reads
+    --inner-distance-size 1
+    --reads-chunk-size 5000000
+  files:
+    - path: "out_R12.fastq.gz"
+      extract_md5sum: 80a8b96b7f31000bb60b40fd2d7a3a4a
+      encoding: UTF-8
+- name: test_fastp_merge
+  tags:
+    - unit-tests
+  command: docker run --rm
+    -v ./:/tmp/
+    fastp-tool
+    --in-fq1 /tmp/tests/fastp/in_R1.fastq.gz
+    --in-fq2 /tmp/tests/fastp/in_R2.fastq.gz
+    --out-fq1 /tmp/out_R1.fastq.gz
+    --out-fq2 /tmp/out_R2.fastq.gz
+    --out-fq12 /tmp/out_R12.fastq.gz
+    --html /tmp/fastp.html
+    --json /tmp/fastp.json
+    --disable-filters length_filtering quality_filtering adapter_trimming
+    --merge-reads
+    --reads-chunk-size 5000000
+  files:
+    - path: "out_R1.fastq.gz"
+      extract_md5sum: 03077cbda752ca0b89bdc7b30c972aaf
+      encoding: UTF-8
+    - path: "out_R2.fastq.gz"
+      extract_md5sum: 81afb98541fe62aab07b6cf6cef23dca
+      encoding: UTF-8
+    - path: "out_R12.fastq.gz"
+      extract_md5sum: b146f68fda58da19d76033c33cb83bcf
+      encoding: UTF-8

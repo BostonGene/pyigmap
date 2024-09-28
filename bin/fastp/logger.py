@@ -3,13 +3,7 @@ import logging
 LOGGER_FORMAT = "%(name)s | line %(lineno)-3d | %(levelname)-8s | %(message)s"
 
 
-def set_logger(name: str, logger_format: str = LOGGER_FORMAT):
-    """
-    Initializes logging.
-
-    :param name: name of the logging file
-    :param logger_format: A logger format string
-    """
+def set_logger(name: str, logger_format: str = LOGGER_FORMAT) -> logging.Logger:
     logger = logging.getLogger(name)
     handler = logging.StreamHandler()
     handler.setLevel(logging.INFO)

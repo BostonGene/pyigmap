@@ -1,28 +1,33 @@
-# Fastp step
+# Fastp
 
-This step is a wrapping of [fastp](https://github.com/OpenGene/fastp) tool designed to provide fast all-in-one preprocessing for FASTQ files.
+This component is a wrapping of [fastp](https://github.com/OpenGene/fastp) tool designed to provide fast all-in-one preprocessing for FASTQ files with additional logic to merge non overlapped reads.
 
-## Parameters:
-* `--merge-reads`: merges forward and reverse FASTQ.
-* `--disable-filters`: disables modes. Example:
-    ```bash
-    --disable-filters "length_filtering" # disables filtering reads shorter than 15bp
-    --disable-filters "quality_filtering" # disables quality filtering (if >40% bases have quality <20)
-    --disable-filters "adapter_trimming" # disables trimming Illumina adapters
-    ```
-* `--mock-merge-reads`: enables mock merging of not overlapped forward and reverse reads with a selected insert size (distance)
-    * `--inner-distance-size`: inner distance between reads (used in mock merging) 
+## Input
 
-Example of mering overlapped reads:
+  * `--in-fq1`: Path to the forward FASTQ.
+  * `--in-fq2` (**optional**): Path to the reverse FASTQ.
+  * `--merge-reads`: Enable merging of forward and reverse FASTQ.
+  * `--disable-filters`: List of modes that we need to disable.  
+   Example:
+      ```bash
+      --disable-filters "length_filtering" # disables filtering reads shorter than 15bp
+      --disable-filters "quality_filtering" # disables quality filtering (if >40% bases have quality <20)
+      --disable-filters "adapter_trimming" # disables trimming Illumina adapters
+      ```
+  * `--mock-merge-reads`: Enable mock merging of not overlapped forward and reverse reads with a selected insert size (distance)
+  * `--inner-distance-size`: Inner distance between reads (used in mock merging). Default: `1`.
+  * `--reads-chunk-size`: The maximum number of reads that a chunk can contain to perform mock merging. Default: `5000000`.
+
+Example of merging overlapped reads:
 
 ```
 |------------------------| Full sequence
 |----------ATG>            R1
           <ATG-----------| R2
-|----------ATG-----------| Concatenated (overlap)
+|----------ATG-----------| Consensus (overlap)
 ```
 
-Example of mock mering not-overlapped reads with `--inner-distance-size 3`:
+Example of mock merging not-overlapped reads with `--inner-distance-size 3`:
 
 ```
 |------------------------| Full sequence
@@ -31,25 +36,10 @@ Example of mock mering not-overlapped reads with `--inner-distance-size 3`:
 |----------NNN-----------| Concatenated (no overlap)
 ```
 
-## Input
-
-  * `--in-fq1`: path to the forward fastq (`path/to/R1.fastq.gz`)
-  * `--in-fq2` (**optional**): path to the reverse fastq (`path/to/R2.fastq.gz`)
-
 ## Output
 
-  * `--out-fq1` (**optional**): output forward fastq
-  * `--out-fq2` (**optional**): output reverse fastq
-  * `--out-fq12` (**optional**): output merged fastq
-  * `--json`: output json with metrics
-  * `--html`: output html with metrics
-
-## Testing
-
-To run unit tests, execute:
-
-```bash
-pip install pytest
-docker build -t fastp .
-pytest unit_tests -vv
-```
+  * `--out-fq1` (**optional**): Path to the output forward FASTQ. Default: `/outputs/R1.fastq.gz`.
+  * `--out-fq2` (**optional**): Path to the output reverse FASTQ. Default: `/outputs/R2.fastq.gz`.
+  * `--out-fq12` (**optional**): Path to the output merged FASTQ. Default: `/outputs/R12.fastq.gz`.
+  * `--json`: Path to the output json with metrics. Default: `/outputs/fastp.json`.
+  * `--html`: Path to the output html with metrics. Default: /outputs/fastp.html.
