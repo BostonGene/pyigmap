@@ -9,9 +9,9 @@ process IgBlastFASTA {
         path params.out_igblast_annotation, emit: annotation
     script:
         """
-        python3.9 /usr/local/run.py \
+        python3.9 /usr/local/src/run.py \
             --in-fasta \${PWD}/$fasta \
-            --in-ref \${PWD}/$ref \
+            --ref \${PWD}/$ref \
             --receptor ${params.igblast_receptor} \
             --organism ${params.igblast_organism} \
             --out-annotation \${PWD}/${params.out_igblast_annotation}
@@ -31,11 +31,9 @@ process IgBlastFASTQ {
         path params.out_igblast_annotation, emit: annotation
     script:
         """
-        python3.9 /usr/local/run.py \
-            --in-fq1 \${PWD}/$fq1 \
-            --in-fq2 \${PWD}/$fq2 \
-            --in-fq12 \${PWD}/$fq12 \
-            --in-ref \${PWD}/$ref \
+        python3.9 /usr/local/src/run.py \
+            --in-fastq \${PWD}/$fq1 \${PWD}/$fq2 \${PWD}/$fq12 \
+            --ref \${PWD}/$ref \
             --receptor ${params.igblast_receptor} \
             --organism ${params.igblast_organism} \
             --out-annotation \${PWD}/${params.out_igblast_annotation}
@@ -53,8 +51,8 @@ process IgBlastMockFASTQ {
         path params.out_igblast_annotation, emit: annotation
     script:
         """
-        python3.9 /usr/local/run.py \
-            --in-fq12 \${PWD}/$fq12 \
+        python3.9 /usr/local/src/run.py \
+            --in-fastq \${PWD}/$fq12 \
             --in-ref \${PWD}/$ref \
             --receptor ${params.igblast_receptor} \
             --organism ${params.igblast_organism} \

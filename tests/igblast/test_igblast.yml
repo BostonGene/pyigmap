@@ -1,0 +1,28 @@
+- name: test_igblast_rnaseq_bulk
+  tags:
+    - unit-tests
+  command: docker run --rm
+    -v ./:/tmp/
+    igblast-tool
+    --in-fasta /tmp/tests/igblast/in_vidjil.fasta.gz
+    --out-annotation /tmp/igblast_annotation.expected.tsv.gz
+    --ref /tmp/bin/igblast/igblast.reference.major_allele.tar.gz
+    --reads-chunk-size 50000
+  files:
+    - path: "igblast_annotation.expected.tsv.gz"
+      extract_md5sum: b6939fd629e5a09e21af2f6772b05b66
+      encoding: UTF-8
+- name: test_igblast_amplicon
+  tags:
+    - unit-tests
+  command: docker run --rm
+    -v ./:/tmp/
+    igblast-tool
+    --in-fastq /tmp/tests/igblast/in_R12.fastq.gz
+    --out-annotation /tmp/igblast_annotation.expected.tsv.gz
+    --ref /tmp/bin/igblast/igblast.reference.major_allele.tar.gz
+    --reads-chunk-size 50000
+  files:
+    - path: "igblast_annotation.expected.tsv.gz"
+      extract_md5sum: 1131470e18e06176b1eb3bf3648bd5ad
+      encoding: UTF-8
