@@ -134,7 +134,7 @@
     },
     "disable": {
       "type": "string",
-      "default": "length_filtering adapter_trimming quality_filtering"
+      "default": "length_filtering quality_filtering"
     },
     "vidjil_ref": {
       "type": "string",
