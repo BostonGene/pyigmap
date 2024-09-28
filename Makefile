@@ -55,7 +55,6 @@ unit-tests: venv ## >> run tests for all steps via pytest tool
 	$(PYTHON_ENV) -m pytest bin/pyumi/unit_tests -vv
 #	$(PYTHON_ENV) -m pytest bin/calib_dedup/unit_tests -vv
 	$(PYTHON_ENV) -m pytest tests -vv --kwdof --tag unit-tests
-#	$(PYTHON_ENV) -m pytest bin/vidjil/unit_tests -vv
 	$(PYTHON_ENV) -m pytest bin/igblast/unit_tests -vv
 	$(PYTHON_ENV) -m pytest bin/cdr3nt_error_corrector/unit_tests -vv
 

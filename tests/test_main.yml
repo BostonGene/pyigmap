@@ -3,8 +3,8 @@
     - integration-tests
   command: ./pyigmap --library rnaseq
                      --sample_id SRR3743469
-                     --reads_to_process 10000
-                     --outdir ./
+                     --first_reads 10000
+                     --outdir ./ --save_all
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
@@ -13,8 +13,8 @@
   command: ./pyigmap --library amplicon
                      --sample_id ERR7425614
                      --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
-                     --reads_to_process 10
-                     --outdir ./
+                     --first_reads 10
+                     --outdir ./ --save_all
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_zenodo
@@ -23,7 +23,7 @@
   command: ./pyigmap --library amplicon
                      --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz
                      --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz
-                     --reads_to_process 5000
-                     --outdir ./
+                     --first_reads 5000
+                     --outdir ./ --save_all
   files:
     - path: "pyigmap.tar.gz"

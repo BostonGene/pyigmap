@@ -39,10 +39,10 @@ process Download {
 
     script:
         """
-        if [[ "${params.reads_to_process}" == "all" ]]; then
+        if [[ "${params.first_reads}" == "all" ]]; then
             wget "${link}" -O "${sample_id}_R${read}.fastq.gz"
         else
-            let lines_to_save=${params.reads_to_process}*4
+            let lines_to_save=${params.first_reads}*4
             wget -O - "${link}" | zcat | head -n "\${lines_to_save}" | gzip > "${sample_id}_R${read}.fastq.gz" || true
         fi
         """
@@ -62,7 +62,7 @@ process Downsample {
     script:
         """
         #!/bin/bash
-        let lines_to_save=${params.reads_to_process}*4
+        let lines_to_save=${params.first_reads}*4
         zcat $fastq | head -\${lines_to_save} | gzip > R${read}.fastq.gz
         """
 }
