@@ -12,8 +12,6 @@ from logger import set_logger
 
 logger = set_logger(name=__file__)
 
-TEMPDIR_NAME = "/tmp"
-
 
 def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     msg_list = []
@@ -96,10 +94,7 @@ def run_and_check_with_message(
 
 def run_fastp(in_fq1: str, in_fq2: str, disable_filters: list[str], merge: bool,
               json: str, html: str) -> tuple[str, str, str]:
-    out_fq1, out_fq2, out_fq12 = (
-        os.path.join(TEMPDIR_NAME, os.path.basename(tempfile.NamedTemporaryFile(suffix=".fastq.gz").name))
-        for _ in range(3)
-    )
+    out_fq1, out_fq2, out_fq12 = (tempfile.NamedTemporaryFile(suffix=".fastq.gz").name for _ in range(3))
 
     cmd = ['fastp', '-i', in_fq1]
     cmd += ['-o', out_fq1]
