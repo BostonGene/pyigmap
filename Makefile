@@ -55,7 +55,6 @@ unit-tests: venv ## >> run tests for all steps via pytest tool
 	$(PYTHON_ENV) -m pytest bin/pyumi/unit_tests -vv
 #	$(PYTHON_ENV) -m pytest bin/calib_dedup/unit_tests -vv
 	$(PYTHON_ENV) -m pytest tests -vv --kwdof --tag unit-tests
-	$(PYTHON_ENV) -m pytest bin/igblast/unit_tests -vv
 	$(PYTHON_ENV) -m pytest bin/cdr3nt_error_corrector/unit_tests -vv
 
 tests: venv ##@main >> run integration and unit tests
@@ -139,7 +138,6 @@ $(VIRTUAL_ENV): ## >> setup the virtual environment
 update: venv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(PYTHON_ENV) -m pip install -r bin/pyumi/requirements.txt
-	$(PYTHON_ENV) -m pip install -r bin/igblast/requirements.txt
 	$(PYTHON_ENV) -m pip install -r bin/cdr3nt_error_corrector/requirements.txt
 	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0 nf-core==2.14.1
 

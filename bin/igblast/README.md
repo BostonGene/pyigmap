@@ -1,29 +1,26 @@
-# IgBLAST step
+# IgBLAST component
 
-This step is a wrapping of [IgBlast](https://ncbi.github.io/igblast/) V(D)J mapping tool.
-
-## Parameters
-
-* `--receptor`: receptor name: "TCR" or "BCR"
-* `--organism`: organism name: "human" or "mouse"
+This component is a wrapping of [IgBLAST](https://ncbi.github.io/igblast/) V(D)J mapping tool.
 
 ## Input
 
-* `--in_fq1` (**optional**): path to the first fastq (`path/to/mR1.fq.gz`)
-* `--in-fq2` (**optional**): path to the second fastq (`path/to/mR2.fq.gz`)
-* `--in-fq12` (**optional**): path to the merged fastq (`path/to/mR12.fq.gz`)
-* `--in-fasta` (**optional**): path to the preprocessed fasta with detected V(D)J segments (`path/to/vidjil.fq.gz`)
-* `--in-ref`: path to the archive with reference V(D)J segments (`path/to/iblast.reference.tar.gz`)
+* `--in-fastq` (**optional**): Path to the FASTQ file.
+* `--in-fasta` (**optional**): Path to the FASTA file with detected V(D)J segments.
+* `--ref`: Path to the archive with reference V(D)J segments.
+* `--receptor`: Receptor type: "BCR", "TCR" or "all". Default: `"all"`.
+* `--organism`: organism name: "human" or "mouse"
+* `--reads-chunk-size`: Count of sequences processed in one run of IgBLAST tool. Default: `50_000`.
 
 ## Output
 
-* `--out-annotation`: path to the output IgBLAST annotation (`path/to/igblast_annotation.tsv.gz`)
+* `--out-annotation`: Path to the output IgBLAST annotation. Default: `igblast_annotation.tsv.gz`
 
-## Build archive with V(D)J reference in IgBLAST format
+## How to build V(D)J reference in IgBLAST format
 
 Build docker image with tool to generate IgBLAST reference:
 ```bash
-docker build --target build-ref -t build-ref .
+cd build_ref
+docker build -f build_ref.Dockerfile -t build-ref .
 ```
 
 ### Only major alleles
@@ -31,9 +28,9 @@ docker build --target build-ref -t build-ref .
 If you need to keep only *01 (major) alleles, execute:
 ```bash
 docker run --rm \
-    -v /path/to/put/results:/work \
+    -v ./:/tmp \
     build-ref \
-    --out-archive /work/iglast.reference.major_allele.tar.gz
+    --out-archive /tmp/igblast.reference.major_allele.tar.gz
 ```
 
 Reference will contain sequences with only major allele (*01):
@@ -47,9 +44,9 @@ aggatattgtagtagtaccagctgctatgcc
 Or you can keep all alleles (*01, *02, etc.) by specifying `--all-alleles` flag:
 ```bash
 docker run --rm \
-    -v /path/to/put/results:/work \
+    -v ./:/tmp \
     build-ref \
-    --all-alleles --out-archive /work/iglast.reference.all_alleles.tar.gz
+    --all-alleles --out-archive /tmp/igblast.reference.all_alleles.tar.gz
 ```
 
 Reference will contain sequences with all alleles (*01, *02, *03, etc.):
@@ -60,22 +57,4 @@ aggatattgtagtagtaccagctgctatgcc
 aggatattgtagtagtaccagctgctatacc
 >IGHD2-2*03
 tggatattgtagtagtaccagctgctatgcc
-```
-
-## How to run
-
-```bash
-docker build --target tool -t igblast .
-
-# should contain: vidjil.fasta.gz and igblast.reference.major_allele.tar.gz
-FOLDER_WITH_DATA=path/to/your/folder
-
-docker run \
-    -v ${FOLDER_WITH_DATA}:/root/ \
-    igblast \
-    --in-fasta /root/vidjil.fasta.gz \
-    --in-ref /root/igblast.reference.major_allele.tar.gz \
-    --receptor 'all' \
-    --organism human \
-    --out-annotation /root/raw_annotation.tsv.gz
 ```
