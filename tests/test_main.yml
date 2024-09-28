@@ -4,7 +4,7 @@
   command: ./pyigmap --library rnaseq
                      --sample_id SRR3743469
                      --first_reads 10000
-                     --outdir ./ --save_all
+                     --outdir ./
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
@@ -14,7 +14,7 @@
                      --sample_id ERR7425614
                      --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
                      --first_reads 10
-                     --outdir ./ --save_all
+                     --outdir ./
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_zenodo
@@ -24,6 +24,6 @@
                      --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz
                      --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz
                      --first_reads 5000
-                     --outdir ./ --save_all
+                     --outdir ./
   files:
     - path: "pyigmap.tar.gz"
