@@ -12,7 +12,7 @@ log.info "                     P Y I G M A P                     "
 log.info "======================================================="
 log.info "Library type         : ${params.library}"
 log.info "Sample               : ${params.sample_id}"
-log.info "Reads to process     : ${params.reads_to_process}"
+log.info "Reads to process     : ${params.first_reads}"
 log.info "All alleles          : ${params.all_alleles}"
 log.info "Forward FASTQ        : ${params.fq1}"
 log.info "Reverse FASTQ        : ${params.fq2}"
@@ -34,10 +34,10 @@ def help_message() {
     ./pyigmap --library rnaseq --fq1 /path/to/R1.fastq.gz --fq2 /path/to/R2.fastq.gz
 
     3. To process public RNASeq data by sample id
-    ./pyigmap --library rnaseq --sample_id SRR3743469 --reads_to_process 200000
+    ./pyigmap --library rnaseq --sample_id SRR3743469 --first_reads 200000
 
     4. To process RNASeq data downloaded by HTTP/HTTPS/FTP link
-    ./pyigmap --library rnaseq --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R2.fastq.gz --reads_to_process 200000
+    ./pyigmap --library rnaseq --fq1 https://zenodo.org/records/11103555/files/SRR3743469_R1.fastq.gz --fq2 https://zenodo.org/records/11103555/files/SRR3743469_R2.fastq.gz --first_reads 200000
 
         Optional input:
     --fq1                       path to the forward FASTQ (default: ${params.fq1})
@@ -93,7 +93,7 @@ workflow {
             DOWNLOAD_FASTQ_BY_LINK(params.fq1, params.fq2)
             fq1 = DOWNLOAD_FASTQ_BY_LINK.out.fq1
             fq2 = DOWNLOAD_FASTQ_BY_LINK.out.fq2
-        } else if (params.reads_to_process.toString().isInteger()) {
+        } else if (params.first_reads.toString().isInteger()) {
             DOWNSAMPLE_FASTQ(params.fq1, params.fq2)
             fq1 = DOWNSAMPLE_FASTQ.out.fq1
             fq2 = DOWNSAMPLE_FASTQ.out.fq2

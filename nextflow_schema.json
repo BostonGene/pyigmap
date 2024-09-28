@@ -59,10 +59,6 @@
     "library": {
       "type": "string"
     },
-    "reads_to_process": {
-      "type": "string",
-      "default": "all"
-    },
     "mock_merge_amplicon": {
       "type": "boolean"
     },
@@ -205,6 +201,10 @@
     "max_reads_per_cluster": {
       "type": "integer",
       "default": 50000
+    },
+    "first_reads": {
+      "type": "string",
+      "default": "all"
     }
   }
 }

@@ -1,0 +1,14 @@
+- name: test_vidjil
+  tags:
+    - unit-tests
+  command: docker run --rm
+    -v ./:/tmp/
+    vidjil-tool
+    --in-fastq /tmp/tests/vidjil/in_R12.fastq.gz
+    --out-fasta /tmp/vidjil.fasta.gz
+    --vdj-ref /tmp/bin/vidjil/vidjil.germline.tar.gz
+    --reads-chunk-size 5000000
+  files:
+    - path: "vidjil.fasta.gz"
+      extract_md5sum: aaa998dbcb018414b4c24e4d10829cbe
+      encoding: UTF-8
