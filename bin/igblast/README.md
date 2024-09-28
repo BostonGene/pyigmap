@@ -19,8 +19,7 @@ This component is a wrapping of [IgBLAST](https://ncbi.github.io/igblast/) V(D)J
 
 Build docker image with tool to generate IgBLAST reference:
 ```bash
-cd build_ref
-docker build -f build_ref.Dockerfile -t build-ref .
+docker build --target build-ref -t build-ref .
 ```
 
 ### Only major alleles
@@ -30,7 +29,7 @@ If you need to keep only *01 (major) alleles, execute:
 docker run --rm \
     -v ./:/tmp \
     build-ref \
-    --out-archive /tmp/igblast.reference.major_allele.tar.gz
+    --out-archive igblast.reference.major_allele.tar.gz
 ```
 
 Reference will contain sequences with only major allele (*01):
@@ -46,7 +45,7 @@ Or you can keep all alleles (*01, *02, etc.) by specifying `--all-alleles` flag:
 docker run --rm \
     -v ./:/tmp \
     build-ref \
-    --all-alleles --out-archive /tmp/igblast.reference.all_alleles.tar.gz
+    --all-alleles --out-archive igblast.reference.all_alleles.tar.gz
 ```
 
 Reference will contain sequences with all alleles (*01, *02, *03, etc.):

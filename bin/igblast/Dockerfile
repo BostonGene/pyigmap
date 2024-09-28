@@ -27,7 +27,7 @@ FROM image AS tool
 
 ENTRYPOINT ["python3.9", "/usr/local/src/run.py"]
 
-FROM image as build-ref
+FROM image AS build-ref
 
 RUN wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database/ncbi_human_c_genes.tar -q -O ncbi_human_c_genes.tar && \
     mkdir ${IGBLAST_DIR}/database && tar -xvf ncbi_human_c_genes.tar -C ${IGBLAST_DIR}/database
