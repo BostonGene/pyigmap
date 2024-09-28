@@ -12,7 +12,7 @@ process Vidjil {
         """
         python3.9 /usr/local/src/run.py \
             --in-fq12 $fq12 \
-            --ref $ref \
+            --vdj-ref $ref \
             --out-fasta ${params.out_vidjil_fasta} \
             --logs ${params.out_vidjil_logs}
         """
