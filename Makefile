@@ -177,6 +177,30 @@ install-nextflow: ## >> install a NextFlow
 	@java --version
 	curl -s https://get.nextflow.io | bash
 
+install-gh:
+	curl -sS https://webi.sh/gh | sh
+
+install-cliff: ## >> Install git-cliff tool
+	@echo ""
+	@echo "$(ccso)--> Installing git-cliff tool $(ccend)"
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+	$$HOME/.cargo/bin/cargo install --version 2.6.0 git-cliff
+
+changelog: install-cliff ## >> Update CHANGELOG.md
+	@echo ""
+	@echo "$(ccso)--> Updating CHANGELOG.md $(ccend)"
+	git-cliff --tag $(TAG) --bump -o CHANGELOG.md
+	git add CHANGELOG.md && git commit -m "chore(release): prepare for $(TAG)"
+	git show
+
+release: install-gh changelog
+	changelog=$$(git-cliff -vv --latest --no-exec)
+	git -c user.name="Nikita Syzrantsev" \
+		-c user.email="47356892+nsyzrantsev@users.noreply.github.com" \
+		-c user.signingkey="470EC63086337193C5EC722AA6C31111356B2070" \
+		tag -s -a "$(TAG)" -m "Release $(TAG)" -m "$$changelog"
+	gh release create $(TAG) --notes-from-tag
+
 build-step-image:
 	@$(ENGINE) version
 	$(ENGINE) build --target $(STAGE) -t $(STEP)-$(STAGE) $(PODMAN_PARAM) bin/$(STEP)
