@@ -20,7 +20,7 @@ def check_argument_consistency(args: argparse.Namespace) -> list[str]:
     return msg_list
 
 
-def parse_args() -> dict:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-fq1', help='Input fastq.gz file, SE or PE pair 1', required=True)
     parser.add_argument('--in-fq2', help='Input fastq.gz file, PE pair 2')
@@ -43,7 +43,7 @@ def parse_args() -> dict:
     if error_message_list:
         parser.error("\n".join(error_message_list))
 
-    return vars(args)
+    return args
 
 
 def move_file(src_file: str, dst_file: str) -> None:
