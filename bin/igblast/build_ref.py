@@ -1,48 +1,120 @@
 import argparse
+import shutil
+import subprocess
+import sys
 import tempfile
 import os
+from typing import Optional, List
+import logging
 
-from utils import IGBLAST_DIR, run_command, check_if_exist
-from logger import set_logger
+LOGGER_FORMAT = "%(name)s | line %(lineno)-3d | %(levelname)-8s | %(message)s"
+logger = logging.getLogger()
 
-logger = set_logger(name=__file__)
+IGBLAST_DIR = os.environ.get('IGBLAST_DIR')
 
-TMP_DIR = '/tmp'
+IMGT_URL = "https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/"
 
-SPECIES_GLOSSARY = {'human': 'Homo_sapiens',
-                    'mouse': 'Mus_musculus'}
+ORGANISMS_GLOSSARY = {
+    'human': 'Homo_sapiens',
+    'mouse': 'Mus_musculus'
+}
 
-CHAINS_GLOSSARY = {'Ig.V': ['IGHV', 'IGKV', 'IGLV'],
-                   'Ig.J': ['IGHJ', 'IGKJ', 'IGLJ'],
-                   'Ig.D': ['IGHD'],
-                   'TCR.V': ['TRAV', 'TRBV', 'TRDV', 'TRGV'],
-                   'TCR.J': ['TRAJ', 'TRBJ', 'TRDJ', 'TRGJ'],
-                   'TCR.D': ['TRBD', 'TRDD']}
+CHAINS_GLOSSARY = {
+    'Ig.V': ['IGHV', 'IGKV', 'IGLV'],
+    'Ig.J': ['IGHJ', 'IGKJ', 'IGLJ'],
+    'Ig.D': ['IGHD'],
+    'TCR.V': ['TRAV', 'TRBV', 'TRDV', 'TRGV'],
+    'TCR.J': ['TRAJ', 'TRBJ', 'TRDJ', 'TRGJ'],
+    'TCR.D': ['TRBD', 'TRDD']
+}
 
 REFERENCE_DIR = os.path.join(IGBLAST_DIR, 'database')
 
 
+def configure_logger(logger_format: str = LOGGER_FORMAT) -> None:
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(logging.Formatter(logger_format))
+    logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
+
+
 def parse_args() -> argparse.Namespace:
-    """Parses arguments"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--all-alleles', action='store_true',
-                        help='Will use all alleles provided in the antigen receptor segment database '
-                             '(*01, *02, etc. according to IMGT).')
-    parser.add_argument('-o', '--out-archive', help='Output IgBLAST reference archive path', required=True)
+    parser.add_argument(
+        "-a",
+        "--all-alleles",
+        action="store_true",
+        help="Will use all alleles provided in the antigen receptor segment database "
+             "(*01, *02, etc. according to IMGT).")
+    parser.add_argument(
+        "-o",
+        "--out-archive",
+        help="Output IgBLAST reference archive path",
+        required=True
+    )
+    parser.add_argument(
+        "--organism",
+        help="Organism name: 'human', 'mouse'",
+        choices=["human", "mouse"],
+        default="human"
+    )
 
     return parser.parse_args()
 
 
-def download_fasta_from_imgt_database(chains_list: list[str], specie: str) -> list[str]:
+def exit_with_error(message: Optional[str]) -> None:
+    if message is None:
+        message = "Empty message for error!"
+    logger.critical(message)
+    sys.exit(1)
+
+
+def print_error_message(error_message: Optional[str]) -> None:
+    if not error_message:
+        error_message = '< EMPTY >'
+    logger.warning(f'stderr: {error_message}')
+
+
+def run_and_check_with_message(
+    cmd: List[str],
+    fail_message: str,
+    exit_on_error: bool = True,
+    return_proc: bool = False,
+    **subprocess_args
+) -> Optional[subprocess.CompletedProcess[str]]:
+    logger.info(f"Running command {' '.join(cmd)}")
+    if 'stderr' not in subprocess_args:
+        subprocess_args['stderr'] = subprocess.PIPE
+    try:
+        proc = subprocess.run(cmd, text=True, check=True, **subprocess_args)
+        print_error_message(proc.stderr)
+        if return_proc:
+            return proc
+    except subprocess.CalledProcessError as e:
+        logger.critical(f"{fail_message} failed with code {e.returncode}")
+        print_error_message(e.stderr)
+        if exit_on_error:
+            logger.critical(f"{exit_on_error=}, now exiting.")
+            sys.exit(1)
+
+
+def check_if_exist(file: str) -> None:
+    """Checks if file exists"""
+    if not os.path.exists(file):
+        exit_with_error(f"Expected file {file} not found, exiting...")
+    logger.info(f"Expected file {file} found.")
+
+
+def download_fasta_from_imgt_database(chains_list: list[str], organism: str) -> list[str]:
     """Downloads VDJ fasta reference from https://www.imgt.org/"""
     fasta_local_paths = []
+    specie = ORGANISMS_GLOSSARY[organism]
     for chain in chains_list:
-        specie_in_imgt_format = SPECIES_GLOSSARY[specie]
-        fasta_link = (f"https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/"
-                      f"{specie_in_imgt_format}/{chain[:2]}/{chain}.fasta")
+        fasta_link = f"{IMGT_URL}{specie}/{chain[:2]}/{chain}.fasta"
         fasta_local_path = tempfile.NamedTemporaryFile().name
         cmd = ['wget', fasta_link, '-q', '-O', fasta_local_path]
-        _ = run_command(cmd)
+        run_and_check_with_message(cmd, "wget")
         fasta_local_paths.append(fasta_local_path)
     return fasta_local_paths
 
@@ -51,8 +123,7 @@ def filter_minor_alleles(fasta_path: str) -> str:
     """Filters out minor alleles: *02, *03, etc."""
     filtered_fasta_path = tempfile.NamedTemporaryFile().name
     cmd = ['seqkit', 'grep', fasta_path, '-r', '-p', '\\*01', '-o', filtered_fasta_path]
-    cmd_process = run_command(cmd)
-    logger.info(cmd_process.stderr)
+    run_and_check_with_message(cmd, "seqkit")
     return filtered_fasta_path
 
 
@@ -60,7 +131,7 @@ def concat_fasta_files(fasta_paths: list[str]) -> str:
     """Concatenates fasta files into one file"""
     concatenated_fasta_path = tempfile.NamedTemporaryFile().name
     with open(concatenated_fasta_path, 'a') as out_f:
-        for i, file in enumerate(fasta_paths):
+        for file in fasta_paths:
             with open(file, 'r') as f:
                 out_f.write(f.read())
                 logger.info(f'{file} appended to {concatenated_fasta_path}!')
@@ -72,26 +143,26 @@ def concat_fasta_files(fasta_paths: list[str]) -> str:
 def clean_imgt_fasta(fasta_path: str) -> str:
     """Cleans the header of the fasta downloaded from IMGT"""
     cmd = [os.path.join(IGBLAST_DIR, 'bin', 'edit_imgt_file.pl'), fasta_path]
-    clean_fasta = run_command(cmd)
+    edit_imgt_file_process = run_and_check_with_message(cmd, "edit_imgt_file.pl", return_proc=True,
+                                                        capture_output=True, stderr=None)
     clean_fasta_path = tempfile.NamedTemporaryFile().name
     with open(clean_fasta_path, 'w') as f:
-        f.write(clean_fasta.stdout)
+        f.write(edit_imgt_file_process.stdout)
     return clean_fasta_path
 
 
-def make_blast_db(fasta_path: str, output_basename: str):
+def make_blast_db(fasta_path: str, output_basename: str) -> None:
     """Makes the blast database from cleaned IMGT fasta"""
-    cmd = [os.path.join(IGBLAST_DIR, 'bin', 'makeblastdb'), '-parse_seqids', '-dbtype', 'nucl', '-in', fasta_path,
-           '-out', output_basename]
-    cmd_process = run_command(cmd)
-    logger.info(cmd_process.stdout)
+    makeblastdb_bin = os.path.join(IGBLAST_DIR, 'bin', 'makeblastdb')
+    cmd = [makeblastdb_bin, '-parse_seqids', '-dbtype', 'nucl', '-in', fasta_path, '-out', output_basename]
+    run_and_check_with_message(cmd, 'makeblastdb')
 
 
 def archive_reference_as_tar_gz(archive_path: str) -> str:
     """Makes tar.gz archive with IgBLAST final reference"""
 
     cmd = ['tar', '-czf', archive_path, '-C', IGBLAST_DIR, 'database', 'internal_data', 'optional_file']
-    _ = run_command(cmd)
+    run_and_check_with_message(cmd, "tar")
     check_if_exist(archive_path)
     logger.info(f"'{archive_path}' has been successfully created.")
 
@@ -104,37 +175,46 @@ def remove_duplicates_by_sequence_id(fasta_path: str) -> str:
     """
     output_fasta = tempfile.NamedTemporaryFile().name
     cmd = ['seqkit', 'rmdup', '--by-name', fasta_path, '-o', output_fasta]
-    cmd_process = run_command(cmd)
-    logger.info(cmd_process.stderr)
+    run_and_check_with_message(cmd, "seqkit")
     return output_fasta
 
 
-def run(args: argparse.Namespace):
-    for specie in SPECIES_GLOSSARY:
-        for library, chains_list in CHAINS_GLOSSARY.items():
+def remove_path(path: str) -> None:
+    try:
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        elif os.path.isfile(path):
+            os.remove(path)
+    except Exception as e:
+        logger.error(f"Error removing {path}: {e}")
 
-            fasta_paths = download_fasta_from_imgt_database(chains_list, specie)
 
-            if not args.all_alleles:
-                fasta_paths = [filter_minor_alleles(fasta_path) for fasta_path in fasta_paths]
+def main() -> None:
+    configure_logger()
 
-            clean_fasta_paths = [clean_imgt_fasta(fasta_path) for fasta_path in fasta_paths]
+    args = parse_args()
+    logger.info(f"Starting program with the following arguments: {vars(args)}")
 
-            concatenated_fasta_path = concat_fasta_files(clean_fasta_paths)
+    for library, chains_list in CHAINS_GLOSSARY.items():
 
-            fasta_without_duplicates_path = remove_duplicates_by_sequence_id(concatenated_fasta_path)
+        fasta_paths = download_fasta_from_imgt_database(chains_list, args.organism)
 
-            output_basename = os.path.join(REFERENCE_DIR, f'{specie}.{library}')
-            make_blast_db(fasta_without_duplicates_path, output_basename)
+        if not args.all_alleles:
+            fasta_paths = [filter_minor_alleles(fasta_path) for fasta_path in fasta_paths]
+
+        clean_fasta_paths = [clean_imgt_fasta(fasta_path) for fasta_path in fasta_paths]
+
+        concatenated_fasta_path = concat_fasta_files(clean_fasta_paths)
+
+        fasta_without_duplicates_path = remove_duplicates_by_sequence_id(concatenated_fasta_path)
+
+        output_basename = os.path.join(REFERENCE_DIR, f'{args.organism}.{library}')
+        make_blast_db(fasta_without_duplicates_path, output_basename)
 
     archive_reference_as_tar_gz(args.out_archive)
 
+    logger.info("Run is completed successfully.")
+
 
 if __name__ == "__main__":
-    args = parse_args()
-
-    logger.info(f"Starting program with the following arguments: {vars(args)}")
-
-    run(args)
-
-    logger.info("Run is completed successfully.")
+    main()

@@ -24,6 +24,8 @@ process CalibDedup {
             --kmer-size ${params.kmer_size} \
             --minimizer-count ${params.minimizer_count} \
             --minimizer-threshold ${params.minimizer_threshold} \
-            --error-tolerance ${params.error_tolerance}
+            --error-tolerance ${params.error_tolerance} \
+            --min-reads-per-cluster ${params.min_reads_per_cluster} \
+            --max-reads-per-cluster ${params.max_reads_per_cluster}
         """
 }

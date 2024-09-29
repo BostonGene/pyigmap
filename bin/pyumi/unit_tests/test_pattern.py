@@ -61,6 +61,11 @@ def pattern12() -> str:
     return "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
 
 
+@fixture(scope='module')
+def pattern13() -> str:
+    return "AAAGACAGTGGTATCAACGCAGAGT(?P<UMI>[ATGCN]{4}T[ATGCN]{4}T[ATGCN]{4}TCTT)"
+
+
 def test_parse_barcode_length_when_present(pattern2, pattern9, pattern10, pattern11):
     assert parse_umi_length(pattern2) == 14
     assert parse_umi_length(pattern9) == 9
@@ -92,8 +97,9 @@ def test_replace_umi_barcode_to_regex_group(pattern2):
             == "^N{0:2}TGGTATCAACGCAGAGT(?P<UMI>N{14})")
 
 
-def test_add_nucleotide_cost(pattern7):
+def test_add_nucleotide_cost(pattern7, pattern13):
     assert add_nucleotide_cost(pattern=pattern7) == "^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=4}(?P<UMI>[ATGCN]{14})"
+    assert add_nucleotide_cost(pattern=pattern13) == "(AAAGACAGTGGTATCAACGCAGAGT){s<=5}(?P<UMI>[ATGCN]{4}(T){s<=1}[ATGCN]{4}(T){s<=1}[ATGCN]{4}(TCTT){s<=1})"
 
 
 def test_without_add_nucleotide_cost(pattern8):

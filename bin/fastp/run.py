@@ -4,7 +4,7 @@ import subprocess
 import os
 import sys
 import tempfile
-from typing import Optional
+from typing import Optional, List
 
 from mock_merge import mock_merge_by_chunks
 
@@ -31,11 +31,11 @@ def parse_args() -> dict:
     parser.add_argument('--mock-merge-reads', help='Enable mock merging of non-overlapped reads', action='store_true')
     parser.add_argument('--reads-chunk-size', help='Read chunk size used in mock merging', type=int)
     parser.add_argument('--inner-distance-size', help='Insert size for mock merging', type=int)
-    parser.add_argument('--out-fq1', help='Output fastq file, SE or PE pair 1')
-    parser.add_argument('--out-fq2', help='Output fastq file, PE pair 2')
-    parser.add_argument('--out-fq12', help='Output merged fastq file, PE pairs 1 and 2')
-    parser.add_argument('--html', help='Output html file', required=True)
-    parser.add_argument('--json', help='Output json file', required=True)
+    parser.add_argument('--out-fq1', help='Output fastq file, SE or PE pair 1', type=str)
+    parser.add_argument('--out-fq2', help='Output fastq file, PE pair 2', type=str)
+    parser.add_argument('--out-fq12', help='Output merged fastq file, PE pairs 1 and 2', type=str)
+    parser.add_argument('--html', help='Output html file', required=True, type=str)
+    parser.add_argument('--json', help='Output json file', required=True, type=str)
 
     args = parser.parse_args()
 
@@ -46,23 +46,14 @@ def parse_args() -> dict:
     return vars(args)
 
 
-def move_file(src_file: str, dst_file: str):
-    """
-    Replaces file from source to the destination
-
-    :param src_file: path to the file, that we need to move
-    :param dst_file: path to destination file
-    """
+def move_file(src_file: str, dst_file: str) -> None:
+    """Move file from source to the destination"""
     shutil.move(src_file, dst_file)
-    logger.info(f'{src_file} replaced to {dst_file}')
+    logger.info(f'{src_file} moved to {dst_file}')
 
 
-def check_if_exist(file: str):
-    """
-    Checks if file exists
-
-    :param file: path to the file
-    """
+def check_if_exist(file: str) -> None:
+    """Checks if file exists"""
     if not os.path.exists(file):
         logger.critical(f"Expected file {file} not found, exiting...")
         sys.exit(1)
@@ -72,27 +63,38 @@ def check_if_exist(file: str):
     logger.info(f"Expected file {file} found.")
 
 
-def run_command(command: list[str], stdin=None):
-    logger.info(f'Running {command}...')
+def print_error_message(error_message: Optional[str]) -> None:
+    if not error_message:
+        error_message = '< EMPTY >'
+    logger.warning(f'stderr: {error_message}')
 
+
+def run_and_check_with_message(
+    cmd: List[str],
+    fail_message: str,
+    exit_on_error: bool = True,
+    return_proc: bool = False,
+    **subprocess_args
+) -> Optional[subprocess.CompletedProcess[str]]:
+    logger.info(f"Running command {' '.join(cmd)}")
+    if 'stderr' not in subprocess_args:
+        subprocess_args['stderr'] = subprocess.PIPE
     try:
-        command_process = subprocess.run(command, text=True, capture_output=True, input=stdin, check=True)
+        proc = subprocess.run(cmd, text=True, check=True, **subprocess_args)
+        print_error_message(proc.stderr)
+        if return_proc:
+            return proc
     except subprocess.CalledProcessError as e:
-        logger.critical(e.stderr)
-        logger.critical(e.stdout)
-        logger.critical(f"Failed to run '{' '.join(command)}'")
-        sys.exit(1)
-    except Exception as e:
-        logger.critical(f"Undefined error: {e}")
-        sys.exit(1)
-
-    logger.info(command_process.stdout)
-    logger.info(command_process.stderr)
+        logger.critical(f'{fail_message} failed with code {e.returncode}')
+        print_error_message(e.stderr)
+        if exit_on_error:
+            logger.critical(f'{exit_on_error=}, now exiting.')
+            sys.exit(1)
 
 
-def run_fastp(in_fq1: str, in_fq2: str, disable_filters: list[str], merge: bool, json: str, html: str) -> tuple[str, str, str]:
-
-    out_fq1, out_fq2, out_fq12 = (tempfile.NamedTemporaryFile(suffix=".gz").name for _ in range(3))
+def run_fastp(in_fq1: str, in_fq2: str, disable_filters: list[str], merge: bool,
+              json: str, html: str) -> tuple[str, str, str]:
+    out_fq1, out_fq2, out_fq12 = (tempfile.NamedTemporaryFile(suffix=".fastq.gz").name for _ in range(3))
 
     cmd = ['fastp', '-i', in_fq1]
     cmd += ['-o', out_fq1]
@@ -106,17 +108,21 @@ def run_fastp(in_fq1: str, in_fq2: str, disable_filters: list[str], merge: bool,
     cmd += [f'--disable_{mode}' for mode in disable_filters] if disable_filters else []
     cmd += ['--thread', str(os.cpu_count()), '--html', html, '--json', json]
 
-    run_command(cmd)
+    run_and_check_with_message(cmd, 'fastp')
 
     return out_fq1, out_fq2, out_fq12
 
 
 def save_final_fastq_by_mode(merge_reads: bool, mock_merge_reads: bool, in_fq2_path: str,
                              processed_fq1_path: str, processed_fq2_path: str, processed_fq12_path: str,
-                             out_fq1_path: str, out_fq2_path: str, out_fq12_path: str):
+                             out_fq1_path: str, out_fq2_path: str, out_fq12_path: str) -> None:
     """Saves final FASTQ files by provided modes"""
+
+    logger.info("Going to move final FASTQ file(s) from /tmp to /output dir...")
+
     if mock_merge_reads:
         move_file(processed_fq12_path, out_fq12_path)
+        logger.info("All files has been successfully moved from /tmp to /output dir.")
         return
 
     move_file(processed_fq1_path, out_fq1_path)
@@ -127,25 +133,26 @@ def save_final_fastq_by_mode(merge_reads: bool, mock_merge_reads: bool, in_fq2_p
     if merge_reads:
         move_file(processed_fq12_path, out_fq12_path)
 
-
-def run(in_fq1: str, in_fq2: Optional[str], disable_filters: Optional[list[str]], merge_reads: Optional[bool],
-        mock_merge_reads: Optional[bool], reads_chunk_size: Optional[int], inner_distance_size: Optional[int],
-        out_fq1: Optional[str], out_fq2: Optional[str], out_fq12: Optional[str], html: str, json: str) -> None:
-
-    merge_reads = True if mock_merge_reads else merge_reads
-
-    tmp_fq1, tmp_fq2, tmp_fq12 = run_fastp(in_fq1, in_fq2, disable_filters, merge_reads, json, html)
-
-    if mock_merge_reads:
-        mock_merge_by_chunks(tmp_fq1, tmp_fq2, inner_distance_size, reads_chunk_size, tmp_fq12)
-
-    save_final_fastq_by_mode(merge_reads, mock_merge_reads, in_fq2, tmp_fq1, tmp_fq2,
-                             tmp_fq12, out_fq1, out_fq2, out_fq12)
+    logger.info("All files has been successfully moved from /tmp to /output dir.")
 
 
-if __name__ == "__main__":
+def main() -> None:
     args = parse_args()
     logger.info(f"Starting program with the following arguments: {args}")
 
-    run(**args)
+    merge_reads = True if args.mock_merge_reads else args.merge_reads
+
+    tmp_fq1, tmp_fq2, tmp_fq12 = run_fastp(args.in_fq1, args.in_fq2, args.disable_filters, merge_reads,
+                                           args.json, args.html)
+
+    if args.mock_merge_reads:
+        mock_merge_by_chunks(tmp_fq1, tmp_fq2, args.inner_distance_size, args.reads_chunk_size, tmp_fq12)
+
+    save_final_fastq_by_mode(merge_reads, args.mock_merge_reads, args.in_fq2, tmp_fq1, tmp_fq2,
+                             tmp_fq12, args.out_fq1, args.out_fq2, args.out_fq12)
+
     logger.info("Run is completed successfully.")
+
+
+if __name__ == "__main__":
+    main()
