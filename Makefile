@@ -195,7 +195,7 @@ changelog: install-cliff ## >> Update CHANGELOG.md
 release: install-gh changelog
 	git tag $(TAG) && git push origin $(TAG)
 	git push
-	git cliff --strip all --latest | gh release create $(TAG) --notes-from -
+	git cliff --strip all --latest | gh release create $(TAG) --notes-file -
 
 build-step-image:
 	@$(ENGINE) version
