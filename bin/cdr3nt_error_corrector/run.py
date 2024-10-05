@@ -19,12 +19,7 @@ pd.options.mode.copy_on_write = True
 
 logger = set_logger(name=__file__)
 
-TEMPDIR_NAME = "/tmp"
-
-OLGA_MODELS_DIR = os.path.join(
-    TEMPDIR_NAME,
-    os.path.basename(tempfile.TemporaryDirectory().name)
-)
+OLGA_MODELS_DIR = tempfile.TemporaryDirectory().name
 os.makedirs(OLGA_MODELS_DIR, exist_ok=True)
 
 
