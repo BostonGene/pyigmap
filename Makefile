@@ -198,7 +198,6 @@ release: install-gh changelog
 		-c user.email="47356892+nsyzrantsev@users.noreply.github.com" \
 		-c user.signingkey="470EC63086337193C5EC722AA6C31111356B2070" \
 		tag -s -a "$(TAG)" -m "Release $(TAG)" -m "$$changelog"
-	gh release create $(TAG) --notes-from-tag
 
 build-step-image:
 	@$(ENGINE) version
