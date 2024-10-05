@@ -68,3 +68,50 @@ Run script:
 ```bash
 bash build_ref.sh
 ```
+
+## How to run
+
+1. Build an image
+
+```bash
+docker build --target tool -t cdr3nt-error-corrector .
+```
+
+2. Be sure, that you have all input files
+
+```bash
+$ FOLDER_WITH_DATA=path/to/your/folder
+$ ls $FOLDER_WITH_DATA
+raw_annotation.TCR.tsv.gz
+raw_annotation.BCR.tsv.gz
+```
+
+3. Run container
+
+```bash
+docker run \
+   -v ${FOLDER_WITH_DATA}:/root/ \
+   -v ./olga-models.tar.gz:/root/olga-models.tar.gz \
+   cdr3nt-error-corrector \
+   --in-annotation /root/raw_annotation.TCR.tsv.gz /root/raw_annotation.BCR.tsv.gz \
+   --filter-pgen-singletons 0 \
+   --only-functional \
+   --remove-chimeras \
+   --error-rate 0.001 \
+   --olga-models /root/olga-models.tar.gz \
+   --out-corrected-annotation /root/corrected_annotation.tsv \
+   --in-json /root/test_fastp.json \
+   --out-json /root/stat.json \
+   --out-archive /root/pyigmap.tar.gz # archive with final results will be saved into ./unit_tests/test_data/
+```
+
+4. Outputs will be here
+
+```bash
+$ ls $FOLDER_WITH_DATA
+raw_annotation.TCR.tsv.gz
+raw_annotation.BCR.tsv.gz
+corrected_annotation.tsv
+stat.json
+pyigmap.tar.gz # <-- OUTPUT
+```
