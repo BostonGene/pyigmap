@@ -193,10 +193,8 @@ changelog: install-cliff ## >> Update CHANGELOG.md
 	git show
 
 release: install-gh changelog
-	changelog=$$(git-cliff -vv --latest --no-exec)
-	git commit -m "Release $(TAG)"
-	git push
 	git tag $(TAG) && git push origin $(TAG)
+	git push
 	git cliff --strip all --latest | gh release create $(TAG) --notes-from -
 
 build-step-image:
