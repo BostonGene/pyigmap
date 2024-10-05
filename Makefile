@@ -74,8 +74,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		igblast-tool igblast-image \
 		cdr3nt_error_corrector-tool cdr3nt_error_corrector-image
 	rm -rf $(VIRTUAL_ENV) \
-		.nextflow.log* work .nextflow nextflow \
-		/tmp/pytest_workflow_*
+		.nextflow.log* work .nextflow nextflow
 
 build-ref-image:
 	@echo ""
