@@ -1,0 +1,9 @@
+{
+    "summary": {
+        "before_filtering": {
+            "total_reads": 10
+        }
+    },
+    "fq1_umi_length": 0,
+    "fq2_umi_length": 19
+}

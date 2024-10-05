@@ -1,0 +1,52 @@
+- name: test_cdr3nt_error_corrector_rnaseq
+  tags:
+    - unit-tests
+  command: docker run --rm
+    -v ./:/tmp/
+    cdr3nt_error_corrector-tool
+    --in-annotation /tmp/tests/cdr3nt_error_corrector/in_annotation.bulk.tsv.gz
+    --in-json /tmp/tests/cdr3nt_error_corrector/in_fastp.json
+    --olga-models /tmp/bin/cdr3nt_error_corrector/olga-models.tar.gz
+    --remove-chimeras
+    --only-best-alignment
+    --discard-junctions-with-n
+    --filter-pgen-singletons 0
+    --top-c-call
+    --top-v-alignment-call
+    --out-corrected-annotation /tmp/corrected_annotation.tsv
+    --out-json /tmp/stat.json
+    --out-archive /tmp/pyigmap.tar.gz
+  files:
+    - path: "pyigmap.tar.gz"
+    - path: "stat.json"
+      md5sum: dbdcd63f398bf6585b330802c5a9932f
+      encoding: UTF-8
+    - path: "corrected_annotation.tsv"
+      md5sum: 8ff67596c42dc6bfc6a9644efa56c5d4
+      encoding: UTF-8
+- name: test_cdr3nt_error_corrector_amplicon
+  tags:
+    - unit-tests
+  command: docker run --rm
+    -v ./:/tmp/
+    cdr3nt_error_corrector-tool
+    --in-annotation /tmp/tests/cdr3nt_error_corrector/in_annotation.amplicon.tsv.gz
+    --in-json /tmp/tests/cdr3nt_error_corrector/in_calib.json
+    --olga-models /tmp/bin/cdr3nt_error_corrector/olga-models.tar.gz
+    --remove-chimeras
+    --only-best-alignment
+    --discard-junctions-with-n
+    --filter-pgen-singletons 0
+    --top-c-call
+    --top-v-alignment-call
+    --out-corrected-annotation /tmp/corrected_annotation.tsv
+    --out-json /tmp/stat.json
+    --out-archive /tmp/pyigmap.tar.gz
+  files:
+    - path: "pyigmap.tar.gz"
+    - path: "stat.json"
+      md5sum: 907768c789d987da855c0d16176137d6
+      encoding: UTF-8
+    - path: "corrected_annotation.tsv"
+      md5sum: b0aff5c0fd65c895ee78ab1de2f07199
+      encoding: UTF-8

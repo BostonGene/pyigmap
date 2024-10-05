@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye as image
+FROM python:3.9-bullseye AS image
 
 RUN apt-get update && apt-get install -y jq pigz
 

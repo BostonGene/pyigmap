@@ -181,7 +181,7 @@
     },
     "default_corrector_options": {
       "type": "string",
-      "default": "--clonotype-collapse-factor 0.05 --discard-junctions-with-N --only-best-alignment --remove-chimeras"
+      "default": "--error-rate 0.001 --discard-junctions-with-n --only-best-alignment --remove-chimeras"
     },
     "rnaseq_corrector_options": {
       "type": "string",
