@@ -183,7 +183,7 @@ install-cliff: ## >> Install git-cliff tool
 	@echo ""
 	@echo "$(ccso)--> Installing git-cliff tool $(ccend)"
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-	$$HOME/.cargo/bin/cargo install --version 2.6.0 git-cliff
+	$$HOME/.cargo/bin/cargo install --version 2.6.1 git-cliff
 
 changelog: install-cliff ## >> Update CHANGELOG.md
 	@echo ""
@@ -198,6 +198,9 @@ release: install-gh changelog
 		-c user.email="47356892+nsyzrantsev@users.noreply.github.com" \
 		-c user.signingkey="470EC63086337193C5EC722AA6C31111356B2070" \
 		tag -s -a "$(TAG)" -m "Release $(TAG)" -m "$$changelog"
+	git push
+	git tag $(TAG) && git push origin $(TAG)
+	git cliff --strip all --latest | gh release create $(TAG) --notes-from -
 
 build-step-image:
 	@$(ENGINE) version
