@@ -11,7 +11,7 @@ process CDR3ErrorCorrector {
     script:
         def librarySpecifiedOptions = params.library == "rnaseq" ? params.rnaseq_corrector_options : params.amplicon_corrector_options
         """
-        python3.9 /usr/local/run.py \
+        python3.9 /usr/local/src/run.py \
             --in-annotation $raw_annotation \
             ${params.default_corrector_options} \
             $librarySpecifiedOptions \
