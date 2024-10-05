@@ -86,7 +86,7 @@ class PgenModel:
 
             return probability_generator(generative_model, genomic_data)
 
-        logger.warning("Provided locus does not exist in OLGA models, pgen will be equal None...")
+        logger.warning(f"{self.locus} does not exist in OLGA models, pgen calculation skipped...")
         # None for locus that does not exist in OLGA model (for example: TRG, TRD)
         # https://github.com/statbiophys/OLGA/tree/master/olga/default_models
         return None
