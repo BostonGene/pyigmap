@@ -194,10 +194,7 @@ changelog: install-cliff ## >> Update CHANGELOG.md
 
 release: install-gh changelog
 	changelog=$$(git-cliff -vv --latest --no-exec)
-	git -c user.name="Nikita Syzrantsev" \
-		-c user.email="47356892+nsyzrantsev@users.noreply.github.com" \
-		-c user.signingkey="470EC63086337193C5EC722AA6C31111356B2070" \
-		tag -s -a "$(TAG)" -m "Release $(TAG)" -m "$$changelog"
+	git commit -m "Release $(TAG)"
 	git push
 	git tag $(TAG) && git push origin $(TAG)
 	git cliff --strip all --latest | gh release create $(TAG) --notes-from -
