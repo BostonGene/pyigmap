@@ -16,9 +16,9 @@ IMMUNORECEPTOR_MOTIF = r"[FW]G.G"
 UNKNOWN_NUCLEOTIDE = "N"
 UNKNOWN_AMINO_ACID = "X"
 
-CYS_CODON = "C"  # CYSTEINE codon
-TRP_CODON = "W"  # TRYPTOPHAN codon
-PHE_CODON = "F"  # PHENYLALANINE codon
+CYS = "C"  # CYSTEINE amino acid
+TRP = "W"  # TRYPTOPHAN amino acid
+PHE = "F"  # PHENYLALANINE amino acid
 
 
 def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float,
@@ -142,10 +142,10 @@ def remove_non_canonical_clones(annotation: pd.DataFrame) -> pd.DataFrame:
     * and not end with a Phe/Trp codon"""
     filtered_canonical = annotation[
         annotation['j_sequence_alignment_aa'].str.contains(IMMUNORECEPTOR_MOTIF, na=False, regex=True)
-        & annotation['junction_aa'].str.startswith(CYS_CODON, na=False)
+        & annotation['junction_aa'].str.startswith(CYS, na=False)
         & (
-            annotation['junction_aa'].str.endswith(PHE_CODON, na=False)
-            | annotation['junction_aa'].str.endswith(TRP_CODON, na=False)
+            annotation['junction_aa'].str.endswith(PHE, na=False)
+            | annotation['junction_aa'].str.endswith(TRP, na=False)
         )
     ]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_canonical.shape[0]} non canonical clones.')
