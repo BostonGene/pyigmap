@@ -160,7 +160,7 @@ class ClonotypeCorrector:
         annotation = annotation.sort_values(by=COUNT_COLUMN, ascending=False)
 
         clonotype_count_dict = {}
-        clonotype_count_list = []
+        clonotype_count_list = [] # note that list is sorted from largest to smallest, needed for _update_counters_inplace
 
         for clonotype, count in zip(annotation[CLONOTYPE_COLUMNS].values, annotation[COUNT_COLUMN].values):
             counter = ClonotypeCounter(*clonotype, count, error_rate=self.error_rate)
@@ -171,9 +171,9 @@ class ClonotypeCorrector:
 
     def _update_counters_inplace(self, clonotype_count_list: list, clonotype_count_dict: dict) -> pd.DataFrame:
         for counter in clonotype_count_list:
-            for junction_variant in self._get_variants(counter.junction):
-                for counter_to_update in clonotype_count_dict.get(junction_variant, []):
-                    counter_to_update.reassign_parent(counter.v_call, counter.j_call, counter.junction, counter.count)
+            for junction_variant in self._get_variants(counter.junction): # we search using current junction
+                for counter_to_update in clonotype_count_dict.get(junction_variant, []): # we assign parent's junction as parent
+                    counter_to_update.reassign_parent(counter.v_call, counter.j_call, counter.parent, counter.count)
         return (pd.DataFrame
                 .from_records([count.__dict__ for count in clonotype_count_list])
                 .rename(columns={'seq': JUNCTION_COLUMN}))
