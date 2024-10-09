@@ -30,6 +30,23 @@ def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_thresho
     return annotation
 
 
+def filter_duplicates_by_vj_score(annotation: pd.DataFrame) -> pd.DataFrame:
+    """Filters out duplicate sequences in a DataFrame
+    by selecting the entries with the highest combined V and J gene scores."""
+    vj_score_annotation = annotation[['sequence_id', 'locus', 'v_score', 'j_score']].copy()
+
+    vj_score_annotation['v_score'] = vj_score_annotation['v_score'].fillna(0)
+    vj_score_annotation['j_score'] = vj_score_annotation['j_score'].fillna(0)
+    vj_score_annotation['score'] = vj_score_annotation['v_score'] + vj_score_annotation['j_score']
+
+    max_scores = vj_score_annotation.groupby('sequence_id', as_index=False)['score'].max()
+
+    result = vj_score_annotation.merge(max_scores, on=['sequence_id', 'score'])
+    result = annotation.merge(result, on=['locus', 'sequence_id'])
+
+    return annotation.merge(result[['sequence_id', 'locus']], on=['sequence_id', 'locus'])
+
+
 def get_duplicates_in_different_loci(annotation: pd.DataFrame) -> list[pd.DataFrame]:
     """Returns list of cdr3 duplicates in different loci"""
     duplicates_with_different_loci = (annotation[annotation.duplicated(subset=['junction'], keep=False)]
