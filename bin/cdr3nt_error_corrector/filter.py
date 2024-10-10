@@ -39,12 +39,11 @@ def filter_duplicates_by_vj_score(annotation: pd.DataFrame) -> pd.DataFrame:
     vj_score_annotation['j_score'] = vj_score_annotation['j_score'].fillna(0)
     vj_score_annotation['score'] = vj_score_annotation['v_score'] + vj_score_annotation['j_score']
 
-    max_scores = vj_score_annotation.groupby('sequence_id', as_index=False)['score'].max()
+    max_vj_score_annotation = vj_score_annotation \
+        .groupby('sequence_id', as_index=False)['score'].max() \
+        .merge(vj_score_annotation, on=['sequence_id', 'score'])
 
-    result = vj_score_annotation.merge(max_scores, on=['sequence_id', 'score'])
-    result = annotation.merge(result, on=['locus', 'sequence_id'])
-
-    return annotation.merge(result[['sequence_id', 'locus']], on=['sequence_id', 'locus'])
+    return annotation.merge(max_vj_score_annotation[['sequence_id', 'locus']], on=['sequence_id', 'locus'])
 
 
 def get_duplicates_in_different_loci(annotation: pd.DataFrame) -> list[pd.DataFrame]:
