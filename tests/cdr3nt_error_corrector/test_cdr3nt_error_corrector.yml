@@ -19,10 +19,10 @@
   files:
     - path: "pyigmap.tar.gz"
     - path: "stat.json"
-      md5sum: dbdcd63f398bf6585b330802c5a9932f
+      md5sum: 42843654fcf25e1023d4904b584d2a98
       encoding: UTF-8
     - path: "corrected_annotation.tsv"
-      md5sum: 8ff67596c42dc6bfc6a9644efa56c5d4
+      md5sum: 67f7cbcb41e85ebf89c97044e16a10d9
       encoding: UTF-8
 - name: test_cdr3nt_error_corrector_amplicon
   tags:
@@ -45,8 +45,8 @@
   files:
     - path: "pyigmap.tar.gz"
     - path: "stat.json"
-      md5sum: 907768c789d987da855c0d16176137d6
+      md5sum: a4c5d4a31b403f8edeea696a06c6ca14
       encoding: UTF-8
     - path: "corrected_annotation.tsv"
-      md5sum: b0aff5c0fd65c895ee78ab1de2f07199
+      md5sum: 09d584bfdc19768a081af98ad2044a7b
       encoding: UTF-8

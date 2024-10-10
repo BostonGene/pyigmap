@@ -4,7 +4,7 @@ import pandas as pd
 from filter import (remove_non_canonical_clones, remove_non_functional_clones, remove_non_productive_clones, filter_clones_by_pgen,
                     get_duplicates_in_different_loci, drop_clones_with_duplicates_in_different_loci,
                     remove_chimeras_by_segment, remove_chimeras_by_segment, remove_clones_without_junction,
-                    discard_clones_with_n_in_junction)
+                    discard_clones_with_n_in_junction, filter_duplicates_by_vj_score)
 
 from logger import set_logger
 
@@ -72,6 +72,13 @@ def annotation_with_v_chimeras() -> pd.DataFrame:
 def annotation_with_j_chimeras() -> pd.DataFrame:
     return pd.DataFrame(data={'locus': ['IGH', 'IGL', 'TRA', 'IGK', 'TRA'],
                               'j_call': ['IGLJ3-25*03', 'IGHJ2-26*03', 'TRAJ4-2*01', 'IGLJ2-34*01,IGHJ4-34*02', 'TRAJ7-6*01,TRDJ7-6*02']})
+
+@fixture(scope='module')
+def annotation_with_tcr_bcr_duplicates() -> pd.DataFrame:
+    return pd.DataFrame(data={"sequence_id": ["1", "1", "2", "2", "3", "4"],
+                              "locus": ["IGK", "TRA", "IGH", "TRB", "TRD", "IGL"],
+                              "v_score": [200, 20, None, 100, 200, 150],
+                              "j_score": [150, 20, 10, 100, 300, 200]})
 
 
 def test_remove_clones_without_junction(annotation_non_functional):
@@ -237,3 +244,13 @@ def test_discard_clones_with_n_in_junction(annotation_junctions_with_n):
 def test_discard_clones_with_n_in_junction_on_empty_annotation(empty_annotation):
     filtered_annotation = discard_clones_with_n_in_junction(empty_annotation)
     assert filtered_annotation.empty
+
+
+def test_filter_duplicates_by_vj_score(annotation_with_tcr_bcr_duplicates):
+    filtered_annotation = filter_duplicates_by_vj_score(annotation_with_tcr_bcr_duplicates)
+    assert filtered_annotation.equals(
+        pd.DataFrame(data={"sequence_id": ["1", "2", "3", "4"],
+                           "locus": ["IGK", "TRB", "TRD", "IGL"],
+                           "v_score": [200.0, 100.0, 200.0, 150.0],
+                           "j_score": [150, 100, 300, 200]})
+    )

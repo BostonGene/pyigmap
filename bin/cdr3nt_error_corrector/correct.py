@@ -66,7 +66,7 @@ class ClonotypeCorrector:
                                                         on=CLONOTYPE_COLUMNS,
                                                         how='left')
         full_corrected_annotation = (self.aggregate_clonotypes(merged_annotation, ['parent'])
-                                     .drop(columns=['parent', 'factor']))
+                                     .drop(columns=['parent', 'factor', 'confidence']))
         return full_corrected_annotation
 
     def _aggregate_by_top_c_call(self, group: pd.DataFrame, clonotype: pd.Series) -> Series:

@@ -3,7 +3,8 @@ from collections import namedtuple
 import pandas as pd
 
 from filter import remove_clones_without_junction, discard_clones_with_n_in_junction, remove_chimeras_clones, \
-    remove_non_canonical_clones, remove_non_functional_clones, drop_clones_with_duplicates_in_different_loci
+    remove_non_canonical_clones, remove_non_functional_clones, drop_clones_with_duplicates_in_different_loci, \
+    filter_duplicates_by_vj_score
 from logger import set_logger
 
 logger = set_logger(name=__file__)
@@ -71,6 +72,8 @@ def read_annotation(*annotation_paths: str, only_functional: bool, only_canonica
     logger.info('Reading annotation...')
     metrics_dict = {}
     annotation = concat_annotations(*annotation_paths)
+
+    annotation = filter_duplicates_by_vj_score(annotation)
 
     if not len(annotation):
         logger.warning('Annotation is an empty.')
