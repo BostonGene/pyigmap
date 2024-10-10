@@ -41,7 +41,7 @@ def empty_annotation() -> pd.DataFrame:
     columns = [
         'sequence', 'locus', 'stop_codon', 'vj_in_frame', 'v_frameshift', 'productive', 'v_call', 'j_call', 'junction',
         'junction_aa', 'v_support', 'j_support', 'v_sequence_start', 'v_sequence_end', 'j_sequence_start',
-        'j_sequence_end', 'j_sequence_alignment_aa', 'pgen', 'duplicate_count'
+        'j_sequence_end', 'j_sequence_alignment_aa', 'pgen', 'duplicate_count', 'v_score', 'j_score', 'sequence_id'
     ]
     return pd.DataFrame(columns=columns)
 

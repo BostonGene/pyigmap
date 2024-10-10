@@ -33,6 +33,9 @@ def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_thresho
 def filter_duplicates_by_vj_score(annotation: pd.DataFrame) -> pd.DataFrame:
     """Filters out duplicate sequences in a DataFrame
     by selecting the entries with the highest combined V and J gene scores."""
+    if annotation.empty:
+        return annotation
+
     vj_score_annotation = annotation[['sequence_id', 'locus', 'v_score', 'j_score']].copy()
 
     vj_score_annotation['v_score'] = vj_score_annotation['v_score'].fillna(0)
