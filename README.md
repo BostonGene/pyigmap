@@ -148,3 +148,7 @@ Contributions are more than welcome. See the [`CONTRIBUTING.md`](CONTRIBUTING.md
 ## Citations
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
+
+## License
+
+Pyigmap is [GNU GPL3 licensed](LICENSE).
