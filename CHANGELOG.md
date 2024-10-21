@@ -4,10 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.0] - 2024-10-21
 
-### #127
-
-- Fix
-
 ### 🐛 Bug Fixes
 
 - Filtration of duplicates using sequence_id and v_score / j_score ([#129](https://github.com/BostonGene/pyigmap/issues/129))
