@@ -234,9 +234,12 @@ def parse_total_reads(json_files: list[str]) -> dict:
         if not json_content.get('summary', False):
             logger.warning(f'Total reads count could not be found in {json_file}')
         else:
-            total_reads_count += int(json_content.get('summary', 0).get('before_filtering', 0).get('total_reads', 0))
+            reads_count = int(json_content.get('summary', 0).get('before_filtering', 0).get('total_reads', 0))
             if 'fastp_version' in json_content['summary']:
-                total_reads_count //= 2
+                # A 'total_reads' metric in fastp JSON file is the sum of forward and reverse reads
+                # Therefore we divide this metric by two
+                reads_count //= 2
+            total_reads_count += reads_count
     return {"total_reads": total_reads_count}
 
 
