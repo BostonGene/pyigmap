@@ -9,7 +9,7 @@ from logger import set_logger
 
 logger = set_logger(name=__file__)
 
-TMP_DIR = '/tmp'
+TMP_DIR = 'tmp'
 
 
 def exit_with_error(message: Optional[str]):
@@ -85,12 +85,12 @@ def generate_consensus(in_fq1: str, in_fq2: str, cluster_file: str,
                        min_reads_per_cluster: int, max_reads_per_cluster: int) -> tuple[str, str]:
     logger.info('Generating consensus of clustered reads...')
 
-    fq1_cons_prefix, fq2_cons_prefix = tempfile.NamedTemporaryFile().name, tempfile.NamedTemporaryFile().name
+    fq1_cons_prefix, fq2_cons_prefix = tempfile.NamedTemporaryFile( dir='tmp').name, tempfile.NamedTemporaryFile( dir='tmp').name
     calib_cons_cmd = ['calib_cons',
                       '--fastq', in_fq1, in_fq2,
                       '--cluster', cluster_file,
                       '--output-prefix', fq1_cons_prefix, fq2_cons_prefix,
-                      '--threads', str(os.cpu_count()),
+                      '--threads', str(min(os.cpu_count(), 16)),
                       '--min-reads-per-cluster', str(min_reads_per_cluster),
                       '--max-reads-per-cluster', str(max_reads_per_cluster)]
 
@@ -105,7 +105,7 @@ def generate_consensus(in_fq1: str, in_fq2: str, cluster_file: str,
 
 def cluster_umi(in_fq1: str, in_fq2: str, fq1_umi_len: int, fq2_umi_len: int,
                 kmer_size: int, minimizer_count: int, minimizer_threshold: int, error_tolerance: int) -> str:
-    output_prefix = tempfile.NamedTemporaryFile().name
+    output_prefix = tempfile.NamedTemporaryFile( dir='tmp').name
     logger.info(f'Clustering umi in {in_fq1} and {in_fq2} into {output_prefix}...')
 
     calib_cmd = ['calib',
@@ -140,7 +140,7 @@ def check_error_tolerance_size(umi_len: int, error_tolerance: int):
 
 def decompress(gz_file: str) -> str:
     """Decompresses gzipped file"""
-    output_file = tempfile.NamedTemporaryFile().name
+    output_file = tempfile.NamedTemporaryFile( dir='tmp').name
     cmd = ' '.join(['pigz', '-dck', gz_file, '>', output_file])
     run_command(cmd, shell=True)
     return output_file

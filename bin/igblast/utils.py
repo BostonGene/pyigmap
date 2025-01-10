@@ -12,7 +12,7 @@ logger = set_logger(name=__file__)
 tqdm_out = TqdmToLogger(logger, level=logging.INFO)
 
 IGBLAST_DIR = os.environ.get('IGBLAST_DIR')
-TMP_DIR = '/tmp'
+TMP_DIR = 'tmp'
 
 RECEPTOR_GLOSSARY = {'BCR': 'Ig',
                      'TCR': 'TCR',

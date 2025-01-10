@@ -13,7 +13,7 @@ logger = logging.getLogger()
 
 IGBLAST_DIR = os.environ.get('IGBLAST_DIR')
 
-TEMPDIR_NAME = '/tmp'
+TEMPDIR_NAME = 'tmp'
 
 FASTA_CHUNKS_DIR = tempfile.TemporaryDirectory().name
 

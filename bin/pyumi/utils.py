@@ -12,7 +12,7 @@ from logger import set_logger
 
 logger = set_logger(name=__file__)
 
-TMP_DIR = '/tmp'
+TMP_DIR = 'tmp'
 FASTQ_CHUNK_SIZE = 2_000_000  # reads count in one fastq chunk
 
 
@@ -55,7 +55,8 @@ def run_command(command: list[str], stdin=None, stdout=False) -> Union[str, None
 
 
 def concat_files(files: list[str]) -> str:
-    output_file = tempfile.NamedTemporaryFile().name
+    print(files)
+    output_file = tempfile.NamedTemporaryFile(dir='tmp').name
     with open(output_file, 'w') as out_f:
         for file in files:
             with open(file, 'r') as f:
@@ -70,7 +71,7 @@ def remove(*file: str):
 
 
 def save_to_file(data: str, file_path=None) -> str:
-    file_path = file_path or tempfile.NamedTemporaryFile().name
+    file_path = file_path or tempfile.NamedTemporaryFile( dir='tmp').name
     with open(file_path, 'w') as f:
         f.write(data)
     return file_path
@@ -146,7 +147,7 @@ def extract_umi(fq12_chunks: list[str], read1_pattern: str,
     processed_fq1 = concat_files(processed_fq1_chunks)
     processed_fq2 = concat_files(processed_fq2_chunks)
 
-    logger.info(f'UMI successfully extracted. R2 FASTQ: {processed_fq1}, R2 FASTQ: {processed_fq2}')
+    logger.info(f'UMI successfully extracted. R1 FASTQ: {processed_fq1}, R2 FASTQ: {processed_fq2}')
 
     return processed_fq1, processed_fq2, total_reads_count
 
@@ -174,7 +175,7 @@ def keep_only_paired_reads(fq1: str, fq2: str, clear=False):
     logger.info('Filter out unpaired reads...')
 
     outdir = os.path.join(TMP_DIR, 'paired')
-    cmd = ['seqkit', 'pair', '-1', fq1, '-2', fq2, '--out-dir', outdir]
+    cmd = ['seqkit', 'pair', '-1', fq1, '-2', fq2, '--out-dir', outdir, '--force']
 
     run_command(cmd)
 
