@@ -17,14 +17,20 @@ class ValidationError(Exception):
 
 
 def parse_umi_length(pattern: str, barcode_type='UMI') -> int:
-    """Parses the length of the specified barcode type from the pattern.
-    Example: for ^(UMI:N{12}) returns 12
     """
-    match = re.search(rf'{barcode_type}:?(?:N?{{(\d+)}}|([^)]+))', pattern)
-    if match:
-        barcode_body = match.group(1) or match.group(2)
-        return int(barcode_body) if barcode_body.isdigit() else len(barcode_body)
-    return 0
+    Parses the total length of the specified barcode type from the pattern.
+    Handles multiple occurrences of the barcode type in the same string.
+    Example: for ^TGGTATCAACGCAGAGTAC(UMI:N{6})TCACCAT(UMI:N{6}) returns 12.
+    """
+    matches = re.findall(rf'{barcode_type}:?(?:N?{{(\d+)}}|([^)]+))', pattern)
+    total_length = 0
+    for match in matches:
+        barcode_body = match[0] or match[1]
+        if barcode_body.isdigit():
+            total_length += int(barcode_body)
+        else:
+            total_length += len(barcode_body)
+    return total_length
 
 
 def add_nucleotide_cost(pattern: str, max_error=2) -> str:
@@ -79,6 +85,5 @@ def get_prepared_pattern_and_umi_len(pattern: str, max_error=2) -> tuple[str, in
     pattern = add_nucleotide_cost(pattern, max_error)
     pattern = pattern.replace('{*}', '*')
 
-    logger.info(f"Pattern has been converted into '{pattern}'...")
-
+    logger.info(f"Pattern has been converted into '{pattern}', umi length is {umi_len}...")
     return pattern, umi_len
