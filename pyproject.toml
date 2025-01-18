@@ -5,6 +5,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "mypy>=1.10.0",
+    "nextflow>=24.4.2",
     "nf-core>=2.14.1",
     "numpy==1.26.4",
     "olga==1.2.4",

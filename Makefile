@@ -14,7 +14,7 @@ endif
 # .ONESHELL:
 DEFAULT_GOAL: install
 .PHONY: help clean build build-ref tests integration-tests unit-tests mypy check format \
-		install-nextflow install-python install-docker install-java install-podman
+    install-python install-docker install-java install-podman
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -113,21 +113,20 @@ build: ##@main >> build docker images, the virtual environment and install requi
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
-	$(MAKE) install-nextflow
 	$(MAKE) build-step-image STEP=downloader STAGE=image
 	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
     	$(MAKE) build-step-image STEP=$$step STAGE=tool ; \
 	done
 	$(MAKE) update
-	nf-core schema build --no-prompts
+	# $(UV_BIN) run nf-core pipelines schema build --no-prompts
 	chmod +x pyigmap
 
 update: install-uv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(UV_BIN) add -r bin/pyumi/requirements.txt
 	$(UV_BIN) add -r bin/cdr3nt_error_corrector/requirements.txt
-	$(UV_BIN) add "pytest>=8.1.1" "pytest-workflow>=2.1.0" "ruff>=0.4.2" "mypy>=1.10.0" "nf-core>=2.14.1"
+	$(UV_BIN) add "pytest>=8.1.1" "pytest-workflow>=2.1.0" "ruff>=0.4.2" "mypy>=1.10.0" "nf-core>=2.14.1" "nextflow>=24.04.2"
 
 install-uv: ## >> Installs uv
 	@echo ""
@@ -146,17 +145,13 @@ install-podman: ## >> install a Podman
 
 install-java: ## >> Install Java
 	curl -fL https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz -o /tmp/java.tar.gz
-	mkdir -p /usr/local/bin/java-${JAVA_VERSION}
-	tar --strip-components=1 -xzvf /tmp/java.tar.gz -C /usr/local/bin/java-${JAVA_VERSION}
+	sudo mkdir -p /usr/local/bin/java-${JAVA_VERSION}
+	sudo tar --strip-components=1 -xzvf /tmp/java.tar.gz -C /usr/local/bin/java-${JAVA_VERSION}
 	rm /tmp/java.tar.gz
 	echo "export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}" | tee -a ~/.bashrc ~/.zshrc
 	echo 'export PATH=$$JAVA_HOME/bin:$$PATH' | tee -a ~/.bashrc ~/.zshrc
 	export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}
 	export PATH=$$JAVA_HOME/bin:$$PATH
-
-install-nextflow: ## >> install a NextFlow
-	@java --version
-	curl -s https://get.nextflow.io | bash
 
 install-gh:
 	curl -sS https://webi.sh/gh | sh
@@ -185,7 +180,6 @@ build-step-image:
 
 install: ## Install and check dependencies
 	$(MAKE) update
-	$(MAKE) install-nextflow
 	$(MAKE) build-ref
 	$(MAKE) build-step-image STEP=downloader STAGE=image
 	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
