@@ -7,7 +7,6 @@ from typing import Optional, List
 import shutil
 import subprocess
 import sys
-from utils import TEMPDIR_NAME
 
 LOGGER_FORMAT = "%(name)s | line %(lineno)-3d | %(levelname)-8s | %(message)s"
 logger = logging.getLogger()
@@ -15,6 +14,8 @@ logger = logging.getLogger()
 IGBLAST_DIR = os.environ.get('IGBLAST_DIR')
 
 FASTA_CHUNKS_DIR = tempfile.TemporaryDirectory().name
+
+TEMPDIR_NAME = tempfile.gettempdir()
 
 RECEPTOR_GLOSSARY = {
     'BCR': ['Ig'],
