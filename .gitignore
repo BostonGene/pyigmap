@@ -166,7 +166,3 @@ work/
 
 # ruff linter and checker
 .ruff_cache/
-results/ERR7425614_2.fastq.gz
-results/ALLERGY_dedup_1.fastq.gz
-results/ALLERGY_dedup_2.fastq.gz
-results/ERR7425614_1.fastq.gz

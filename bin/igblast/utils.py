@@ -12,7 +12,7 @@ logger = set_logger(name=__file__)
 tqdm_out = TqdmToLogger(logger, level=logging.INFO)
 
 IGBLAST_DIR = os.environ.get('IGBLAST_DIR')
-TMP_DIR = 'tmp'
+TEMPDIR_NAME = tempfile.gettempdir()
 
 RECEPTOR_GLOSSARY = {'BCR': 'Ig',
                      'TCR': 'TCR',
@@ -21,7 +21,7 @@ ORGANISM_GLOSSARY = {'human': 'human',
                      'mouse': 'mouse'}
 
 FASTA_CHUNKS_NUM = 50000
-FASTA_CHUNKS_DIR = os.path.join(TMP_DIR, "fasta_chunks")
+FASTA_CHUNKS_DIR = os.path.join(TEMPDIR_NAME, "fasta_chunks")
 
 
 def run_command(command: list[str], stdin=None) -> subprocess.CompletedProcess[str]:
@@ -98,7 +98,7 @@ def generate_annotation(fasta_files: list[str], receptor: str, organism: str) ->
     for fasta_file in tqdm(fasta_files, file=tqdm_out, mininterval=1):
         logger.info(f'Generating annotation for {fasta_file}...')
 
-        output_annotation = os.path.join(TMP_DIR, os.path.basename(fasta_file) + f'.{receptor}.tsv')
+        output_annotation = os.path.join(TEMPDIR_NAME, os.path.basename(fasta_file) + f'.{receptor}.tsv')
 
         igblast_cmd = ['bin/igblastn',
                        '-query', fasta_file,
@@ -169,7 +169,7 @@ def save_annotation(out_annotation_path: str, annotations_paths: list[str]):
     :param out_annotation_path: path to the output annotation
     :param annotations_paths: list of calculated annotations paths
     """
-    temp_out_annotation_path = os.path.join(TMP_DIR, os.path.basename(out_annotation_path))
+    temp_out_annotation_path = os.path.join(TEMPDIR_NAME, os.path.basename(out_annotation_path))
     logger.info(f'Defined {temp_out_annotation_path} as an output annotation file.')
     concat_annotation(annotations_paths, temp_out_annotation_path)
     replace_file(temp_out_annotation_path, out_annotation_path)

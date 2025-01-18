@@ -9,6 +9,7 @@ from itertools import cycle
 from logger import set_logger
 
 logger = set_logger(name=__file__)
+TEMPDIR_NAME = tempfile.gettempdir()
 
 BarcodeMarkup = namedtuple('BarcodeMarkup', ['sequence', 'quality'])
 PatternMarkup = namedtuple('PatternMarkup', ['barcode', 'start', 'end'])
@@ -24,7 +25,7 @@ def get_reverse_complement(sequence: str) -> str:
 
 
 def write_new_reads_to_file(reads: list[str]) -> str:
-    with tempfile.NamedTemporaryFile(mode='w', dir='tmp', delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(mode='w', dir=TEMPDIR_NAME, delete=False) as temp_file:
         temp_file.writelines(reads)
         return temp_file.name
 
@@ -45,7 +46,6 @@ def get_barcode_fields(read, match, barcode_type='UMI'):
     for (barcode_start, barcode_end) in barcode_start_end_indices:
         barcode_quality += read[2][barcode_start:barcode_end]
     pattern_match_start, pattern_match_end = match.span()
-    # print(BarcodeMarkup(barcode_seq, barcode_quality), pattern_match_start, pattern_match_end)
     return PatternMarkup(BarcodeMarkup(barcode_seq, barcode_quality), pattern_match_start, pattern_match_end)
 
 
@@ -74,7 +74,6 @@ def match_barcode(read1: list[str], read2: list[str], pattern: str,
                   is_read2: bool, find_umi_in_rc=True) -> tuple[PatternMarkup, list[str], list[str]]:
 
     def find_match(read):
-        # print(read[1], pattern)
         match = regex.search(pattern, read[1], regex.BESTMATCH)
         if not match and (find_umi_in_rc or not is_read2):
             match = match_in_reverse_complement(read[1], pattern)
