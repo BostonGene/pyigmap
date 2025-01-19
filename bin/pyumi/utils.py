@@ -56,7 +56,7 @@ def run_command(command: list[str], stdin=None, stdout=False) -> Union[str, None
 
 def concat_files(files: list[str]) -> str:
     print(files)
-    output_file = tempfile.NamedTemporaryFile(dir=TEMPDIR_NAME).name
+    output_file = tempfile.NamedTemporaryFile().name
     with open(output_file, 'w') as out_f:
         for file in files:
             with open(file, 'r') as f:
@@ -71,7 +71,7 @@ def remove(*file: str):
 
 
 def save_to_file(data: str, file_path=None) -> str:
-    file_path = file_path or tempfile.NamedTemporaryFile( dir=TEMPDIR_NAME).name
+    file_path = file_path or tempfile.NamedTemporaryFile().name
     with open(file_path, 'w') as f:
         f.write(data)
     return file_path

@@ -25,7 +25,7 @@ def get_reverse_complement(sequence: str) -> str:
 
 
 def write_new_reads_to_file(reads: list[str]) -> str:
-    with tempfile.NamedTemporaryFile(mode='w', dir=TEMPDIR_NAME, delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
         temp_file.writelines(reads)
         return temp_file.name
 

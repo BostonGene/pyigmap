@@ -46,7 +46,7 @@ make
 4. Start running your own analysis!
 
 ```bash
-./pyigmap -profile <docker/podman> \
+uv nextflow -profile <docker/podman> \
     --library <amplicon/rnaseq> \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \

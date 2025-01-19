@@ -1,7 +1,7 @@
 - name: test_main_rnaseq_sample_id
   tags:
     - integration-tests
-  command: ./pyigmap --library rnaseq
+  command: uv nextflow --library rnaseq
                      --sample_id SRR3743469
                      --first_reads 10000
                      --outdir ./
@@ -10,7 +10,7 @@
 - name: test_main_amplicon_sample_id
   tags:
     - integration-tests
-  command: ./pyigmap --library amplicon
+  command: uv nextflow --library amplicon
                      --sample_id ERR7425614
                      --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
                      --first_reads 10
@@ -20,7 +20,7 @@
 - name: test_main_amplicon_zenodo
   tags:
     - integration-tests
-  command: ./pyigmap --library amplicon
+  command: uv nextflow --library amplicon
                      --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz
                      --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz
                      --first_reads 5000
