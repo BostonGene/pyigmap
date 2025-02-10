@@ -1,29 +1,32 @@
 - name: test_main_rnaseq_sample_id
   tags:
     - integration-tests
-  command: uv nextflow --library rnaseq
-                     --sample_id SRR3743469
-                     --first_reads 10000
-                     --outdir ./
+  command: nextflow run main.nf
+    --library rnaseq
+    --sample_id SRR3743469
+    --first_reads 10000
+    --outdir ./
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_sample_id
   tags:
     - integration-tests
-  command: uv nextflow --library amplicon
-                     --sample_id ERR7425614
-                     --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
-                     --first_reads 10
-                     --outdir ./
+  command: nextflow run main.nf
+    --library amplicon
+    --sample_id ERR7425614
+    --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
+    --first_reads 10
+    --outdir ./
   files:
     - path: "pyigmap.tar.gz"
 - name: test_main_amplicon_zenodo
   tags:
     - integration-tests
-  command: uv nextflow --library amplicon
-                     --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz
-                     --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz
-                     --first_reads 5000
-                     --outdir ./
+  command: nextflow run main.nf
+    --library amplicon
+    --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz
+    --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz
+    --first_reads 5000
+    --outdir ./
   files:
     - path: "pyigmap.tar.gz"

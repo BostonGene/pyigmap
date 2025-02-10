@@ -73,7 +73,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		igblast-tool igblast-image \
 		cdr3nt_error_corrector-tool cdr3nt_error_corrector-image
 	rm -rf $(VIRTUAL_ENV) \
-		.nextflow.log* work .nextflow nextflow
+		.nextflow.log* work .nextflow nextflow uv.lock
 
 build-ref-image:
 	@echo ""
@@ -122,7 +122,6 @@ build: ##@main >> build docker images, the virtual environment and install requi
 	done
 	$(MAKE) update
 	# $(UV_BIN) run nf-core pipelines schema build --no-prompts
-	chmod +x pyigmap
 
 update: install-uv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
