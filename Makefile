@@ -5,6 +5,8 @@ ARCHITECTURE=amd64
 BUILD_REF_STAGE=build-ref
 ENGINE=docker
 UV_BIN = '$(HOME)/.local/bin/uv'
+PYTHON_VERSION := 3.9
+VENV_DIR := .venv
 
 ifeq ($(ENGINE),podman)
 	PODMAN_PARAM=--format docker
@@ -124,9 +126,10 @@ build: ##@main >> build docker images, the virtual environment and install requi
 
 update: install-uv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
-	$(UV_BIN) add -r bin/pyumi/requirements.txt
-	$(UV_BIN) add -r bin/cdr3nt_error_corrector/requirements.txt
-	$(UV_BIN) add "pytest>=8.1.1" "pytest-workflow>=2.1.0" "ruff>=0.4.2" "mypy>=1.10.0" "nf-core>=2.14.1" "nextflow>=24.04.2"
+	$(UV_BIN) venv --python $(PYTHON_VERSION)
+	$(UV_BIN) pip install -r bin/pyumi/requirements.txt
+	$(UV_BIN) pip install -r bin/cdr3nt_error_corrector/requirements.txt
+	$(UV_BIN) pip install "pytest>=8.1.1" "pytest-workflow>=2.1.0" "ruff>=0.4.2" "mypy>=1.10.0" "nf-core>=2.14.1" "nextflow>=24.04.2"
 
 install-uv: ## >> Installs uv
 	@echo ""
