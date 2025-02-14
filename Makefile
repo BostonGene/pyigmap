@@ -111,7 +111,7 @@ build-ref: ##@main >> build all references
 	$(MAKE) build-vidjil-ref
 	$(MAKE) build-olga-models
 
-build: ##@main >> build docker images, the virtual environment and install requirements
+dev: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
@@ -120,15 +120,20 @@ build: ##@main >> build docker images, the virtual environment and install requi
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
     	$(MAKE) build-step-image STEP=$$step STAGE=tool ; \
 	done
-	$(MAKE) update
+	$(MAKE) update-dev
 	# $(UV_BIN) run nf-core pipelines schema build --no-prompts
+
+update-dev: install-uv ## >> update requirements.txt inside the virtual environment
+	@echo "$(ccso)--> Updating packages $(ccend)"
+	$(UV_BIN) venv --python $(PYTHON_VERSION)
+	$(UV_BIN) add -r bin/pyumi/requirements.txt
+	$(UV_BIN) add -r bin/cdr3nt_error_corrector/requirements.txt
+	$(UV_BIN) add "pytest>=8.1.1" "pytest-workflow>=2.1.0" "ruff>=0.4.2" "mypy>=1.10.0"
 
 update: install-uv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
 	$(UV_BIN) venv --python $(PYTHON_VERSION)
-	$(UV_BIN) pip install -r bin/pyumi/requirements.txt
-	$(UV_BIN) pip install -r bin/cdr3nt_error_corrector/requirements.txt
-	$(UV_BIN) pip install "pytest>=8.1.1" "pytest-workflow>=2.1.0" "ruff>=0.4.2" "mypy>=1.10.0" "nf-core>=2.14.1" "nextflow>=24.04.2"
+	$(UV_BIN) add "nf-core>=2.14.1" "nextflow>=24.04.2"
 
 install-uv: ## >> Installs uv
 	@echo ""

@@ -35,13 +35,13 @@ make ENGINE=podman build-ref # will use Podman as container engine
 
 To build an executable and not executable docker images, python virtual environment and installs requirements execute:
 ```bash
-make build # will use Docker as container engine
+make dev # will use Docker as container engine
 ```
 
 or
 
 ```bash
-make ENGINE=podman build # will use Podman as container engine
+make ENGINE=podman dev # will use Podman as container engine
 ```
 
 ### Unit (step) tests
