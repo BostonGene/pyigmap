@@ -73,7 +73,10 @@ clean: ## >> remove docker images, python environment and nextflow build files
 		igblast-tool igblast-image \
 		cdr3nt_error_corrector-tool cdr3nt_error_corrector-image
 	rm -rf $(VIRTUAL_ENV) \
-		.nextflow.log* work .nextflow nextflow uv.lock
+		.nextflow.log* work .nextflow nextflow uv.lock \
+		bin/igblast/igblast.reference.all_alleles.tar.gz bin/igblast/igblast.reference.major_allele.tar.gz \
+		bin/igblast/vidjil.germline.tar.gz bin/cdr3nt_error_corrector/olga-models.tar.gz
+
 
 build-ref-image:
 	@echo ""
@@ -192,7 +195,6 @@ install: ## Install and check dependencies
 	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
 	done
-	chmod +x pyigmap
 
 # And add help text after each target name starting with '\#\#'
 # A category can be added with @category
