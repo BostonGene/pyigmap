@@ -83,12 +83,12 @@ build-ref-image:
 build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
-	$(ENGINE) run --rm -v $(pwd)/bin/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
+	$(ENGINE) run --rm -v $(PWD)/bin/igblast:/tmp igblast-$(BUILD_REF_STAGE) -o /tmp/igblast.reference.major_allele.tar.gz
 
 build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01, *02, etc.) for igblast $(ccend)"
-	$(ENGINE) run --rm -v $(pwd)/bin/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
+	$(ENGINE) run --rm -v $(PWD)/bin/igblast:/tmp igblast-$(BUILD_REF_STAGE) -a -o /tmp/igblast.reference.all_alleles.tar.gz
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
