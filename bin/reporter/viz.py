@@ -146,6 +146,41 @@ def bokeh_weighted_usage(res, col='read_num_pre_dedup', bins=20, x_max=None, y_r
     return p
 
 
+
+def plot_barcode_rank(res):
+    df = res.copy()
+    df = df[df['read_num_post_dedup'] > 0]
+    sorted_reads = df['read_num_post_dedup'].sort_values(ascending=False).reset_index(drop=True)
+    cumulative_reads = sorted_reads.cumsum()
+
+    if len(sorted_reads) > 2000:
+        log_space = np.geomspace(1, len(sorted_reads), num=2000).astype(int) - 1
+        log_space = np.unique(np.clip(log_space, 0, len(sorted_reads)-1))
+        sorted_reads = sorted_reads.iloc[log_space].reset_index(drop=True)
+        cumulative_reads = cumulative_reads.iloc[log_space].reset_index(drop=True)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=cumulative_reads,
+        y=sorted_reads,
+        mode='lines',
+        line=dict(color='teal'),
+        name='read_counts'
+    ))
+
+    fig.update_layout(
+        title='UMI Rank Plot (Cumulative Reads vs UMI Read Count)',
+        xaxis_title='Cumulative Reads',
+        yaxis_title='Read Count per UMI',
+        xaxis_type='log',
+        yaxis_type='log',
+        height=500,
+        width=600
+    )
+
+    return fig
+
 def create_report(res, umi_sequences, report_file_name='panel_report.html'):
     x_max = max(res['read_num_pre_dedup'].max(), res['read_num_post_dedup'].max())
     y_max_hist = max(
@@ -187,11 +222,17 @@ def create_report(res, umi_sequences, report_file_name='panel_report.html'):
                 bokeh_weighted_usage(res, col='read_num_post_dedup', x_max=x_max, y_range=y_range_weight))
         )
     )
+    tab_rank = pn.Column(
+        pn.pane.Markdown("## UMI Barcode Rank Plot"),
+        pn.pane.Plotly(plot_barcode_rank(res), config={'responsive': True})
+    )
+
     tabs = pn.Tabs(
         ("Sequence Logo", tab_logo),
         ("UMI Usage", tab_umi_usage),
         ("Weighted UMI Usage", tab_weighted),
-        ("UMI Usage Changes", tab_scatter)
+        ("UMI Usage Changes", tab_scatter),
+        ("Read Rank Plot", tab_rank)
     )
     report = pn.template.FastListTemplate(
         title="UMI Analysis Report",
