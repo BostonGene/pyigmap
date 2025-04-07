@@ -4,8 +4,8 @@ import pandas as pd
 from logger import set_logger
 
 
-from bin.reporter.utils import get_read_to_umi_mapping, get_consensus_group_size_per_read
-from bin.reporter.viz import create_report
+from utils import get_read_to_umi_mapping, get_consensus_group_size_per_read
+from viz import create_report
 
 logger = set_logger(name=__file__)
 

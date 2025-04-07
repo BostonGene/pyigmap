@@ -1,0 +1,8 @@
+pandas==2.1.4
+panel==1.6.2
+matplotlib==3.10.1
+seaborn==0.13.2
+logomaker==0.8.7
+plotly==6.0.1
+numpy==1.26.4
+bokeh==3.7.2

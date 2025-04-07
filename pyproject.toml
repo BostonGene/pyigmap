@@ -5,19 +5,21 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "jupyterlab>=4.3.4",
-    "mypy>=1.10.0",
     "nextflow>=24.4.2",
-    "nf-core>=2.14.1",
     "numpy==1.26.4",
     "olga==1.2.4",
     "pandas==2.1.4",
     "pyfastx==2.1.0",
-    "pytest>=8.1.1",
     "pytest-workflow>=2.1.0",
     "python-dateutil==2.8.2",
     "pytz==2023.3.post1",
     "regex==2024.5.15",
-    "ruff>=0.4.2",
     "six==1.16.0",
     "tzdata==2023.4",
 ]
+
+[project.optional-dependencies]
+dev = ["mypy>=1.10.0", "ruff>=0.4.2", "nf-core>=2.14.1", "pytest>=8.1.1"]
+
+[tool.setuptools.packages.find]
+include = ["pyigmap"]

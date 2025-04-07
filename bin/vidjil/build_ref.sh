@@ -6,8 +6,6 @@ This script builds archive with V(D)J reference and vidjil presets
 
 END_COMMENT
 
-sudo apt install jq
-
 REPOSITORY_DIR=/tmp/vidjil
 VIDJIL_VERSION=release-2024.02
 git clone -b $VIDJIL_VERSION https://gitlab.inria.fr/vidjil/vidjil.git $REPOSITORY_DIR &&

@@ -86,7 +86,7 @@ build-ref-image:
 build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
-	$(ENGINE) run --rm -v $(PWD)/bin/igblast:/tmp igblast-$(BUILD_REF_STAGE) -o /tmp/igblast.reference.major_allele.tar.gz
+	$(ENGINE) run --rm -v $(PWD)/bin/igblast:/tmp igblast-$(BUILD_REF_STAGE) -a -o /tmp/igblast.reference.major_allele.tar.gz
 
 build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
 	@echo ""
@@ -96,14 +96,12 @@ build-igblast-ref-all: ## >> build an archive with igblast vdj reference with al
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference for vidjil $(ccend)"
-	bash bin/vidjil/build_ref.sh
-	mv /tmp/vidjil.germline.tar.gz bin/vidjil/
+	$(ENGINE) run --rm -v $(PWD)/bin/vidjil:/tmp vidjil-$(BUILD_REF_STAGE) -a -o /tmp/vidjil.germline.tar.gz
 
 build-olga-models: ## >> build an archive with olga models
 	@echo ""
 	@echo "$(ccso)--> Build olga models for cdr3nt-error-corrector $(ccend)"
-	bash bin/cdr3nt_error_corrector/build_ref.sh
-	mv /tmp/olga-models.tar.gz bin/cdr3nt_error_corrector/
+	$(ENGINE) run --rm -v $(PWD)/bin/cdr3nt_error_corrector:/tmp cdr3nt_error_corrector-$(BUILD_REF_STAGE) -a -o /tmp/olga-models.tar.gz
 
 build-ref: ##@main >> build all references
 	@echo ""
@@ -111,7 +109,11 @@ build-ref: ##@main >> build all references
 	$(MAKE) build-ref-image STEP=igblast
 	$(MAKE) build-igblast-ref-major
 	$(MAKE) build-igblast-ref-all
+
+	$(MAKE) build-ref-image STEP=vidjil
 	$(MAKE) build-vidjil-ref
+
+	$(MAKE) build-ref-image STEP=cdr3nt_error_corrector
 	$(MAKE) build-olga-models
 
 dev: ##@main >> build docker images, the virtual environment and install requirements
@@ -131,7 +133,6 @@ update-dev: install-uv ## >> update requirements.txt inside the virtual environm
 	$(UV_BIN) venv --python $(PYTHON_VERSION)
 	$(UV_BIN) add -r bin/pyumi/requirements.txt
 	$(UV_BIN) add -r bin/cdr3nt_error_corrector/requirements.txt
-	$(UV_BIN) add "pytest>=8.1.1" "pytest-workflow>=2.1.0" "ruff>=0.4.2" "mypy>=1.10.0"
 
 update: install-uv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
