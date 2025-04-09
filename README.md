@@ -46,7 +46,8 @@ make
 4. Start running your own analysis!
 
 ```bash
-uv nextflow -profile <docker/podman> \
+uv run nextflow main.nf \
+    -profile <docker/podman> \
     --library <amplicon/rnaseq> \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \
