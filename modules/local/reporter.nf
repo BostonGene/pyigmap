@@ -8,9 +8,7 @@ process Reporter {
         path fq1_calib
         path fq2_calib
     output:
-        path params.out_pyumi_fq1, emit: fq1
-        path params.out_pyumi_fq2, emit: fq2
-        path params.out_pyumi_json, emit: json
+        path params.out_report_file, emit: html
     script:
         """
         python3.10 /usr/local/src/run.py \

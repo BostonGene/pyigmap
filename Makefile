@@ -68,6 +68,7 @@ clean: ## >> remove docker images, python environment and nextflow build files
 	$(ENGINE) rmi -f downloader-image \
 		pyumi-tool pyumi-image \
 		calib_dedup-tool calib_dedup-image \
+		reporter-tool reporter-image \
 		fastp-tool fastp-image \
 		vidjil-tool vidjil-image \
 		igblast-tool igblast-image \
@@ -121,7 +122,7 @@ dev: ##@main >> build docker images, the virtual environment and install require
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
 	$(MAKE) build-step-image STEP=downloader STAGE=image
-	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+	for step in pyumi calib_dedup reporter fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
     	$(MAKE) build-step-image STEP=$$step STAGE=tool ; \
 	done
@@ -193,7 +194,7 @@ install: ## Install and check dependencies
 	$(MAKE) update
 	$(MAKE) build-ref
 	$(MAKE) build-step-image STEP=downloader STAGE=image
-	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+	for step in pyumi calib_dedup reporter fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
 	done
 
