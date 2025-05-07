@@ -9,6 +9,7 @@ from itertools import cycle
 from logger import set_logger
 
 logger = set_logger(name=__file__)
+TEMPDIR_NAME = tempfile.gettempdir()
 
 BarcodeMarkup = namedtuple('BarcodeMarkup', ['sequence', 'quality'])
 PatternMarkup = namedtuple('PatternMarkup', ['barcode', 'start', 'end'])
@@ -39,9 +40,11 @@ def add_barcode_to_the_header(header: str, umi_seq: str, barcode_type='UMI'):
 
 
 def get_barcode_fields(read, match, barcode_type='UMI'):
-    barcode_seq = match.group(barcode_type).replace('N', 'A')
-    barcode_start, barcode_end = match.span(barcode_type)
-    barcode_quality = read[2][barcode_start:barcode_end]
+    barcode_seq = ''.join(match.captures(barcode_type)).replace('N', 'A')
+    barcode_start_end_indices = match.spans(barcode_type)
+    barcode_quality = ''
+    for (barcode_start, barcode_end) in barcode_start_end_indices:
+        barcode_quality += read[2][barcode_start:barcode_end]
     pattern_match_start, pattern_match_end = match.span()
     return PatternMarkup(BarcodeMarkup(barcode_seq, barcode_quality), pattern_match_start, pattern_match_end)
 

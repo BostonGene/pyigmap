@@ -22,7 +22,7 @@
       md5sum: 42843654fcf25e1023d4904b584d2a98
       encoding: UTF-8
     - path: "corrected_annotation.tsv"
-      md5sum: 67f7cbcb41e85ebf89c97044e16a10d9
+      md5sum: 9bbd6d1cc6bbb3c4b4e1960f10af6fe4
       encoding: UTF-8
 - name: test_cdr3nt_error_corrector_amplicon
   tags:
@@ -48,5 +48,5 @@
       md5sum: a4c5d4a31b403f8edeea696a06c6ca14
       encoding: UTF-8
     - path: "corrected_annotation.tsv"
-      md5sum: 09d584bfdc19768a081af98ad2044a7b
+      md5sum: 3ebe43f73165361bd0b0a0460990ba29
       encoding: UTF-8

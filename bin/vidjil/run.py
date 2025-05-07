@@ -13,7 +13,7 @@ from typing import Optional, Union, List
 LOGGER_FORMAT = "%(name)s | line %(lineno)-3d | %(levelname)-8s | %(message)s"
 logger = logging.getLogger()
 
-TEMPDIR_NAME = '/tmp'
+TEMPDIR_NAME = tempfile.gettempdir()
 
 ORGANISM_GLOSSARY = {
     'human': 'homo-sapiens',

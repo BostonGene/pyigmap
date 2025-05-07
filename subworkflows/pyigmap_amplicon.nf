@@ -1,5 +1,6 @@
 include { PyUMI } from '../modules/local/pyumi.nf'
 include { CalibDedup } from '../modules/local/calib_dedup.nf'
+include { Reporter } from '../modules/local/reporter.nf'
 include { FastpMerge; FastpMockMerge } from '../modules/local/fastp.nf'
 include { IgBlastFASTQ; IgBlastMockFASTQ } from '../modules/local/igblast.nf'
 include { CDR3ErrorCorrector } from '../modules/local/cdr3nt_error_corrector.nf'
@@ -25,6 +26,10 @@ workflow PYIGMAP_AMPLICON_WITH_UMI {
     main:
         PyUMI(fq1, fq2)
         CalibDedup(PyUMI.out.fq1, PyUMI.out.fq2, PyUMI.out.json)
+
+        if (params.run_umi_reporter) {
+            Reporter(PyUMI.out.fq1, PyUMI.out.fq2, CalibDedup.out.fq1, CalibDedup.out.fq2)
+        }
 
         igblast_ref = file(params.igblast_ref)
 

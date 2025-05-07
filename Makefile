@@ -1,13 +1,12 @@
 SHELL:=/bin/bash
 
-PYTHON_VERSION=3.9.19
-PYTHON_SYS=python3.9
-VIRTUAL_ENV=env
-PYTHON_ENV=${VIRTUAL_ENV}/bin/python3
 JAVA_VERSION=21
 ARCHITECTURE=amd64
 BUILD_REF_STAGE=build-ref
 ENGINE=docker
+UV_BIN = '$(HOME)/.local/bin/uv'
+PYTHON_VERSION := 3.9
+VENV_DIR := .venv
 
 ifeq ($(ENGINE),podman)
 	PODMAN_PARAM=--format docker
@@ -16,8 +15,8 @@ endif
 
 # .ONESHELL:
 DEFAULT_GOAL: install
-.PHONY: help clean build build-ref integration-tests unit-tests mypy check format \
-		install-nextflow install-python install-docker install-java install-podman
+.PHONY: help clean build build-ref tests integration-tests unit-tests mypy check format \
+    install-python install-docker install-java install-podman
 
 # Colors for echos 
 ccend = $(shell tput sgr0)
@@ -28,36 +27,36 @@ ccso = $(shell tput smso)
 mypy: venv ## >> run mypy type checker
 	@echo ""
 	@echo "$(ccso)--> Running mypy $(ccend)"
-	$(PYTHON_ENV) -m mypy bin/calib_dedup/
-	$(PYTHON_ENV) -m mypy bin/fastp/
-	$(PYTHON_ENV) -m mypy bin/vidjil/
-	$(PYTHON_ENV) -m mypy bin/igblast/
-	$(PYTHON_ENV) -m mypy bin/cdr3nt_error_corrector/
+	$(UV_BIN) run mypy bin/calib_dedup/
+	$(UV_BIN) run mypy bin/fastp/
+	$(UV_BIN) run mypy bin/vidjil/
+	$(UV_BIN) run mypy bin/igblast/
+	$(UV_BIN) run mypy bin/cdr3nt_error_corrector/
 
-check: venv ## >> run ruff linter
+check: ## >> run ruff linter
 	@echo ""
 	@echo "$(ccso)--> Running ruff check $(ccend)"
-	$(PYTHON_ENV) -m ruff check bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
+	$(UV_BIN) run ruff check bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
 
-format: venv ## >> run ruff formatter
+format: ## >> run ruff formatter
 	@echo ""
 	@echo "$(ccso)--> Running ruff format $(ccend)"
-	$(PYTHON_ENV) -m ruff format bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
+	$(UV_BIN) run ruff format bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
 
-integration-tests: venv ## >> run tests for all workflows via pytest and pytest-workflow tool
+integration-tests: ## >> run tests for all workflows via pytest and pytest-workflow tool
 	@echo ""
 	@echo "$(ccso)--> Running workflow tests $(ccend)"
-	$(PYTHON_ENV) -m pytest tests -vv --kwdof --tag integration-tests
+	$(UV_BIN) run pytest tests -vv --kwdof --tag integration-tests
 
-unit-tests: venv ## >> run tests for all steps via pytest tool
+unit-tests: ## >> run tests for all steps via pytest tool
 	@echo ""
 	@echo "$(ccso)--> Running steps tests $(ccend)"
-	$(PYTHON_ENV) -m pytest bin/pyumi/unit_tests -vv
-#	$(PYTHON_ENV) -m pytest bin/calib_dedup/unit_tests -vv
-	$(PYTHON_ENV) -m pytest tests -vv --kwdof --tag unit-tests
-	$(PYTHON_ENV) -m pytest bin/cdr3nt_error_corrector/unit_tests -vv
+	$(UV_BIN) run pytest bin/pyumi/unit_tests -vv
+#	$(UV_BIN) run pytest bin/calib_dedup/unit_tests -vv
+	$(UV_BIN) run pytest tests -vv --kwdof --tag unit-tests
+	$(UV_BIN) run pytest bin/cdr3nt_error_corrector/unit_tests -vv
 
-tests: venv ##@main >> run integration and unit tests
+tests: ##@main >> run integration and unit tests
 	@echo ""
 	@echo "$(ccso)--> Running integration and unit tests $(ccend)"
 	$(MAKE) unit-tests
@@ -69,12 +68,16 @@ clean: ## >> remove docker images, python environment and nextflow build files
 	$(ENGINE) rmi -f downloader-image \
 		pyumi-tool pyumi-image \
 		calib_dedup-tool calib_dedup-image \
+		reporter-tool reporter-image \
 		fastp-tool fastp-image \
 		vidjil-tool vidjil-image \
 		igblast-tool igblast-image \
 		cdr3nt_error_corrector-tool cdr3nt_error_corrector-image
 	rm -rf $(VIRTUAL_ENV) \
-		.nextflow.log* work .nextflow nextflow
+		.nextflow.log* work .nextflow nextflow uv.lock \
+		bin/igblast/igblast.reference.all_alleles.tar.gz bin/igblast/igblast.reference.major_allele.tar.gz \
+		bin/igblast/vidjil.germline.tar.gz bin/cdr3nt_error_corrector/olga-models.tar.gz
+
 
 build-ref-image:
 	@echo ""
@@ -84,24 +87,22 @@ build-ref-image:
 build-igblast-ref-major: ## >> build an archive with igblast vdj reference with only major allele (*01)
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01) for igblast $(ccend)"
-	$(ENGINE) run --rm -v $(pwd)/bin/igblast:/work igblast-$(BUILD_REF_STAGE) -o /work/igblast.reference.major_allele.tar.gz
+	$(ENGINE) run --rm -v $(PWD)/bin/igblast:/tmp igblast-$(BUILD_REF_STAGE) -a -o /tmp/igblast.reference.major_allele.tar.gz
 
 build-igblast-ref-all: ## >> build an archive with igblast vdj reference with all alleles
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference with all alleles (*01, *02, etc.) for igblast $(ccend)"
-	$(ENGINE) run --rm -v $(pwd)/bin/igblast:/work igblast-$(BUILD_REF_STAGE) -a -o /work/igblast.reference.all_alleles.tar.gz
+	$(ENGINE) run --rm -v $(PWD)/bin/igblast:/tmp igblast-$(BUILD_REF_STAGE) -a -o /tmp/igblast.reference.all_alleles.tar.gz
 
 build-vidjil-ref: ## >> build an archive with vidjil reference
 	@echo ""
 	@echo "$(ccso)--> Build a vdj reference for vidjil $(ccend)"
-	bash bin/vidjil/build_ref.sh
-	mv /tmp/vidjil.germline.tar.gz bin/vidjil/
+	$(ENGINE) run --rm -v $(PWD)/bin/vidjil:/tmp vidjil-$(BUILD_REF_STAGE) -a -o /tmp/vidjil.germline.tar.gz
 
 build-olga-models: ## >> build an archive with olga models
 	@echo ""
 	@echo "$(ccso)--> Build olga models for cdr3nt-error-corrector $(ccend)"
-	bash bin/cdr3nt_error_corrector/build_ref.sh
-	mv /tmp/olga-models.tar.gz bin/cdr3nt_error_corrector/
+	$(ENGINE) run --rm -v $(PWD)/bin/cdr3nt_error_corrector:/tmp cdr3nt_error_corrector-$(BUILD_REF_STAGE) -a -o /tmp/olga-models.tar.gz
 
 build-ref: ##@main >> build all references
 	@echo ""
@@ -109,46 +110,40 @@ build-ref: ##@main >> build all references
 	$(MAKE) build-ref-image STEP=igblast
 	$(MAKE) build-igblast-ref-major
 	$(MAKE) build-igblast-ref-all
+
+	$(MAKE) build-ref-image STEP=vidjil
 	$(MAKE) build-vidjil-ref
+
+	$(MAKE) build-ref-image STEP=cdr3nt_error_corrector
 	$(MAKE) build-olga-models
 
-build: ##@main >> build docker images, the virtual environment and install requirements
+dev: ##@main >> build docker images, the virtual environment and install requirements
 	@echo ""
 	@echo "$(ccso)--> Build $(ccend)"
 	$(MAKE) clean
-	$(MAKE) install-nextflow
 	$(MAKE) build-step-image STEP=downloader STAGE=image
-	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+	for step in pyumi calib_dedup reporter fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
     	$(MAKE) build-step-image STEP=$$step STAGE=tool ; \
 	done
-	$(MAKE) update
-	nf-core schema build --no-prompts
-	chmod +x pyigmap
+	$(MAKE) update-dev
+	# $(UV_BIN) run nf-core pipelines schema build --no-prompts
 
-venv: $(VIRTUAL_ENV)
-
-$(VIRTUAL_ENV): ## >> setup the virtual environment
-	@echo "$(ccso)--> Install and setup virtualenv $(ccend)"
-	$(PYTHON_SYS) -m pip install --upgrade pip
-	$(PYTHON_SYS) -m pip install virtualenv
-	virtualenv $(VIRTUAL_ENV)
-
-update: venv ## >> update requirements.txt inside the virtual environment
+update-dev: install-uv ## >> update requirements.txt inside the virtual environment
 	@echo "$(ccso)--> Updating packages $(ccend)"
-	$(PYTHON_ENV) -m pip install -r bin/pyumi/requirements.txt
-	$(PYTHON_ENV) -m pip install -r bin/cdr3nt_error_corrector/requirements.txt
-	$(PYTHON_ENV) -m pip install pytest==8.1.1 pytest-workflow==2.1.0 ruff==0.4.2 mypy==1.10.0 nf-core==2.14.1
+	$(UV_BIN) venv --python $(PYTHON_VERSION)
+	$(UV_BIN) add -r bin/pyumi/requirements.txt
+	$(UV_BIN) add -r bin/cdr3nt_error_corrector/requirements.txt
 
-install-python: ## >> install a python
-	curl -fL http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz > /tmp/python.tgz
-	mkdir -p /tmp/python
-	tar xzvf /tmp/python.tgz --one-top-level=/tmp/python --strip-component 1
-	cd /tmp/python && \
-		./configure --enable-optimizations && \
-		make -j 8 && sudo make altinstall
-	sudo apt install ${PYTHON_SYS}-distutils
-	sudo rm -rf /tmp/python.tgz /tmp/python
+update: install-uv ## >> update requirements.txt inside the virtual environment
+	@echo "$(ccso)--> Updating packages $(ccend)"
+	$(UV_BIN) venv --python $(PYTHON_VERSION)
+	$(UV_BIN) add "nf-core>=2.14.1" "nextflow>=24.04.2"
+
+install-uv: ## >> Installs uv
+	@echo ""
+	@echo "Installing uv..."
+	curl -LsSf https://astral.sh/uv/install.sh | sh
 
 install-docker: ## >> install a docker
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -160,21 +155,15 @@ install-podman: ## >> install a Podman
 	sudo apt-get update
 	sudo apt-get -y install podman
 
-install-java: ## >> install a java
-	curl -fL https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz > /tmp/java.tar.gz
-	mkdir -p /tmp/java-${JAVA_VERSION}
-	tar xzvf /tmp/java.tar.gz --one-top-level=/tmp/java-${JAVA_VERSION} --strip-component 1
-	sudo mv /tmp/java-${JAVA_VERSION} /usr/local/bin/
-	@echo "export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}" >> ~/.bashrc
-	@echo 'export PATH=$$JAVA_HOME/bin:$$PATH' >> ~/.bashrc
+install-java: ## >> Install Java
+	curl -fL https://download.oracle.com/java/${JAVA_VERSION}/latest/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz -o /tmp/java.tar.gz
+	sudo mkdir -p /usr/local/bin/java-${JAVA_VERSION}
+	sudo tar --strip-components=1 -xzvf /tmp/java.tar.gz -C /usr/local/bin/java-${JAVA_VERSION}
+	rm /tmp/java.tar.gz
+	echo "export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}" | tee -a ~/.bashrc ~/.zshrc
+	echo 'export PATH=$$JAVA_HOME/bin:$$PATH' | tee -a ~/.bashrc ~/.zshrc
 	export JAVA_HOME=/usr/local/bin/java-${JAVA_VERSION}
 	export PATH=$$JAVA_HOME/bin:$$PATH
-	@java -version
-	rm /tmp/java.tar.gz
-
-install-nextflow: ## >> install a NextFlow
-	@java --version
-	curl -s https://get.nextflow.io | bash
 
 install-gh:
 	curl -sS https://webi.sh/gh | sh
@@ -202,13 +191,12 @@ build-step-image:
 	$(ENGINE) build --target $(STAGE) -t $(STEP)-$(STAGE) $(PODMAN_PARAM) bin/$(STEP)
 
 install: ## Install and check dependencies
-	$(MAKE) install-nextflow
+	$(MAKE) update
 	$(MAKE) build-ref
 	$(MAKE) build-step-image STEP=downloader STAGE=image
-	for step in pyumi calib_dedup fastp vidjil igblast cdr3nt_error_corrector ; do \
+	for step in pyumi calib_dedup reporter fastp vidjil igblast cdr3nt_error_corrector ; do \
     	$(MAKE) build-step-image STEP=$$step STAGE=image ; \
 	done
-	chmod +x pyigmap
 
 # And add help text after each target name starting with '\#\#'
 # A category can be added with @category

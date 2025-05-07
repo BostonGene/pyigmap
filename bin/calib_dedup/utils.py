@@ -9,7 +9,7 @@ from logger import set_logger
 
 logger = set_logger(name=__file__)
 
-TMP_DIR = '/tmp'
+TMP_DIR = tempfile.gettempdir()
 
 
 def exit_with_error(message: Optional[str]):

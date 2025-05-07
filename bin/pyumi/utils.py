@@ -12,7 +12,7 @@ from logger import set_logger
 
 logger = set_logger(name=__file__)
 
-TMP_DIR = '/tmp'
+TEMPDIR_NAME = tempfile.gettempdir()
 FASTQ_CHUNK_SIZE = 2_000_000  # reads count in one fastq chunk
 
 
@@ -55,6 +55,7 @@ def run_command(command: list[str], stdin=None, stdout=False) -> Union[str, None
 
 
 def concat_files(files: list[str]) -> str:
+    print(files)
     output_file = tempfile.NamedTemporaryFile().name
     with open(output_file, 'w') as out_f:
         for file in files:
@@ -146,7 +147,7 @@ def extract_umi(fq12_chunks: list[str], read1_pattern: str,
     processed_fq1 = concat_files(processed_fq1_chunks)
     processed_fq2 = concat_files(processed_fq2_chunks)
 
-    logger.info(f'UMI successfully extracted. R2 FASTQ: {processed_fq1}, R2 FASTQ: {processed_fq2}')
+    logger.info(f'UMI successfully extracted. R1 FASTQ: {processed_fq1}, R2 FASTQ: {processed_fq2}')
 
     return processed_fq1, processed_fq2, total_reads_count
 
@@ -154,8 +155,8 @@ def extract_umi(fq12_chunks: list[str], read1_pattern: str,
 def split_by_chunks(fq1_path: str, fq2_path: str) -> list[str]:
     logger.info(f'Splitting {fq1_path} and {fq2_path} into chunks by {FASTQ_CHUNK_SIZE} reads...')
 
-    fq1_outdir = os.path.join(TMP_DIR, 'chunks', 'fq1')
-    fq2_outdir = os.path.join(TMP_DIR, 'chunks', 'fq2')
+    fq1_outdir = os.path.join(TEMPDIR_NAME, 'chunks', 'fq1')
+    fq2_outdir = os.path.join(TEMPDIR_NAME, 'chunks', 'fq2')
 
     for fq_path, output_dir in [(fq1_path, fq1_outdir), (fq2_path, fq2_outdir)]:
         cmd = ['seqkit', 'split2', fq_path, '--by-size', str(FASTQ_CHUNK_SIZE),
@@ -173,8 +174,8 @@ def split_by_chunks(fq1_path: str, fq2_path: str) -> list[str]:
 def keep_only_paired_reads(fq1: str, fq2: str, clear=False):
     logger.info('Filter out unpaired reads...')
 
-    outdir = os.path.join(TMP_DIR, 'paired')
-    cmd = ['seqkit', 'pair', '-1', fq1, '-2', fq2, '--out-dir', outdir]
+    outdir = os.path.join(TEMPDIR_NAME, 'paired')
+    cmd = ['seqkit', 'pair', '-1', fq1, '-2', fq2, '--out-dir', outdir, '--force']
 
     run_command(cmd)
 
