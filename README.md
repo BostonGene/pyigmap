@@ -99,7 +99,7 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
 A typical command to run the pipeline from **RNASeq-bulk** sequencing data is:
 
 ```bash
-uv nextflow -profile <docker/podman> \
+uv run nextflow -profile <docker/podman> \
     --library rnaseq \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \
@@ -111,7 +111,7 @@ For common **AIRR-Seq targeted** sequencing protocols we provide pre-set paramet
 Here is an example command to process the data from the **AIRR-Seq targeted** protocol, where there is a 19-base pair UMI located between two adapters in the reverse FASTQ file:
 
 ```bash
-uv nextflow -profile <docker/podman> \
+uv run nextflow -profile <docker/podman> \
     --library amplicon \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \
@@ -122,7 +122,7 @@ uv nextflow -profile <docker/podman> \
 You can also use public data from these databases by using a sample ID: [GEO](https://www.ncbi.nlm.nih.gov/geo/), [SRA](https://www.ncbi.nlm.nih.gov/sra), [EMBL-EBI](https://www.ebi.ac.uk/), [DDBJ](https://www.ddbj.nig.ac.jp/index-e.html), [NIH Biosample](https://www.ncbi.nlm.nih.gov/biosample) and [ENCODE](https://www.encodeproject.org/):
 
 ```bash
-uv nextflow -profile <docker/podman> \
+uv run nextflow -profile <docker/podman> \
     --library rnaseq \
     --sample_id SRR3743469 \
     --outdir "./results"
@@ -131,7 +131,7 @@ uv nextflow -profile <docker/podman> \
 Alternatively, you can provide an HTTP/HTTPS/FTP link to your FASTQ files.
 
 ```bash
-uv nextflow -profile <docker/podman> \
+uv run nextflow -profile <docker/podman> \
     --library amplicon \
     --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz \
     --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz \
