@@ -1,6 +1,6 @@
 process CDR3ErrorCorrector {
     // labels are defined in conf/base.config
-    label "process_low"
+    // label "process_low"
 
     input:
         path raw_annotation

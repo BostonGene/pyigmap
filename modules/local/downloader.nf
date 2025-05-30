@@ -1,6 +1,6 @@
 process GetLinks {
     // labels are defined in conf/base.config
-    label "process_single"
+    // label "process_single"
 
     input:
         val sample_id
