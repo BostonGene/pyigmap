@@ -12,7 +12,6 @@ logger = set_logger(name=__file__)
 
 CPU_COUNT = os.cpu_count()
 TEMPDIR_NAME = os.environ.get('TEMPDIR', '/tmp/')
-OUTPUT_FOLDER_NAME = os.environ.get('HOME', '')
 CHUNK_SIZE = 20 * 1024 * 1024  # 20MB
 
 
@@ -34,16 +33,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--mock-merge-reads', help='Enable mock merging of non-overlapped reads', action='store_true')
     parser.add_argument('--reads-chunk-size', help='Read chunk size used in mock merging', type=int)
     parser.add_argument('--inner-distance-size', help='Insert size for mock merging', type=int)
-    parser.add_argument('--out-fq1', help='Output fastq file, SE or PE pair 1',
-                        type=lambda basename: os.path.join(OUTPUT_FOLDER_NAME, basename))
-    parser.add_argument('--out-fq2', help='Output fastq file, PE pair 2',
-                        type=lambda basename: os.path.join(OUTPUT_FOLDER_NAME, basename))
-    parser.add_argument('--out-fq12', help='Output merged fastq file, PE pairs 1 and 2',
-                        type=lambda basename: os.path.join(OUTPUT_FOLDER_NAME, basename))
-    parser.add_argument('--html', help='Output html file', required=True,
-                        type=lambda basename: os.path.join(OUTPUT_FOLDER_NAME, basename))
-    parser.add_argument('--json', help='Output json file', required=True,
-                        type=lambda basename: os.path.join(OUTPUT_FOLDER_NAME, basename))
+    parser.add_argument('--out-fq1', help='Output fastq file, SE or PE pair 1')
+    parser.add_argument('--out-fq2', help='Output fastq file, PE pair 2')
+    parser.add_argument('--out-fq12', help='Output merged fastq file, PE pairs 1 and 2')
+    parser.add_argument('--html', help='Output html file', required=True)
+    parser.add_argument('--json', help='Output json file', required=True)
 
     args = parser.parse_args()
 
