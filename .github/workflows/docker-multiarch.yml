@@ -68,7 +68,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check GHCR refs (version, version-amd, version-arm)
+      - name: Check GHCR multi-arch tag exists
         id: exist
         if: steps.get_ver.outputs.version != ''
         run: |
@@ -76,17 +76,14 @@ jobs:
           BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
           V="${{ steps.get_ver.outputs.version }}"
           REF_MULTI="${BASE}:${V}"
-          REF_AMD="${BASE}:${V}-amd"
-          REF_ARM="${BASE}:${V}-arm"
-
-          has_multi=false; has_amd=false; has_arm=false
-          docker buildx imagetools inspect "$REF_MULTI" >/dev/null 2>&1 && has_multi=true || true
-          docker buildx imagetools inspect "$REF_AMD"   >/dev/null 2>&1 && has_amd=true   || true
-          docker buildx imagetools inspect "$REF_ARM"   >/dev/null 2>&1 && has_arm=true   || true
-
-          echo "has_multi=$has_multi" >> "$GITHUB_OUTPUT"
-          echo "has_amd=$has_amd"     >> "$GITHUB_OUTPUT"
-          echo "has_arm=$has_arm"     >> "$GITHUB_OUTPUT"
+          REF_MULTI_LC="${REF_MULTI,,}"
+          
+          if docker buildx imagetools inspect "$REF_MULTI_LC" >/dev/null 2>&1; then
+          echo "has_multi=true"  >> "$GITHUB_OUTPUT"
+          else
+          echo "has_multi=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Checked: $REF_MULTI_LC"
 
       - name: Decide skip
         id: out
@@ -98,9 +95,7 @@ jobs:
             exit 0
           fi
           has_multi='${{ steps.exist.outputs.has_multi }}'
-          has_amd='${{ steps.exist.outputs.has_amd }}'
-          has_arm='${{ steps.exist.outputs.has_arm }}'
-          if [[ "$has_multi" == "true" || ( "$has_amd" == "true" && "$has_arm" == "true" ) ]]; then
+          if [[ "$has_multi" == "true" ]]; then
             echo "skip=true"  >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
