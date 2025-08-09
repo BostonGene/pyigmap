@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository_owner }}/pyigmap
-  SERVICES_CSV: fastp igblast vidjil
+  SERVICES_CSV: fastp,igblast,vidjil
 
 permissions:
   contents: read
