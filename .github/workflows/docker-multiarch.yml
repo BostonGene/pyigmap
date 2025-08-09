@@ -29,16 +29,28 @@ jobs:
           printf '{"service":[%s]}\n' "$(printf '"%s",' "${arr[@]}" | sed 's/,$//')" > services.json
           echo "services=$(cat services.json)" >> "$GITHUB_OUTPUT"
 
-  build_amd:
-    name: Build & push (amd) — ${{ matrix.service }}
+  build:
+    name: Build ${{ matrix.service }} @ ${{ matrix.arch }}
     needs: [matrix]
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
+      matrix:
+        service: ${{ fromJSON(needs.matrix.outputs.services).service }}
+        arch: [amd, arm]
+        include:
+          - arch: amd
+            os: ubuntu-24.04
+            platform: linux/amd64
+            suffix: -amd
+          - arch: arm
+            os: ubuntu-24.04-arm
+            platform: linux/arm64
+            suffix: -arm
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+
       - uses: docker/login-action@v3
         if: github.event_name != 'pull_request'
         with:
@@ -54,111 +66,44 @@ jobs:
           if [[ -f "$FILE" ]]; then
             V=$(awk '
               /^\[project\]/ { in_p=1; next }
-              in_p && $0 ~ /^version[[:space:]]*=/ { match($0,/"([^"]+)"/,m); if(m[1]!=""){print m[1]; exit} }' "$FILE" || true)
+              in_p && $0 ~ /^version[[:space:]]*=/ {
+                match($0,/"([^"]+)"/,m); if(m[1]!=""){print m[1]; exit}
+              }' "$FILE" || true)
           fi
           echo "version=$V" >> "$GITHUB_OUTPUT"
 
-      - name: Gate AMD
+      - name: Gate (skip if tag exists)
         id: gate
         if: steps.ver.outputs.version != ''
         run: |
           set -euo pipefail
           BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
-          TAG="${BASE}:${{ steps.ver.outputs.version }}-amd"
+          TAG="${BASE}:${{ steps.ver.outputs.version }}${{ matrix.suffix }}"
           if docker buildx imagetools inspect "${TAG,,}" >/dev/null 2>&1; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "skip=true"  >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
           echo "tag=${TAG,,}" >> "$GITHUB_OUTPUT"
 
-      - name: Docker metadata (amd)
+      - name: Docker metadata
         id: meta
         if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ steps.ver.outputs.version }}-amd,enable=true
+            type=raw,value=${{ steps.ver.outputs.version }}${{ matrix.suffix }},enable=true
           flavor: |
             latest=false
 
-      - name: Build & push (amd64)
+      - name: Build & push
         if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./bin/${{ matrix.service }}
           file: ./bin/${{ matrix.service }}/Dockerfile
-          platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: false
-          sbom: false
-
-  build_arm:
-    name: Build & push (arm) — ${{ matrix.service }}
-    needs: [matrix]
-    runs-on: ubuntu-24.04-arm
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        if: github.event_name != 'pull_request'
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Parse version
-        id: ver
-        run: |
-          FILE="./bin/${{ matrix.service }}/pyproject.toml"
-          V=""
-          if [[ -f "$FILE" ]]; then
-            V=$(awk '
-              /^\[project\]/ { in_p=1; next }
-              in_p && $0 ~ /^version[[:space:]]*=/ { match($0,/"([^"]+)"/,m); if(m[1]!=""){print m[1]; exit} }' "$FILE" || true)
-          fi
-          echo "version=$V" >> "$GITHUB_OUTPUT"
-
-      - name: Gate ARM
-        id: gate
-        if: steps.ver.outputs.version != ''
-        run: |
-          set -euo pipefail
-          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
-          TAG="${BASE}:${{ steps.ver.outputs.version }}-arm"
-          if docker buildx imagetools inspect "${TAG,,}" >/dev/null 2>&1; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "tag=${TAG,,}" >> "$GITHUB_OUTPUT"
-
-      - name: Docker metadata (arm)
-        id: meta
-        if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
-          tags: |
-            type=raw,value=${{ steps.ver.outputs.version }}-arm,enable=true
-          flavor: |
-            latest=false
-
-      - name: Build & push (arm64)
-        if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./bin/${{ matrix.service }}
-          file: ./bin/${{ matrix.service }}/Dockerfile
-          platforms: linux/arm64
+          platforms: ${{ matrix.platform }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -169,11 +114,12 @@ jobs:
 
   manifest:
     name: Manifest — ${{ matrix.service }}
-    needs: [matrix, build_amd, build_arm]
+    needs: [matrix, build]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
+      matrix:
+        service: ${{ fromJSON(needs.matrix.outputs.services).service }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -191,7 +137,9 @@ jobs:
           if [[ -f "$FILE" ]]; then
             V=$(awk '
               /^\[project\]/ { in_p=1; next }
-              in_p && $0 ~ /^version[[:space:]]*=/ { match($0,/"([^"]+)"/,m); if(m[1]!=""){print m[1]; exit} }' "$FILE" || true)
+              in_p && $0 ~ /^version[[:space:]]*=/ {
+                match($0,/"([^"]+)"/,m); if(m[1]!=""){print m[1]; exit}
+              }' "$FILE" || true)
           fi
           echo "version=$V" >> "$GITHUB_OUTPUT"
 
@@ -207,8 +155,8 @@ jobs:
           TGT="${BASE}:${V}"
           has_multi=false; has_amd=false; has_arm=false
           docker buildx imagetools inspect "${TGT,,}" >/dev/null 2>&1 && has_multi=true || true
-          docker buildx imagetools inspect "${AMD,,}" >/dev/null 2>&1 && has_amd=true || true
-          docker buildx imagetools inspect "${ARM,,}" >/dev/null 2>&1 && has_arm=true || true
+          docker buildx imagetools inspect "${AMD,,}" >/dev/null 2>&1 && has_amd=true   || true
+          docker buildx imagetools inspect "${ARM,,}" >/dev/null 2>&1 && has_arm=true   || true
           echo "has_multi=$has_multi" >> "$GITHUB_OUTPUT"
           echo "has_amd=$has_amd"     >> "$GITHUB_OUTPUT"
           echo "has_arm=$has_arm"     >> "$GITHUB_OUTPUT"
