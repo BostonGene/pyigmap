@@ -100,17 +100,24 @@ jobs:
         run: |
           V='${{ steps.get_ver.outputs.version }}'
           if [[ -z "$V" ]]; then
-            for k in manifest amd arm; do
-              echo "skip_${k}=false" >> "$GITHUB_OUTPUT"
-            done
+            echo "skip_manifest=false" >> "$GITHUB_OUTPUT"
+            echo "skip_amd=false"      >> "$GITHUB_OUTPUT"
+            echo "skip_arm=false"      >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
-          for k in manifest amd arm; do
-            val_var="has_${k}"
-            val="${{ steps.exist.outputs.has_${k} }}"
-            [[ "$val" == "true" ]] && echo "skip_${k}=true" || echo "skip_${k}=false"
-          done >> "$GITHUB_OUTPUT"
+          
+          has_multi='${{ steps.exist.outputs.has_multi }}'
+          has_amd='${{ steps.exist.outputs.has_amd }}'
+          has_arm='${{ steps.exist.outputs.has_arm }}'
+          
+          if [[ "$has_multi" == "true" ]]; then
+            echo "skip_manifest=true" >> "$GITHUB_OUTPUT"
+          
+          if [[ "$has_amd" == "true" ]]; then
+            echo "skip_amd=true" >> "$GITHUB_OUTPUT"
+          
+          if [[ "$has_arm" == "true" ]]; then
+            echo "skip_arm=true" >> "$GITHUB_OUTPUT"
 
   build_amd:
     name: Build & push (amd, linux/amd64)
