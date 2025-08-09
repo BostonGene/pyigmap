@@ -39,16 +39,15 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     outputs:
-      version: ${{ steps.get_ver.outputs.version }}
-      has_multi: ${{ steps.exist.outputs.has_multi }}
-      has_amd: ${{ steps.exist.outputs.has_amd }}
-      has_arm: ${{ steps.exist.outputs.has_arm }}
+      version:       ${{ steps.get_ver.outputs.version }}
+      has_multi:     ${{ steps.exist.outputs.has_multi }}
+      has_amd:       ${{ steps.exist.outputs.has_amd }}
+      has_arm:       ${{ steps.exist.outputs.has_arm }}
       skip_manifest: ${{ steps.decide.outputs.skip_manifest }}
-      skip_amd: ${{ steps.decide.outputs.skip_amd }}
-      skip_arm: ${{ steps.decide.outputs.skip_arm }}
+      skip_amd:      ${{ steps.decide.outputs.skip_amd }}
+      skip_arm:      ${{ steps.decide.outputs.skip_arm }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Parse version from pyproject.toml
         id: get_ver
         run: |
@@ -63,8 +62,6 @@ jobs:
               }' "$FILE" || true)
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Detected version: ${VERSION:-<empty>}"
-
       - name: Login to GHCR
         if: steps.get_ver.outputs.version != ''
         uses: docker/login-action@v3
@@ -72,7 +69,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Check GHCR tags exist
         id: exist
         if: steps.get_ver.outputs.version != ''
@@ -80,21 +76,10 @@ jobs:
           set -euo pipefail
           BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
           V="${{ steps.get_ver.outputs.version }}"
-          REF_MULTI="${BASE}:${V}"
-          REF_AMD="${BASE}:${V}-amd"
-          REF_ARM="${BASE}:${V}-arm"
-          
           check() { docker buildx imagetools inspect "${1,,}" >/dev/null 2>&1 && echo true || echo false; }
-          
-          echo "has_multi=$(check "$REF_MULTI")" >> "$GITHUB_OUTPUT"
-          echo "has_amd=$(check "$REF_AMD")"     >> "$GITHUB_OUTPUT"
-          echo "has_arm=$(check "$REF_ARM")"     >> "$GITHUB_OUTPUT"
-          
-          echo "Checked:"
-          echo "  multi: $REF_MULTI"
-          echo "  amd  : $REF_AMD"
-          echo "  arm  : $REF_ARM"
-
+          echo "has_multi=$(check "${BASE}:${V}")"     >> "$GITHUB_OUTPUT"
+          echo "has_amd=$(check "${BASE}:${V}-amd")"   >> "$GITHUB_OUTPUT"
+          echo "has_arm=$(check "${BASE}:${V}-arm")"   >> "$GITHUB_OUTPUT"
       - name: Decide which jobs to skip
         id: decide
         run: |
@@ -106,54 +91,50 @@ jobs:
             echo "skip_arm=false"      >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
           has_multi='${{ steps.exist.outputs.has_multi }}'
           has_amd='${{ steps.exist.outputs.has_amd }}'
           has_arm='${{ steps.exist.outputs.has_arm }}'
-
-          skip_manifest=false
-          skip_amd=false
-          skip_arm=false
-
-          [[ "$has_multi" == "true" ]] && skip_manifest=true
-          [[ "$has_amd"   == "true" ]] && skip_amd=true
-          [[ "$has_arm"   == "true" ]] && skip_arm=true
-
+          skip_manifest=$([[ "$has_multi" == "true" ]] && echo true || echo false)
+          skip_amd=$([[ "$has_amd" == "true" ]] && echo true || echo false)
+          skip_arm=$([[ "$has_arm" == "true" ]] && echo true || echo false)
           echo "skip_manifest=$skip_manifest" >> "$GITHUB_OUTPUT"
           echo "skip_amd=$skip_amd"           >> "$GITHUB_OUTPUT"
           echo "skip_arm=$skip_arm"           >> "$GITHUB_OUTPUT"
-
           echo "service=${{ matrix.service }}  skip_amd=$skip_amd  skip_arm=$skip_arm  skip_manifest=$skip_manifest"
 
   build_amd:
-    name: Build & push (amd)
+    name: Build & push (amd) — ${{ matrix.service }}
     needs: [matrix, precheck]
-    if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_amd != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     steps:
+      - name: Gate AMD
+        id: gate
+        run: echo "skip=${{ needs.precheck.outputs.skip_amd }}" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
+        if: steps.gate.outputs.skip != 'true'
       - uses: docker/setup-buildx-action@v3
+        if: steps.gate.outputs.skip != 'true'
       - uses: docker/login-action@v3
-        if: github.event_name != 'pull_request'
+        if: steps.gate.outputs.skip != 'true' && github.event_name != 'pull_request'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Docker metadata (amd only)
         id: meta_amd
+        if: steps.gate.outputs.skip != 'true' && needs.precheck.outputs.version != ''
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ needs.precheck.outputs.version }}-amd,enable=${{ needs.precheck.outputs.version != '' }}
+            type=raw,value=${{ needs.precheck.outputs.version }}-amd,enable=true
           flavor: |
             latest=false
-
       - name: Build & push image (amd)
+        if: steps.gate.outputs.skip != 'true' && needs.precheck.outputs.version != ''
         uses: docker/build-push-action@v6
         with:
           context: ./bin/${{ matrix.service }}
@@ -168,34 +149,38 @@ jobs:
           sbom: false
 
   build_arm:
-    name: Build & push (arm)
+    name: Build & push (arm) — ${{ matrix.service }}
     needs: [matrix, precheck]
-    if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_arm != 'true'
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     steps:
+      - name: Gate ARM
+        id: gate
+        run: echo "skip=${{ needs.precheck.outputs.skip_arm }}" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
+        if: steps.gate.outputs.skip != 'true'
       - uses: docker/setup-buildx-action@v3
+        if: steps.gate.outputs.skip != 'true'
       - uses: docker/login-action@v3
-        if: github.event_name != 'pull_request'
+        if: steps.gate.outputs.skip != 'true' && github.event_name != 'pull_request'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Docker metadata (arm only)
         id: meta_arm
+        if: steps.gate.outputs.skip != 'true' && needs.precheck.outputs.version != ''
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ needs.precheck.outputs.version }}-arm,enable=${{ needs.precheck.outputs.version != '' }}
+            type=raw,value=${{ needs.precheck.outputs.version }}-arm,enable=true
           flavor: |
             latest=false
-
       - name: Build & push image (arm)
+        if: steps.gate.outputs.skip != 'true' && needs.precheck.outputs.version != ''
         uses: docker/build-push-action@v6
         with:
           context: ./bin/${{ matrix.service }}
@@ -210,23 +195,28 @@ jobs:
           sbom: false
 
   manifest:
-    name: Manifest
+    name: Manifest — ${{ matrix.service }}
     needs: [matrix, precheck, build_amd, build_arm]
-    if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_manifest != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     steps:
+      - name: Gate manifest
+        id: gate
+        run: echo "skip=${{ needs.precheck.outputs.skip_manifest }}" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
+        if: steps.gate.outputs.skip != 'true'
       - uses: docker/setup-buildx-action@v3
+        if: steps.gate.outputs.skip != 'true'
       - uses: docker/login-action@v3
+        if: steps.gate.outputs.skip != 'true'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create multi-arch manifest (:<version>)
+        if: steps.gate.outputs.skip != 'true' && needs.precheck.outputs.version != ''
         env:
           VERSION: ${{ needs.precheck.outputs.version }}
           IMAGE_BASE: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
@@ -235,6 +225,5 @@ jobs:
           AMD="${IMAGE_BASE}:${VERSION}-amd"
           ARM="${IMAGE_BASE}:${VERSION}-arm"
           TARGET="${IMAGE_BASE}:${VERSION}"
-          echo "Create multi-arch: $TARGET <= [$AMD, $ARM]"
           docker buildx imagetools create --tag "${TARGET@L}" "${AMD@L}" "${ARM@L}"
           docker buildx imagetools inspect "${TARGET@L}"
