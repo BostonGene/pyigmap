@@ -127,7 +127,7 @@ jobs:
 
   build_amd:
     name: Build & push (amd)
-    needs: [precheck]
+    needs: [matrix, precheck]
     if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_amd != 'true'
     runs-on: ubuntu-24.04
     strategy:
@@ -169,7 +169,7 @@ jobs:
 
   build_arm:
     name: Build & push (arm)
-    needs: [precheck]
+    needs: [matrix, precheck]
     if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_arm != 'true'
     runs-on: ubuntu-24.04-arm
     strategy:
@@ -211,7 +211,7 @@ jobs:
 
   manifest:
     name: Manifest
-    needs: [precheck, build_amd, build_arm]
+    needs: [matrix, precheck, build_amd, build_arm]
     if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_manifest != 'true'
     runs-on: ubuntu-24.04
     strategy:
