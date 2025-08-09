@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ toLower(github.repository_owner) }}/pyigmap
+  IMAGE_PREFIX: ${{ github.repository_owner }}/pyigmap
   SERVICES_CSV: fastp
 
 permissions:
@@ -219,5 +219,5 @@ jobs:
           ARM="${IMAGE_BASE}:${VERSION}-arm"
           TARGET="${IMAGE_BASE}:${VERSION}"
           echo "Create multi-arch: $TARGET <= [$AMD, $ARM]"
-          docker buildx imagetools create --tag "$TARGET" "$AMD" "$ARM"
-          docker buildx imagetools inspect "$TARGET"
+          docker buildx imagetools create --tag "${TARGET@L}" "${AMD@L}" "${ARM@L}"
+          docker buildx imagetools inspect "${TARGET@L}"
