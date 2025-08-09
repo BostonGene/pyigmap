@@ -1,0 +1,10 @@
+[build-system]
+requires = ["maturin>=1.9.2", "patchelf==0.17.2.4", "tomli==2.2.1"]
+build-backend = "maturin"
+
+[project]
+name = "fastp"
+version = "1.0.0"
+description = "An ultra-fast tool for processing FASTQ files: filters low-quality reads, merges overlapped and non-overlapped reads, and more."
+authors = [{name = "nikita.syzrantsev@gmail.com"}]
+requires-python = ">=3.10"

@@ -1,0 +1,14 @@
+[package]
+name = "mock_merge_rs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "mock_merge_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.25.1", features = ["extension-module"] }
+rayon = "1.10.0"
+log = "0.4.27"
+env_logger = "0.11.8"

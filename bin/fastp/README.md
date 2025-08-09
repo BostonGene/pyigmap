@@ -1,5 +1,7 @@
 # Fastp component
 
+> Owner: nikita.syzrantsev@bostongene.com
+
 This component is a wrapping of [fastp](https://github.com/OpenGene/fastp) tool designed to provide fast all-in-one preprocessing for FASTQ files with additional logic to merge non overlapped reads.
 
 ## Input
@@ -27,7 +29,7 @@ Example of merging overlapped reads:
 |----------ATG-----------| Consensus (overlap)
 ```
 
-Example of mock merging not-overlapped reads with `--inner-distance-size 3`:
+Example of mock merging not-overlapped reads with `--innner-distance-size 3`:
 
 ```
 |------------------------| Full sequence
