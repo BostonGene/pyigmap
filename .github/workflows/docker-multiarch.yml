@@ -32,7 +32,7 @@ jobs:
           echo "services=$(cat services.json)" >> "$GITHUB_OUTPUT"
 
   precheck:
-    name: Precheck version existence
+    name: Precheck (${{ matrix.service }})
     needs: matrix
     runs-on: ubuntu-24.04
     strategy:
@@ -126,7 +126,7 @@ jobs:
   build_amd:
     name: Build & push (amd, linux/amd64)
     needs: [matrix, precheck]
-    if: needs.precheck.outputs.skip_amd != 'true'
+    if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_amd != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -168,7 +168,7 @@ jobs:
   build_arm:
     name: Build & push (arm, linux/arm64)
     needs: [matrix, precheck]
-    if: needs.precheck.outputs.skip_arm != 'true'
+    if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_arm != 'true'
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
@@ -209,8 +209,8 @@ jobs:
 
   manifest:
     name: Assemble multi-arch manifest
-    needs: [matrix, precheck, build_amd, build_arm]
-    if: github.event_name != 'pull_request' && needs.precheck.outputs.skip_manifest != 'true'
+    needs: [ matrix, precheck, build_amd, build_arm ]
+    if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_manifest != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
