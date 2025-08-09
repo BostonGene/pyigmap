@@ -161,7 +161,7 @@ jobs:
 
   manifest:
     name: Assemble multi-arch manifest
-    needs: [build_amd64, build_arm64]
+    needs: [matrix, build_amd64, build_arm64]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     strategy:
