@@ -39,8 +39,13 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     outputs:
-      skip: ${{ steps.out.outputs.skip }}
-      version: ${{ steps.out.outputs.version }}
+      version: ${{ steps.get_ver.outputs.version }}
+      has_multi: ${{ steps.exist.outputs.has_multi }}
+      has_amd: ${{ steps.exist.outputs.has_amd }}
+      has_arm: ${{ steps.exist.outputs.has_arm }}
+      skip_manifest: ${{ steps.decide.outputs.skip_manifest }}
+      skip_amd: ${{ steps.decide.outputs.skip_amd }}
+      skip_arm: ${{ steps.decide.outputs.skip_arm }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,7 +73,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check GHCR multi-arch tag exists
+      - name: Check GHCR tags exist
         id: exist
         if: steps.get_ver.outputs.version != ''
         run: |
@@ -76,36 +81,43 @@ jobs:
           BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
           V="${{ steps.get_ver.outputs.version }}"
           REF_MULTI="${BASE}:${V}"
-          REF_MULTI_LC="${REF_MULTI,,}"
+          REF_AMD="${BASE}:${V}-amd"
+          REF_ARM="${BASE}:${V}-arm"
           
-          if docker buildx imagetools inspect "$REF_MULTI_LC" >/dev/null 2>&1; then
-          echo "has_multi=true"  >> "$GITHUB_OUTPUT"
-          else
-          echo "has_multi=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "Checked: $REF_MULTI_LC"
+          check() { docker buildx imagetools inspect "${1,,}" >/dev/null 2>&1 && echo true || echo false; }
+          
+          echo "has_multi=$(check "$REF_MULTI")" >> "$GITHUB_OUTPUT"
+          echo "has_amd=$(check "$REF_AMD")"     >> "$GITHUB_OUTPUT"
+          echo "has_arm=$(check "$REF_ARM")"     >> "$GITHUB_OUTPUT"
+          
+          echo "Checked:"
+          echo "  multi: $REF_MULTI"
+          echo "  amd  : $REF_AMD"
+          echo "  arm  : $REF_ARM"
 
-      - name: Decide skip
-        id: out
+      - name: Decide which jobs to skip
+        id: decide
         run: |
           V='${{ steps.get_ver.outputs.version }}'
           if [[ -z "$V" ]]; then
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "version="   >> "$GITHUB_OUTPUT"
+            echo "skip_manifest=false" >> "$GITHUB_OUTPUT"
+            echo "skip_amd=false"      >> "$GITHUB_OUTPUT"
+            echo "skip_arm=false"      >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          
           has_multi='${{ steps.exist.outputs.has_multi }}'
-          if [[ "$has_multi" == "true" ]]; then
-            echo "skip=true"  >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "version=$V"   >> "$GITHUB_OUTPUT"
+          has_amd='${{ steps.exist.outputs.has_amd }}'
+          has_arm='${{ steps.exist.outputs.has_arm }}'
+          
+          [[ "$has_multi" == "true" ]] && echo "skip_manifest=true" || echo "skip_manifest=false"
+          [[ "$has_amd"   == "true" ]] && echo "skip_amd=true"      || echo "skip_amd=false"
+          [[ "$has_arm"   == "true" ]] && echo "skip_arm=true"      || echo "skip_arm=false"
 
   build_amd:
     name: Build & push (amd, linux/amd64)
     needs: [matrix, precheck]
-    if: needs.precheck.outputs.skip != 'true' && needs.precheck.outputs.skip != 'true'
+    if: needs.precheck.outputs.skip_amd != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -147,7 +159,7 @@ jobs:
   build_arm:
     name: Build & push (arm, linux/arm64)
     needs: [matrix, precheck]
-    if: needs.precheck.outputs.skip != 'true' && needs.precheck.outputs.skip != 'true'
+    if: needs.precheck.outputs.skip_arm != 'true'
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
@@ -189,7 +201,7 @@ jobs:
   manifest:
     name: Assemble multi-arch manifest
     needs: [matrix, precheck, build_amd, build_arm]
-    if: github.event_name != 'pull_request' && needs.precheck.outputs.skip != 'true'
+    if: github.event_name != 'pull_request' && needs.precheck.outputs.skip_manifest != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
