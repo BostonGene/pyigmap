@@ -18,30 +18,18 @@ permissions:
   id-token: write
 
 jobs:
-  prepare:
+  matrix:
     name: Prepare services matrix
     runs-on: ubuntu-24.04
     outputs:
       services: ${{ steps.mkjson.outputs.services }}
     steps:
-      - name: Ensure jq
-        run: sudo apt-get update && sudo apt-get install -y jq
       - name: Expand SERVICES_CSV -> JSON
         id: mkjson
-        shell: bash
         run: |
-          set -euo pipefail
-          IFS=',' read -ra arr <<< "${SERVICES_CSV:-}"
-          if (( ${#arr[@]} == 0 )); then
-            echo "SERVICES_CSV empty, using fallback 'fastp'"
-            arr=(fastp)
-          fi
-          # build {"service":["a","b",...]} and force compact one-line JSON
-          printf '{"service":[' > services.json
-          printf '"%s",' "${arr[@]}" | sed 's/,$//' >> services.json
-          printf ']}\n' >> services.json
-          jq -c . services.json
-          echo "services=$(jq -c . services.json)" >> "$GITHUB_OUTPUT"
+          IFS=',' read -ra arr <<< "${SERVICES_CSV}"
+          printf '{"service":[%s]}\n' "$(printf '"%s",' "${arr[@]}" | sed 's/,$//')" > services.json
+          echo "services=$(cat services.json)" >> "$GITHUB_OUTPUT"
 
   build_amd64:
     name: Build & push (amd64)
