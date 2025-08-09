@@ -94,6 +94,8 @@ jobs:
           labels: ${{ steps.meta_amd.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
 
   build_arm64:
     name: Build & push (arm64)
@@ -158,6 +160,8 @@ jobs:
           labels: ${{ steps.meta_arm.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
 
   manifest:
     name: Assemble multi-arch manifest
