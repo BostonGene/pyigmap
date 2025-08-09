@@ -5,8 +5,6 @@ on:
     branches: [ main, add-ci-cd ]
     tags: ['v*', 'v*.*']
   pull_request:
-    paths:
-      - 'bin/**'
   workflow_dispatch:
 
 env:
