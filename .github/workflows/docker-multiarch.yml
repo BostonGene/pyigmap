@@ -126,8 +126,8 @@ jobs:
           echo "service=${{ matrix.service }}  skip_amd=$skip_amd  skip_arm=$skip_arm  skip_manifest=$skip_manifest"
 
   build_amd:
-    name: Build & push (amd) — ${{ matrix.service }}
-    needs: [matrix, precheck]
+    name: Build & push (amd)
+    needs: [precheck]
     if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_amd != 'true'
     runs-on: ubuntu-24.04
     strategy:
@@ -168,8 +168,8 @@ jobs:
           sbom: false
 
   build_arm:
-    name: Build & push (arm) — ${{ matrix.service }}
-    needs: [matrix, precheck]
+    name: Build & push (arm)
+    needs: [precheck]
     if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_arm != 'true'
     runs-on: ubuntu-24.04-arm
     strategy:
@@ -210,8 +210,8 @@ jobs:
           sbom: false
 
   manifest:
-    name: Manifest — ${{ matrix.service }}
-    needs: [matrix, precheck, build_amd, build_arm]
+    name: Manifest
+    needs: [precheck, build_amd, build_arm]
     if: needs.precheck.result == 'success' && needs.precheck.outputs.skip_manifest != 'true'
     runs-on: ubuntu-24.04
     strategy:
