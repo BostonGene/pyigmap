@@ -29,4 +29,4 @@ RUN if [ "$(uname -m)" = "x86_64" ]; then \
 
 COPY run.py /usr/local/src/
 
-ENTRYPOINT ["python3.9", "/usr/local/src/run.py"]
+# ENTRYPOINT ["python3.9", "/usr/local/src/run.py"]

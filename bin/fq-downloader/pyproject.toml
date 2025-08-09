@@ -1,0 +1,5 @@
+[project]
+name = "fq-downloader"
+version = "1.0.0-dev1"
+description = "Tool to download public FASTQ files."
+authors = [{name = "nikita.syzrantsev@gmail.com"}]

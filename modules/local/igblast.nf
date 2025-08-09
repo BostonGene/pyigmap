@@ -9,7 +9,7 @@ process IgBlastFASTA {
         path params.out_igblast_annotation, emit: annotation
     script:
         """
-        python3.9 /usr/local/src/run.py \
+        python3 /usr/local/src/run.py \
             --in-fasta \${PWD}/$fasta \
             --ref \${PWD}/$ref \
             --receptor ${params.igblast_receptor} \
@@ -31,7 +31,7 @@ process IgBlastFASTQ {
         path params.out_igblast_annotation, emit: annotation
     script:
         """
-        python3.9 /usr/local/src/run.py \
+        python3 /usr/local/src/run.py \
             --in-fastq \${PWD}/$fq1 \${PWD}/$fq2 \${PWD}/$fq12 \
             --ref \${PWD}/$ref \
             --receptor ${params.igblast_receptor} \
@@ -51,7 +51,7 @@ process IgBlastMockFASTQ {
         path params.out_igblast_annotation, emit: annotation
     script:
         """
-        python3.9 /usr/local/src/run.py \
+        python3 /usr/local/src/run.py \
             --in-fastq \${PWD}/$fq12 \
             --in-ref \${PWD}/$ref \
             --receptor ${params.igblast_receptor} \

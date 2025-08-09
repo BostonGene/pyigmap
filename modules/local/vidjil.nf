@@ -10,7 +10,7 @@ process Vidjil {
         path params.out_vidjil_logs, emit: logs
     script:
         """
-        python3.9 /usr/local/src/run.py \
+        python3 /usr/local/src/run.py \
             --in-fastq $fq12 \
             --vdj-ref $ref \
             --out-fasta ${params.out_vidjil_fasta} \

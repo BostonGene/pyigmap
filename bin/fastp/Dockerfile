@@ -68,4 +68,4 @@ RUN pip install --upgrade pip && \
     rm -rf dist
 
 ENV RUST_LOG=info
-ENTRYPOINT ["python3", "/usr/local/src/run.py"]
+# ENTRYPOINT ["python3", "/usr/local/src/run.py"]
