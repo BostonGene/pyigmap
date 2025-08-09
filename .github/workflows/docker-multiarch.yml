@@ -3,7 +3,7 @@ name: Continuous Deployment (Docker multi-arch)
 on:
   push:
     branches: [ main, add-ci-cd ]
-    tags: ['v*', 'v*.*', 'v*.*.*']
+    tags: ['v*', 'v*.*']
     paths:
       - 'bin/**'
       - '.github/workflows/docker-multiarch-buildx.yml'
