@@ -20,7 +20,7 @@ permissions:
 jobs:
   matrix:
     name: Prepare services matrix
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       services: ${{ steps.mkjson.outputs.services }}
     steps:
@@ -34,7 +34,7 @@ jobs:
   build_amd64:
     name: Build & push (amd64)
     needs: matrix
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
@@ -52,12 +52,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Parse version from pyproject.toml (amd64)
+        id: get_version_amd
+        run: |
+          set -euo pipefail
+          FILE="./bin/${{ matrix.service }}/pyproject.toml"
+          if [[ -f "$FILE" ]]; then
+            VERSION=$(awk '
+              /^\[project\]/ { in_proj=1; next }
+              in_proj && $0 ~ /^version[[:space:]]*=/ {
+                match($0, /"([^"]+)"/, m); if (m[1]!="") { print m[1]; exit }
+              }
+            ' "$FILE")
+          fi
+          : "${VERSION:=}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${VERSION:-<empty>}"
+
       - name: Docker metadata (amd64 tags)
         id: meta_amd
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
+            type=raw,value=${{ steps.get_version_amd.outputs.version }},enable=${{ steps.get_version_amd.outputs.version != '' }}
             type=ref,event=branch
             type=sha
             type=semver,pattern={{version}}
@@ -80,7 +98,7 @@ jobs:
   build_arm64:
     name: Build & push (arm64)
     needs: matrix
-    runs-on: ubuntu-24.04-arm64
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
@@ -98,12 +116,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Parse version from pyproject.toml (arm64)
+        id: get_version_arm
+        run: |
+          set -euo pipefail
+          FILE="./bin/${{ matrix.service }}/pyproject.toml"
+          if [[ -f "$FILE" ]]; then
+            VERSION=$(awk '
+              /^\[project\]/ { in_proj=1; next }
+              in_proj && $0 ~ /^version[[:space:]]*=/ {
+                match($0, /"([^"]+)"/, m); if (m[1]!="") { print m[1]; exit }
+              }
+            ' "$FILE")
+          fi
+          : "${VERSION:=}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${VERSION:-<empty>}"
+
       - name: Docker metadata (arm64 tags)
         id: meta_arm
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
+            type=raw,value=${{ steps.get_version_arm.outputs.version }},enable=${{ steps.get_version_arm.outputs.version != '' }}
             type=ref,event=branch
             type=sha
             type=semver,pattern={{version}}
@@ -127,7 +163,7 @@ jobs:
     name: Assemble multi-arch manifest
     needs: [build_amd64, build_arm64]
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
@@ -144,12 +180,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Parse version from pyproject.toml (final)
+        id: get_version_final
+        run: |
+          set -euo pipefail
+          FILE="./bin/${{ matrix.service }}/pyproject.toml"
+          if [[ -f "$FILE" ]]; then
+            VERSION=$(awk '
+              /^\[project\]/ { in_proj=1; next }
+              in_proj && $0 ~ /^version[[:space:]]*=/ {
+                match($0, /"([^"]+)"/, m); if (m[1]!="") { print m[1]; exit }
+              }
+            ' "$FILE")
+          fi
+          : "${VERSION:=}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${VERSION:-<empty>}"
+
       - name: Docker metadata (final tags)
         id: meta_final
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
+            type=raw,value=${{ steps.get_version_final.outputs.version }},enable=${{ steps.get_version_final.outputs.version != '' }}
             type=ref,event=branch
             type=sha
             type=semver,pattern={{version}}
