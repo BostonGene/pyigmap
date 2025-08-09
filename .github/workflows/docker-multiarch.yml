@@ -68,28 +68,49 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check tag existence in GHCR
+      - name: Check GHCR refs (multi-arch and both arch tags)
         id: exist
+        if: steps.get_ver.outputs.version != ''
         run: |
           set -euo pipefail
-          if [[ -z "${{ steps.get_ver.outputs.version }}" ]]; then
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.get_ver.outputs.version }}"
-          if docker buildx imagetools inspect "${IMAGE}" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "Checked ${IMAGE}: exists=${{ steps.exist.outputs.exists }}"
+          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
+          V="${{ steps.get_ver.outputs.version }}"
+          REF_MULTI="${BASE}:${V}"
+          REF_AMD="${BASE}:${V}-amd64"
+          REF_ARM="${BASE}:${V}-arm64"
 
-      - name: Expose outputs
+          has_multi=false
+          has_amd=false
+          has_arm=false
+
+          docker buildx imagetools inspect "$REF_MULTI" >/dev/null 2>&1 && has_multi=true || true
+          docker buildx imagetools inspect "$REF_AMD"   >/dev/null 2>&1 && has_amd=true   || true
+          docker buildx imagetools inspect "$REF_ARM"   >/dev/null 2>&1 && has_arm=true   || true
+
+          echo "has_multi=$has_multi" >> "$GITHUB_OUTPUT"
+          echo "has_amd=$has_amd"     >> "$GITHUB_OUTPUT"
+          echo "has_arm=$has_arm"     >> "$GITHUB_OUTPUT"
+          echo "Checked: $REF_MULTI / $REF_AMD / $REF_ARM"
+
+      - name: Decide skip
         id: out
         run: |
-          SKIP=$([[ "${{ steps.exist.outputs.exists }}" == "true" ]] && echo true || echo false)
-          echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
-          echo "version=${{ steps.get_ver.outputs.version }}" >> "$GITHUB_OUTPUT"
+          V='${{ steps.get_ver.outputs.version }}'
+          if [[ -z "$V" ]]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "version="   >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          has_multi='${{ steps.exist.outputs.has_multi }}'
+          has_amd='${{ steps.exist.outputs.has_amd }}'
+          has_arm='${{ steps.exist.outputs.has_arm }}'
+
+          if [[ "$has_multi" == "true" || ( "$has_amd" == "true" && "$has_arm" == "true" ) ]]; then
+            echo "skip=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$V"   >> "$GITHUB_OUTPUT"
 
   build_amd64:
     name: Build & push (amd64)
@@ -111,7 +132,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker metadata (amd64 tags) — без branch tag
+      - name: Docker metadata (amd64 tags)
         id: meta_amd
         uses: docker/metadata-action@v5
         with:
