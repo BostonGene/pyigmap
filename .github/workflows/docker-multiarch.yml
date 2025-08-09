@@ -110,7 +110,7 @@ jobs:
   build_amd:
     name: Build & push (amd, linux/amd64)
     needs: [matrix, precheck]
-    if: needs.precheck.outputs.skip != 'true'
+    if: needs.precheck.outputs.skip != 'true' && needs.precheck.outputs.skip != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -152,7 +152,7 @@ jobs:
   build_arm:
     name: Build & push (arm, linux/arm64)
     needs: [matrix, precheck]
-    if: needs.precheck.outputs.skip != 'true'
+    if: needs.precheck.outputs.skip != 'true' && needs.precheck.outputs.skip != 'true'
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
