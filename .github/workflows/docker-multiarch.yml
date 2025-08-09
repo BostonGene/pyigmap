@@ -31,18 +31,77 @@ jobs:
           printf '{"service":[%s]}\n' "$(printf '"%s",' "${arr[@]}" | sed 's/,$//')" > services.json
           echo "services=$(cat services.json)" >> "$GITHUB_OUTPUT"
 
+  precheck:
+    name: Precheck version existence
+    needs: matrix
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
+    outputs:
+      skip: ${{ steps.out.outputs.skip }}
+      version: ${{ steps.out.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse version from pyproject.toml
+        id: get_ver
+        run: |
+          set -euo pipefail
+          FILE="./bin/${{ matrix.service }}/pyproject.toml"
+          VERSION=""
+          if [[ -f "$FILE" ]]; then
+            VERSION=$(awk '
+              /^\[project\]/ { in_proj=1; next }
+              in_proj && $0 ~ /^version[[:space:]]*=/ {
+                match($0, /"([^"]+)"/, m); if (m[1]!="") { print m[1]; exit }
+              }' "$FILE" || true)
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${VERSION:-<empty>}"
+
+      - name: Login to GHCR
+        if: steps.get_ver.outputs.version != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check tag existence in GHCR
+        id: exist
+        run: |
+          set -euo pipefail
+          if [[ -z "${{ steps.get_ver.outputs.version }}" ]]; then
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.get_ver.outputs.version }}"
+          if docker buildx imagetools inspect "${IMAGE}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Checked ${IMAGE}: exists=${{ steps.exist.outputs.exists }}"
+
+      - name: Expose outputs
+        id: out
+        run: |
+          SKIP=$([[ "${{ steps.exist.outputs.exists }}" == "true" ]] && echo true || echo false)
+          echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
+          echo "version=${{ steps.get_ver.outputs.version }}" >> "$GITHUB_OUTPUT"
+
   build_amd64:
     name: Build & push (amd64)
-    needs: matrix
+    needs: [matrix, precheck]
+    if: needs.precheck.outputs.skip != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
         if: github.event_name != 'pull_request'
@@ -52,30 +111,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Parse version from pyproject.toml (amd64)
-        id: get_version_amd
-        run: |
-          set -euo pipefail
-          FILE="./bin/${{ matrix.service }}/pyproject.toml"
-          if [[ -f "$FILE" ]]; then
-            VERSION=$(awk '
-              /^\[project\]/ { in_proj=1; next }
-              in_proj && $0 ~ /^version[[:space:]]*=/ {
-                match($0, /"([^"]+)"/, m); if (m[1]!="") { print m[1]; exit }
-              }
-            ' "$FILE")
-          fi
-          : "${VERSION:=}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Detected version: ${VERSION:-<empty>}"
-
-      - name: Docker metadata (amd64 tags)
+      - name: Docker metadata (amd64 tags) — без branch tag
         id: meta_amd
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ steps.get_version_amd.outputs.version }},enable=${{ steps.get_version_amd.outputs.version != '' }}
+            type=raw,value=${{ needs.precheck.outputs.version }},enable=${{ needs.precheck.outputs.version != '' }}
             type=sha
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
@@ -98,16 +140,15 @@ jobs:
 
   build_arm64:
     name: Build & push (arm64)
-    needs: matrix
-    runs-on: ubuntu-24.04-arm
+    needs: [matrix, precheck]
+    if: needs.precheck.outputs.skip != 'true'
+    runs-on: ubuntu-24.04-arm64
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
         if: github.event_name != 'pull_request'
@@ -117,30 +158,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Parse version from pyproject.toml (arm64)
-        id: get_version_arm
-        run: |
-          set -euo pipefail
-          FILE="./bin/${{ matrix.service }}/pyproject.toml"
-          if [[ -f "$FILE" ]]; then
-            VERSION=$(awk '
-              /^\[project\]/ { in_proj=1; next }
-              in_proj && $0 ~ /^version[[:space:]]*=/ {
-                match($0, /"([^"]+)"/, m); if (m[1]!="") { print m[1]; exit }
-              }
-            ' "$FILE")
-          fi
-          : "${VERSION:=}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Detected version: ${VERSION:-<empty>}"
-
       - name: Docker metadata (arm64 tags)
         id: meta_arm
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ steps.get_version_arm.outputs.version }},enable=${{ steps.get_version_arm.outputs.version != '' }}
+            type=raw,value=${{ needs.precheck.outputs.version }},enable=${{ needs.precheck.outputs.version != '' }}
             type=sha
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
@@ -163,17 +187,15 @@ jobs:
 
   manifest:
     name: Assemble multi-arch manifest
-    needs: [matrix, build_amd64, build_arm64]
-    if: github.event_name != 'pull_request'
+    needs: [matrix, precheck, build_amd64, build_arm64]
+    if: github.event_name != 'pull_request' && needs.precheck.outputs.skip != 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.services) }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -182,30 +204,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Parse version from pyproject.toml (final)
-        id: get_version_final
-        run: |
-          set -euo pipefail
-          FILE="./bin/${{ matrix.service }}/pyproject.toml"
-          if [[ -f "$FILE" ]]; then
-            VERSION=$(awk '
-              /^\[project\]/ { in_proj=1; next }
-              in_proj && $0 ~ /^version[[:space:]]*=/ {
-                match($0, /"([^"]+)"/, m); if (m[1]!="") { print m[1]; exit }
-              }
-            ' "$FILE")
-          fi
-          : "${VERSION:=}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Detected version: ${VERSION:-<empty>}"
-
       - name: Docker metadata (final tags)
         id: meta_final
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ steps.get_version_final.outputs.version }},enable=${{ steps.get_version_final.outputs.version != '' }}
+            type=raw,value=${{ needs.precheck.outputs.version }},enable=${{ needs.precheck.outputs.version != '' }}
             type=sha
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
