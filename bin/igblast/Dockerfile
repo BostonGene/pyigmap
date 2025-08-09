@@ -99,4 +99,4 @@ ENV PATH=${IGBLAST_DIR}:$PATH
 
 COPY run.py /usr/local/src/
 
-ENTRYPOINT ["python3", "/usr/local/src/run.py"]
+# ENTRYPOINT ["python3", "/usr/local/src/run.py"]
