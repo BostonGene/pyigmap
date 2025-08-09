@@ -4,12 +4,7 @@ on:
   push:
     branches: [ main, add-ci-cd ]
     tags: ['v*', 'v*.*', 'v*.*.*']
-    paths:
-      - 'bin/**'
-      - '.github/workflows/docker-multiarch-buildx.yml'
   pull_request:
-    paths:
-      - 'bin/**'
   workflow_dispatch:
 
 env:
