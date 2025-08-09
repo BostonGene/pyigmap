@@ -1,7 +1,5 @@
 # Fastp component
 
-> Owner: nikita.syzrantsev@bostongene.com
-
 This component is a wrapping of [fastp](https://github.com/OpenGene/fastp) tool designed to provide fast all-in-one preprocessing for FASTQ files with additional logic to merge non overlapped reads.
 
 ## Input

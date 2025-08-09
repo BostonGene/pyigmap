@@ -1,4 +1,5 @@
 import argparse
+import glob
 import shutil
 import subprocess
 import sys
@@ -14,10 +15,9 @@ IGBLAST_DIR = os.environ.get('IGBLAST_DIR')
 
 IMGT_URL = "https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/"
 
-ORGANISMS_GLOSSARY = {
-    'human': 'Homo_sapiens',
-    'mouse': 'Mus_musculus'
-}
+SPECIE = 'Homo_sapiens'
+
+ORGANISMS_BLACKLIST = ["mouse", "rabbit", "rat", "rhesus_monkey"]
 
 CHAINS_GLOSSARY = {
     'Ig.V': ['IGHV', 'IGKV', 'IGLV'],
@@ -41,24 +41,10 @@ def configure_logger(logger_format: str = LOGGER_FORMAT) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-a",
-        "--all-alleles",
-        action="store_true",
-        help="Will use all alleles provided in the antigen receptor segment database "
-             "(*01, *02, etc. according to IMGT).")
-    parser.add_argument(
-        "-o",
-        "--out-archive",
-        help="Output IgBLAST reference archive path",
-        required=True
-    )
-    parser.add_argument(
-        "--organism",
-        help="Organism name: 'human', 'mouse'",
-        choices=["human", "mouse"],
-        default="human"
-    )
+    parser.add_argument('-a', '--all-alleles', action='store_true',
+                        help='Will use all alleles provided in the antigen receptor segment database '
+                             '(*01, *02, etc. according to IMGT).')
+    parser.add_argument('-o', '--out-archive', help='Output IgBLAST reference archive path', required=True)
 
     return parser.parse_args()
 
@@ -106,12 +92,11 @@ def check_if_exist(file: str) -> None:
     logger.info(f"Expected file {file} found.")
 
 
-def download_fasta_from_imgt_database(chains_list: list[str], organism: str) -> list[str]:
+def download_fasta_from_imgt_database(chains_list: list[str], specie: str) -> list[str]:
     """Downloads VDJ fasta reference from https://www.imgt.org/"""
     fasta_local_paths = []
-    specie = ORGANISMS_GLOSSARY[organism]
     for chain in chains_list:
-        fasta_link = f"{IMGT_URL}{specie}/{chain[:2]}/{chain}.fasta"
+        fasta_link = f"{IMGT_URL}{SPECIE}/{chain[:2]}/{chain}.fasta"
         fasta_local_path = tempfile.NamedTemporaryFile().name
         cmd = ['wget', fasta_link, '-q', '-O', fasta_local_path]
         run_and_check_with_message(cmd, "wget")
@@ -189,6 +174,14 @@ def remove_path(path: str) -> None:
         logger.error(f"Error removing {path}: {e}")
 
 
+def remove_unnecessary_organisms() -> None:
+    for organism in ORGANISMS_BLACKLIST:
+        paths_to_remove = glob.glob(os.path.join(IGBLAST_DIR, "**", f"{organism}*"), recursive=True)
+        for path in paths_to_remove:
+            if os.path.exists(path):
+                remove_path(path)
+
+
 def main() -> None:
     configure_logger()
 
@@ -197,7 +190,7 @@ def main() -> None:
 
     for library, chains_list in CHAINS_GLOSSARY.items():
 
-        fasta_paths = download_fasta_from_imgt_database(chains_list, args.organism)
+        fasta_paths = download_fasta_from_imgt_database(chains_list, SPECIE)
 
         if not args.all_alleles:
             fasta_paths = [filter_minor_alleles(fasta_path) for fasta_path in fasta_paths]
@@ -208,9 +201,10 @@ def main() -> None:
 
         fasta_without_duplicates_path = remove_duplicates_by_sequence_id(concatenated_fasta_path)
 
-        output_basename = os.path.join(REFERENCE_DIR, f'{args.organism}.{library}')
+        output_basename = os.path.join(REFERENCE_DIR, f'{SPECIE}.{library}')
         make_blast_db(fasta_without_duplicates_path, output_basename)
 
+    remove_unnecessary_organisms()
     archive_reference_as_tar_gz(args.out_archive)
 
     logger.info("Run is completed successfully.")

@@ -13,9 +13,13 @@ logger = logging.getLogger()
 
 IGBLAST_DIR = os.environ.get('IGBLAST_DIR')
 
-FASTA_CHUNKS_DIR = tempfile.TemporaryDirectory().name
+TEMPDIR_NAME = os.environ.get('TEMPDIR', '/tmp/')
+OUTPUT_FOLDER_NAME = os.environ.get('HOME', '')
 
-TEMPDIR_NAME = tempfile.gettempdir()
+FASTA_CHUNKS_DIR = os.path.join(
+    TEMPDIR_NAME,
+    os.path.dirname(tempfile.TemporaryDirectory().name)
+)
 
 RECEPTOR_GLOSSARY = {
     'BCR': ['Ig'],
@@ -37,18 +41,15 @@ def configure_logger(logger_format: str = LOGGER_FORMAT) -> logging.Logger:
 def parse_args() -> argparse.Namespace:
     """Parse arguments"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in-fastq', help='Input FASTQ (for amplicon)', nargs='+',
-                        action='extend')
-    parser.add_argument('--in-fasta', help='Input FASTA (Vidjil output; for RNASeq-bulk)')
-    parser.add_argument('--organism', help="Organism name: 'human' or 'mouse'",
-                        choices=["human", "mouse"], default='human')
+    parser.add_argument('--in-fastq', help='Input FASTQ (for RNASeq-target)')
+    parser.add_argument('--in-fasta', help='Input FASTA (Vidjil output, for RNASeq-bulk)')
     parser.add_argument('--receptor', help="Receptor type: 'BCR', 'TCR' or 'all'",
-                        choices=["BCR", "TCR", "all"], type=str, default="all")
+                        choices=["BCR", "TCR", "all"], type=str, required=True)
     parser.add_argument('--ref', help='IgBLAST reference archive', required=True)
     parser.add_argument('--reads-chunk-size', help='Count of sequences processed in one run of IgBLAST',
                         type=int, default=50_000)
     parser.add_argument('--out-annotation', help='Output AIRR-formatted annotation table', required=True,
-                        type=str)
+                        type=lambda basename: os.path.join(OUTPUT_FOLDER_NAME, basename))
 
     args = parser.parse_args()
 
@@ -116,28 +117,29 @@ def convert_fastq_to_fasta(fastq_stdin: str) -> str:
     return seqtk_process.stdout
 
 
-def run_igblast(seq_file: str, receptor: str, organism: str) -> str:
+def run_igblast(seq_file: str, receptor: str) -> str:
     logger.info("Going to run IgBLAST...")
 
-    output_annotation = tempfile.NamedTemporaryFile(suffix=".tsv").name
+    output_annotation = os.path.join(
+        TEMPDIR_NAME,
+        os.path.basename(tempfile.NamedTemporaryFile(suffix=".tsv").name)
+    )
 
     igblast_cmd = [
         'bin/igblastn',
         '-query', seq_file,
-        '-germline_db_V', os.path.join(IGBLAST_DIR, 'database', f'{organism}.{receptor}.V'),
-        '-germline_db_D', os.path.join(IGBLAST_DIR, 'database', f'{organism}.{receptor}.D'),
-        '-germline_db_J', os.path.join(IGBLAST_DIR, 'database', f'{organism}.{receptor}.J'),
-        '-organism', organism,
-        '-auxiliary_data', os.path.join(IGBLAST_DIR, 'optional_file', f'{organism}_gl.aux'),
+        '-germline_db_V', os.path.join(IGBLAST_DIR, 'database', f'human.{receptor}.V'),
+        '-germline_db_D', os.path.join(IGBLAST_DIR, 'database', f'human.{receptor}.D'),
+        '-germline_db_J', os.path.join(IGBLAST_DIR, 'database', f'human.{receptor}.J'),
+        '-organism', 'human',
+        '-c_region_db', os.path.join(IGBLAST_DIR, "database", "ncbi_human_c_genes"),
+        '-auxiliary_data', os.path.join(IGBLAST_DIR, 'optional_file', 'human_gl.aux'),
         '-ig_seqtype', receptor,
         '-show_translation',
         '-outfmt', str(19),
         '-num_threads', str(os.cpu_count()),
         '-out', output_annotation
     ]
-
-    if organism == "human":
-        igblast_cmd += ['-c_region_db', os.path.join(IGBLAST_DIR, "database", "ncbi_human_c_genes")]
 
     run_and_check_with_message(igblast_cmd, "igblast")
 
@@ -158,12 +160,12 @@ def check_if_entries_exist_and_not_empty(directory: str) -> None:
         exit_with_error(f'Some file in {directory} is an empty, exiting...')
 
 
-def generate_annotations(fasta_chunks: list[str], receptor_type: str, organism: str) -> list[str]:
+def generate_annotations(fasta_chunks: list[str], receptor_type: str) -> list[str]:
     """Generate IgBLAST annotation"""
     annotation_paths = []
     for fasta_chunk in fasta_chunks:
         for receptor in RECEPTOR_GLOSSARY[receptor_type]:
-            annotation = run_igblast(fasta_chunk, receptor, organism)
+            annotation = run_igblast(fasta_chunk, receptor)
             if not is_file_empty(annotation):
                 annotation_paths.append(annotation)
 
@@ -218,9 +220,10 @@ def split_fasta_by_chunks(fasta_stdin: str, reads_chunk_size: int) -> list[str]:
     return [entry.path for entry in os.scandir(FASTA_CHUNKS_DIR)]
 
 
-def get_seq_chunks(seq_file: str, chunk_size: int, is_fastq: bool = False) -> list[str]:
+def get_fasta_chunks(in_fastq: str, in_fasta: str, chunk_size: int) -> list[str]:
+    seq_file = in_fastq or in_fasta
     seq_stdout = read_seq_gz_file(seq_file)
-    fasta_stdout = convert_fastq_to_fasta(seq_stdout) if is_fastq else seq_stdout
+    fasta_stdout = convert_fastq_to_fasta(seq_stdout) if in_fastq else seq_stdout
     return split_fasta_by_chunks(fasta_stdout, chunk_size)
 
 
@@ -244,16 +247,11 @@ def main() -> None:
 
     unpack_reference(args.ref)
 
-    all_annotation_paths = []
-    for seq_file in args.in_fastq or []:
-        fasta_chunks_list = get_seq_chunks(seq_file, args.reads_chunk_size, is_fastq=True)
-        all_annotation_paths += generate_annotations(fasta_chunks_list, args.receptor, args.organism)
+    fasta_chunks_list = get_fasta_chunks(args.in_fastq, args.in_fasta, args.reads_chunk_size)
 
-    if args.in_fasta:
-        fasta_chunks_list = get_seq_chunks(args.in_fasta, args.reads_chunk_size)
-        all_annotation_paths += generate_annotations(fasta_chunks_list, args.receptor, args.organism)
+    annotation_paths = generate_annotations(fasta_chunks_list, args.receptor)
 
-    save_igblast_result(all_annotation_paths, args.out_annotation)
+    save_igblast_result(annotation_paths, args.out_annotation)
 
     logger.info("Run is completed successfully.")
 

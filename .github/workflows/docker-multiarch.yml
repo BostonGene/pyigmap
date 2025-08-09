@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository_owner }}/pyigmap
-  SERVICES_CSV: fastp
+  SERVICES_CSV: fastp igblast vidjil
 
 permissions:
   contents: read
@@ -133,7 +133,6 @@ jobs:
           tags: |
             type=raw,value=${{ needs.precheck.outputs.version }}-amd,enable=${{ needs.precheck.outputs.version != '' }}
           flavor: |
-            # без автоматического добавления суффикса — мы уже задали -amd в raw
             latest=false
 
       - name: Build & push image (amd)

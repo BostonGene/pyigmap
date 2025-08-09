@@ -8,7 +8,6 @@ This component is a wrapping of [IgBLAST](https://ncbi.github.io/igblast/) V(D)J
 * `--in-fasta` (**optional**): Path to the FASTA file with detected V(D)J segments.
 * `--ref`: Path to the archive with reference V(D)J segments.
 * `--receptor`: Receptor type: "BCR", "TCR" or "all". Default: `"all"`.
-* `--organism`: organism name: "human" or "mouse"
 * `--reads-chunk-size`: Count of sequences processed in one run of IgBLAST tool. Default: `50_000`.
 
 ## Output
@@ -19,7 +18,8 @@ This component is a wrapping of [IgBLAST](https://ncbi.github.io/igblast/) V(D)J
 
 Build docker image with tool to generate IgBLAST reference:
 ```bash
-docker build --target build-ref -t build-ref .
+cd build_ref
+docker build -f build_ref.Dockerfile -t build-ref .
 ```
 
 ### Only major alleles
@@ -29,7 +29,7 @@ If you need to keep only *01 (major) alleles, execute:
 docker run --rm \
     -v ./:/tmp \
     build-ref \
-    --out-archive igblast.reference.major_allele.tar.gz
+    --out-archive /tmp/igblast.reference.major_allele.tar.gz
 ```
 
 Reference will contain sequences with only major allele (*01):
@@ -45,7 +45,7 @@ Or you can keep all alleles (*01, *02, etc.) by specifying `--all-alleles` flag:
 docker run --rm \
     -v ./:/tmp \
     build-ref \
-    --all-alleles --out-archive igblast.reference.all_alleles.tar.gz
+    --all-alleles --out-archive /tmp/igblast.reference.all_alleles.tar.gz
 ```
 
 Reference will contain sequences with all alleles (*01, *02, *03, etc.):

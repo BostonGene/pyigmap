@@ -1,101 +1,56 @@
 import argparse
 import glob
-import gzip
+import json
 import logging
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
-import typing
-from typing import Optional, Union, List
+from dataclasses import dataclass, field
+from multiprocessing import Pool
+from typing import Dict, List, Optional
 
 LOGGER_FORMAT = "%(name)s | line %(lineno)-3d | %(levelname)-8s | %(message)s"
 logger = logging.getLogger()
 
-TEMPDIR_NAME = tempfile.gettempdir()
-
-ORGANISM_GLOSSARY = {
-    'human': 'homo-sapiens',
-    'rat': 'rattus-norvegicus',
-    'mouse': 'mus-musculus'
-}
-
 CPU_COUNT = os.cpu_count()
+TEMPDIR = os.environ.get('TEMPDIR', tempfile.gettempdir())
+REF_DIR = os.path.join(TEMPDIR, 'vdj_ref')
+SEQKIT_TEMPDIR = os.path.join(TEMPDIR, 'seqkit')
+VIDJIL_TEMPDIR = os.path.join(TEMPDIR, 'vidjil')
+VIDJIL_REF_GERMLINE_PATH = os.path.join(REF_DIR, 'homo-sapiens.g')
+VIDJIL_OUT_FASTA_PATTERN = '*detected.vdj.fa'
+VIDJIL_OUT_JSON_PATTERN = '*.vidjil'
+SEQKIT_OUT_EXTENSION = '.fastq.gz'
+SEQKIT_OUT_FQ_PATTERN = f'*{SEQKIT_OUT_EXTENSION}'
 
-REF_DIR = tempfile.TemporaryDirectory().name
 
-
-def configure_logger(logger_format: str = LOGGER_FORMAT) -> None:
+def configure_logger(fmt: str = LOGGER_FORMAT) -> None:
     handler = logging.StreamHandler()
-    handler.setLevel(logging.INFO)
-    handler.setFormatter(logging.Formatter(logger_format))
+    handler.setFormatter(logging.Formatter(fmt))
     logger.setLevel(logging.INFO)
     logger.addHandler(handler)
 
 
 def parse_args() -> argparse.Namespace:
-    """Parses arguments"""
     parser = argparse.ArgumentParser()
+    parser.add_argument('--in-fastq', help='Input FASTQ')
+    parser.add_argument('--vdj-ref', help='V(D)J reference', required=True)
     parser.add_argument(
-        '--in-fastq',
-        help='Input FASTQ'
+        '--e-value',
+        type=float,
+        help='E-value threshold to relax V–J window filtering and capture more potential recombination signals'
     )
-    parser.add_argument(
-        '--out-fasta',
-        help='Output FASTA with detected CDR3',
-        required=True,
-        type=str
-    )
-    parser.add_argument(
-        '--vdj-ref',
-        help='V(D)J reference',
-        required=True
-    )
-    parser.add_argument(
-        '--reads-chunk-size',
-        type=int,
-        default=5_000_000
-    )
-    parser.add_argument(
-        '--organism',
-        help="Organism name: 'human', 'rat' or 'mouse'",
-        choices=["human", "rat", "mouse"],
-        default="human"
-    )
-    parser.add_argument(
-        '--logs',
-        help='Output logs file',
-        type=str
-    )
-    parser.add_argument(
-        '--debug',
-        help='Enables saving logs',
-        action="store_true"
-    )
+    parser.add_argument('--debug', help='Enables saving logs', action="store_true")
+    parser.add_argument('--out-json', help='JSON output summary with QC metrics')
+    parser.add_argument('--out-fasta', help='Output FASTA with detected V(D)J segments', required=True)
 
     return parser.parse_args()
 
 
-def exit_with_error(message: Optional[str]) -> None:
-    if message is None:
-        message = "Empty message for error!"
-    logger.critical(message)
-    sys.exit(1)
-
-
-def read_fastq_file_chunk(file_obj: typing.TextIO, reads_chunk_size: int) -> str:
-    """Reads a FASTQ file chunk and returns a concatenated string of reads."""
-    reads_list = []
-    while len(reads_list) < reads_chunk_size and (read_header := file_obj.readline()):
-        reads_list.append(read_header + file_obj.readline() + file_obj.readline() + file_obj.readline())
-    return ''.join(reads_list)
-
-
-def print_error_message(error_message: Optional[str]) -> None:
-    if not error_message:
-        error_message = '< EMPTY >'
-    logger.warning(f'stderr: {error_message}')
+def print_error_message(msg: Optional[str]) -> None:
+    logger.warning(f"stderr: {msg or '<EMPTY>'}")
 
 
 def run_and_check_with_message(
@@ -121,115 +76,152 @@ def run_and_check_with_message(
             sys.exit(1)
 
 
-def check_if_exist_and_not_empty(file: str) -> None:
-    """Checks if file exists"""
-    if not os.path.exists(file):
-        exit_with_error(f"Expected file {file} not found, exiting...")
-    if os.path.getsize(file) == 0:
-        exit_with_error(f"Output file {file} is an empty, exiting...")
-    logger.info(f"Expected file {file} successfully found.")
+@dataclass
+class VidjilReads:
+    clones: Dict[str, int] = field(default_factory=dict)
+    germline: Dict[str, int] = field(default_factory=dict)
+    segmented: int = 0
+    total: int = 0
+
+    def add(self, other: dict):
+        for section in ["clones", "germline"]:
+            for k, v in other.get(section, {}).items():
+                self_section = getattr(self, section)
+                self_section[k] = self_section.get(k, 0) + (v[0] if isinstance(v, list) else v)
+        for k in ["segmented", "total"]:
+            val = other.get(k, [0])
+            setattr(self, k, getattr(self, k) + (val[0] if isinstance(val, list) else val))
+
+    def to_dict(self):
+        return {
+            "reads": {
+                "clones": self.clones,
+                "germline": self.germline,
+                "detected": self.segmented,
+                "total": self.total
+            },
+            "vdj_detected": self.segmented > 0
+        }
 
 
-def move_file(src_file: str, dst_file: str) -> None:
-    """Moves file from source to the destination"""
-    shutil.move(src_file, dst_file)
-    logger.info(f"{src_file} moved to {dst_file}")
+def merge_and_compress_fasta(fasta_files: List[str], output_fasta: str) -> None:
+    non_empty_files = [f for f in fasta_files if os.path.getsize(f) > 0]
+    if not non_empty_files:
+        logger.warning("All FASTA files are empty — skipping output file creation")
+        return
+
+    logger.info(f"Merging {len(fasta_files)} FASTA files into compressed output: {output_fasta}")
+
+    cmd = ['pigz', '-p', str(CPU_COUNT), '-c']
+
+    with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=open(output_fasta, 'wb')) as proc:
+        for fasta in fasta_files:
+            logger.debug(f"Appending {fasta}")
+            with open(fasta, 'rb') as rfd:
+                shutil.copyfileobj(rfd, proc.stdin)
+        proc.stdin.close()
+        proc.wait()
+
+    if proc.returncode != 0:
+        logger.critical(f"pigz compression failed with return code {proc.returncode}")
+        sys.exit(1)
 
 
-def get_file_obj(file_path: str, mode: str) -> Union[typing.TextIO, gzip.GzipFile]:
-    """Returns reader or writer file object"""
-    if 'b' in mode:
-        return gzip.open(file_path, mode)
-    return open(file_path, mode)
+def merge_vidjil_json(files: list[str]) -> dict:
+    merged = VidjilReads()
+    logger.info(f"Merging {len(files)} Vidjil JSON files")
+    for path in files:
+        logger.debug(f"Reading JSON file {path}")
+        with open(path, "rt") as f:
+            data = json.load(f)
+            merged.add(data.get("reads", {}))
+    logger.debug("Merging completed successfully")
+
+    return merged.to_dict()
 
 
-def concat_files(output_file_path: str, files_to_concatenate: list[str], file_type: str) -> None:
-    """Concatenates files into one file"""
-    with get_file_obj(output_file_path, "a" + file_type) as write_obj:
-        for file in files_to_concatenate:
-            with get_file_obj(file, "r" + file_type) as read_obj:
-                write_obj.write(read_obj.read())
-                logger.info(f"{file} appended to {output_file_path}!")
-    check_if_exist_and_not_empty(output_file_path)
-    logger.info(f"Output {output_file_path} file successfully wrote.")
+def save_results(fasta_files: list[str], json_files: list[str], out_fasta: str, out_json: str, debug: bool) -> None:
+    logger.info(f"Saving results to {out_fasta} and {out_json}")
 
+    result_dict = merge_vidjil_json(json_files)
 
-def concat_and_move_file(out_file: str, files_to_concatenate: list[str], file_type: str = "") -> None:
-    """Prepares output file(s)"""
-    temp_out_file = os.path.join(TEMPDIR_NAME, os.path.basename(out_file))
-    concat_files(temp_out_file, files_to_concatenate, file_type)
-    move_file(temp_out_file, out_file)
-
-
-def save_vidjil_results(out_fasta: str, logs: str, debug: bool) -> None:
-    """Save Vidjil results"""
-    fasta_files_paths = glob.glob(os.path.join(TEMPDIR_NAME, '*detected.vdj.fa.gz'))
-    concat_and_move_file(out_fasta, fasta_files_paths, file_type="b")
     if debug:
-        log_files_paths = glob.glob(os.path.join(TEMPDIR_NAME, '*.vidjil.log'))
-        concat_and_move_file(logs, log_files_paths)
+        logger.info(f"Writing merged JSON results to {out_json}")
+        with open(out_json, 'w') as f:
+            json.dump(result_dict, f, indent=2)
 
-
-def run_vidjil_in_parallel(command: list, stdin: str) -> None:
-    """Parallels vidjil calculation"""
-    parallel_cmd = ['parallel', '-j', str(CPU_COUNT), '--pipe', '-L', '4', '--round-robin'] + command
-    vidjil_log_file = tempfile.NamedTemporaryFile(suffix=".vidjil.log").name
-    with open(vidjil_log_file, 'w') as file_obj:
-        run_and_check_with_message(parallel_cmd, 'vidjil', input=stdin, stderr=None, stdout=file_obj)
-
-
-def detect_cdr3_in_reads(reads_chunk: str, output_basename: str, organism: str) -> None:
-    """Detects CDR3 in FASTQ file reads"""
-    logger.info("Starting detect reads with CDR3...")
-    vidjil_cmd = [
-        'vidjil-algo',
-        '--germline', os.path.join(REF_DIR, f'{organism}.g'),
-        '--out-detected',
-        '--dir', TEMPDIR_NAME,
-        '--gz',
-        '--clean-memory',
-        '--base', output_basename,
-        '-c', 'detect',
-        '-'
-    ]
-
-    run_vidjil_in_parallel(vidjil_cmd, reads_chunk)
-    logger.info("All reads with CDR3 successfully detected.")
-
-
-def run_vidjil_by_fastq_chunk(fastq_file: str, reads_chunk_size: int, organism: str) -> None:
-    with gzip.open(fastq_file, "rt") as fq_file_obj:
-        chunk_number = 1
-        while reads_chunk := read_fastq_file_chunk(fq_file_obj, reads_chunk_size):
-            output_basename = f"{os.path.basename(fastq_file)}.chunk{chunk_number}.part{{#}}"
-            detect_cdr3_in_reads(reads_chunk, output_basename, organism)
-            chunk_number += 1
+    if result_dict["vdj_detected"]:
+        merge_and_compress_fasta(fasta_files, out_fasta)
+    else:
+        logger.warning("Detected cdr3 reads == 0, skipping out_fasta creation.")
 
 
 def unpack_reference(archive: str) -> None:
-    """Unpack V(D)J reference into selected directory"""
-    logger.info(f'Unpacking {archive} into {REF_DIR}...')
-    os.mkdir(REF_DIR)
-    tar_cmd = ['tar', '-xvf', archive, '-C', REF_DIR]
-    run_and_check_with_message(tar_cmd, 'tar')
-    logger.info(f'V(D)J reference {archive} successfully unpacked.')
+    logger.info(f"Unpacking reference archive {archive}")
+    os.makedirs(REF_DIR, exist_ok=True)
+    cmd = ['tar', '-xvf', archive, '-C', REF_DIR]
+    run_and_check_with_message(cmd, 'Unpack reference')
+
+
+def split_fastq(input_fastq: str) -> List[str]:
+    logger.info(f"Splitting FASTQ file {input_fastq}")
+    os.makedirs(SEQKIT_TEMPDIR, exist_ok=True)
+    run_and_check_with_message([
+        'seqkit', 'split2',
+        '--threads', str(CPU_COUNT),
+        '--by-part', str(CPU_COUNT),
+        '-O', SEQKIT_TEMPDIR,
+        input_fastq
+    ], 'seqkit')
+    chunks = sorted(glob.glob(os.path.join(SEQKIT_TEMPDIR, SEQKIT_OUT_FQ_PATTERN)))
+    logger.info(f"Created {len(chunks)} FASTQ chunks")
+    return chunks
+
+
+def process_fq_chunk(fastq_chunk_path: str, e_value: float):
+    logger.info(f"Processing chunk {fastq_chunk_path}")
+
+    cmd = [
+        'vidjil-algo',
+        '--germline', VIDJIL_REF_GERMLINE_PATH,
+        '--out-detected',
+        '--dir', VIDJIL_TEMPDIR,
+        '--clean-memory',
+        '--base', os.path.basename(fastq_chunk_path),
+        '-c', 'clones',
+        '--no-airr',
+        '--verbose',
+        '-e', str(e_value),
+        fastq_chunk_path
+    ]
+
+    run_and_check_with_message(cmd, 'vidjil')
+
+    logger.info(f"Chunk {fastq_chunk_path} processed.")
 
 
 def main() -> None:
     configure_logger()
-
     args = parse_args()
-    logger.info(f"Starting program with the following arguments: {vars(args)}")
+    logger.info(f"Started with args: {vars(args)}")
 
     unpack_reference(args.vdj_ref)
+    fq_chunks = split_fastq(args.in_fastq)
 
-    organism = ORGANISM_GLOSSARY.get(args.organism)
-    run_vidjil_by_fastq_chunk(args.in_fastq, args.reads_chunk_size, organism)
+    logger.info(f"FASTQ chunks to process: {fq_chunks}")
 
-    save_vidjil_results(args.out_fasta, args.logs, args.debug)
+    with Pool(CPU_COUNT) as pool:
+        pool.starmap(process_fq_chunk, [(chunk, args.e_value) for chunk in fq_chunks])
 
+    out_fasta_files = sorted(glob.glob(os.path.join(VIDJIL_TEMPDIR, VIDJIL_OUT_FASTA_PATTERN)))
+    logger.info(f"FASTA outputs collected: {out_fasta_files}")
+
+    out_json_files = sorted(glob.glob(os.path.join(VIDJIL_TEMPDIR, VIDJIL_OUT_JSON_PATTERN)))
+    logger.info(f"JSON outputs collected: {out_json_files}")
+
+    save_results(out_fasta_files, out_json_files, args.out_fasta, args.out_json, args.debug)
     logger.info("Run is completed successfully.")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
