@@ -1,8 +1,68 @@
-FROM python:3.13-bullseye
+FROM ubuntu:24.04
 
-RUN apt-get update \
- && apt-get -y install --no-install-recommends wget pigz ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install --yes --no-install-recommends \
+    ca-certificates \
+    g++ \
+    gcc \
+    pigz \
+    autoconf \
+    automake \
+    libtool \
+    nasm \
+    yasm \
+    libbz2-dev \
+    liblzma-dev \
+    libdeflate0 \
+    libpython3-dev \
+    libisal-dev \
+    libgcc-s1 \
+    cpio \
+    libc6 \
+    make \
+    cmake \
+    git \
+    ncurses-dev \
+    python3 \
+    python3-pip \
+    wget \
+    xxd \
+    zlib1g-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    uuid-dev \
+    libexpat1-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libsqlite3-dev \
+    libmagic-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libgif-dev \
+    libxpm-dev \
+    libfreetype-dev \
+    libboost-all-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    libsasl2-dev \
+    libhdf5-dev \
+    liblapack-dev \
+    libblas-dev \
+    libgsl-dev \
+    liburing-dev \
+    libuv1-dev \
+    libyaml-cpp-dev \
+    libreadline-dev \
+    libncurses-dev \
+    uuid-runtime \
+    gawk \
+    perl \
+    curl \
+    pkg-config && \
+    apt-get autoremove --purge --yes && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV IGBLAST_VERSION=1.22.0
 ENV IGBLAST_DIR=/usr/local/bin/ncbi-igblast
