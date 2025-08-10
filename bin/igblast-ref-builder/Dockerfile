@@ -22,7 +22,7 @@ RUN set -eux; \
     elif [ "${TARGETARCH}" = "arm64" ]; then \
         apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             build-essential zlib1g-dev libbz2-dev liblzma-dev libcurl4-openssl-dev libxml2-dev \
-            cmake git pkg-config && \
+            cmake git pkg-config cpio && \
         rm -rf /var/lib/apt/lists/*; \
         wget -q -O /tmp/igblast-src.tgz "https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VERSION}/ncbi-igblast-${IGBLAST_VERSION}-src.tar.gz" && \
         mkdir -p /tmp/igblast-src && \
