@@ -75,9 +75,9 @@ RUN mkdir -p "${IGBLAST_DIR}" && \
       wget -q -O ncbi-igblast.tar.gz "https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VERSION}/ncbi-igblast-${IGBLAST_VERSION}-src.tar.gz" && \
       tar -xvzf ncbi-igblast.tar.gz --one-top-level=ncbi-igblast --strip-components=1 && rm -f ncbi-igblast.tar.gz && \
       cd ncbi-igblast/c++ && ./configure && make -j"$(nproc)" && make install && \
-      mkdir -p "${IGBLAST_DIR}/bin" && cp /ncbi-igblast/c++/ReleaseMT/bin/igblastn "${IGBLAST_DIR}/bin/" && \
+      mkdir -p "${IGBLAST_DIR}/bin" && cp /ncbi-igblast/c++/ReleaseMT/bin/* "${IGBLAST_DIR}/bin/" && \
       chmod 755 "${IGBLAST_DIR}/bin/igblastn" && \
-      cd / && rm -rf ncbi-igblast* ; \
+      cd / ; \
     fi && \
     wget -q -O ncbi_human_c_genes.tar "https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database/ncbi_human_c_genes.tar" && \
     mkdir -p "${IGBLAST_DIR}/database" && \
