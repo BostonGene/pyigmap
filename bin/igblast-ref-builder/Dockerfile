@@ -34,6 +34,7 @@ RUN set -eux; \
         cp /tmp/igblast-src/c++/ReleaseMT/bin/makeblastdb "${IGBLAST_DIR}/bin/" && chmod 755 "${IGBLAST_DIR}/bin/makeblastdb" && \
         cp /tmp/igblast-src/c++/ReleaseMT/bin/edit_imgt_file.pl "${IGBLAST_DIR}/bin/" && \
         cp -r /tmp/igblast-src/c++/src/app/igblast/internal_data "${IGBLAST_DIR}/" && \
+        cp -r /tmp/igblast-src/c++/src/app/igblast/optional_file "${IGBLAST_DIR}/" && \
         cd / && rm -rf /tmp/igblast-src; \
     else \
         echo "Unsupported TARGETARCH=${TARGETARCH}"; exit 1; \
