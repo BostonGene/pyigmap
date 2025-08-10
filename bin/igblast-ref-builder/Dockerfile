@@ -6,20 +6,23 @@ RUN apt-get update \
 
 ENV IGBLAST_VERSION=1.22.0
 ENV IGBLAST_DIR=/usr/local/bin/ncbi-igblast
-RUN if [ "$(uname -m)" = "x86_64" ]; then \
-      wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VERSION}/ncbi-igblast-${IGBLAST_VERSION}-x64-linux.tar.gz -O ncbi-igblast.tar.gz && \
-      tar -xvzf ncbi-igblast.tar.gz --one-top-level=${IGBLAST_DIR} --strip-component 1 && \
-      rm ncbi-igblast.tar.gz ; \
+RUN mkdir -p "${IGBLAST_DIR}" && \
+    if [ "$(uname -m)" = "x86_64" ]; then \
+      wget -q -O ncbi-igblast.tar.gz "https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VERSION}/ncbi-igblast-${IGBLAST_VERSION}-x64-linux.tar.gz" && \
+      tar -xvzf ncbi-igblast.tar.gz --one-top-level="${IGBLAST_DIR}" --strip-components=1 && \
+      rm -f ncbi-igblast.tar.gz ; \
     elif [ "$(uname -m)" = "aarch64" ]; then \
-      wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VERSION}/ncbi-igblast-${IGBLAST_VERSION}-src.tar.gz -O ncbi-igblast.tar.gz && \
-      tar -xvzf ncbi-igblast.tar.gz --one-top-level=ncbi-igblast --strip-component 1 && rm ncbi-igblast.tar.gz && \
-      cd ncbi-igblast/c++ && ./configure && make -j$(nproc) && make install && \
-      mkdir -p ${IGBLAST_DIR}/bin/ && cp /ncbi-igblast/c++/ReleaseMT/bin/igblastn ${IGBLAST_DIR}/bin/ && \
-      chmod 755 ${IGBLAST_DIR}/bin/igblastn && \
+      wget -q -O ncbi-igblast.tar.gz "https://ftp.ncbi.nih.gov/blast/executables/igblast/release/${IGBLAST_VERSION}/ncbi-igblast-${IGBLAST_VERSION}-src.tar.gz" && \
+      tar -xvzf ncbi-igblast.tar.gz --one-top-level=ncbi-igblast --strip-components=1 && rm -f ncbi-igblast.tar.gz && \
+      cd ncbi-igblast/c++ && ./configure && make -j"$(nproc)" && make install && \
+      mkdir -p "${IGBLAST_DIR}/bin" && cp /ncbi-igblast/c++/ReleaseMT/bin/igblastn "${IGBLAST_DIR}/bin/" && \
+      chmod 755 "${IGBLAST_DIR}/bin/igblastn" && \
       cd / && rm -rf ncbi-igblast* ; \
     fi && \
-    wget https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database/ncbi_human_c_genes.tar -q -O ncbi_human_c_genes.tar && \
-    mkdir ${IGBLAST_DIR}/database && tar -xvf ncbi_human_c_genes.tar -C ${IGBLAST_DIR}/database
+    wget -q -O ncbi_human_c_genes.tar "https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database/ncbi_human_c_genes.tar" && \
+    mkdir -p "${IGBLAST_DIR}/database" && \
+    tar -xvf ncbi_human_c_genes.tar -C "${IGBLAST_DIR}/database" && \
+    rm -f ncbi_human_c_genes.tar
 
 ENV SEQKIT_VERSION=2.10.0
 RUN if [ "$(uname -m)" = "x86_64" ]; then \
