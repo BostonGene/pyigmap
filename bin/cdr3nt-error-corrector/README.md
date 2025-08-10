@@ -61,14 +61,6 @@ By default, all the rules for filtering out spurious sequences are defined in th
     }
     ```
 
-
-## How to build archive with OLGA models
-
-Run script:
-```bash
-bash build_ref.sh
-```
-
 ## How to run
 
 1. Build an image

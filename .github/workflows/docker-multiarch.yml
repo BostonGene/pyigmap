@@ -10,7 +10,15 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository_owner }}/pyigmap
-  SERVICES_CSV: fq-downloader,fastp,vidjil,igblast,cdr3nt-error-corrector
+  TOOLS: |
+    fq-downloader
+    fastp
+    vidjil
+    igblast
+    cdr3nt-error-corrector
+    vidjil-ref-builder
+    igblast-ref-builder
+    olga-ref-builder
 
 permissions:
   contents: read
@@ -21,22 +29,30 @@ jobs:
   matrix:
     runs-on: ubuntu-24.04
     outputs:
-      services: ${{ steps.mkjson.outputs.services }}
+      tools: ${{ steps.mkjson.outputs.tools }}
     steps:
-      - id: mkjson
+      - name: Expand SERVICES_CSV (newline list) -> JSON
+        id: mkjson
+        shell: bash
         run: |
-          IFS=',' read -ra arr <<< "${SERVICES_CSV}"
-          printf '{"service":[%s]}\n' "$(printf '"%s",' "${arr[@]}" | sed 's/,$//')" > services.json
-          echo "services=$(cat services.json)" >> "$GITHUB_OUTPUT"
+          mapfile -t arr < <(printf '%s\n' "${SERVICES_CSV}" \
+            | sed -E 's/^[[:space:]]+|[[:space:]]+$//g' \
+            | sed -E '/^($|#)/d')
+
+          json_items=$(printf '"%s",' "${arr[@]}")
+          json_array="[${json_items%,}]"
+
+          printf '{"tool":%s}\n' "${json_array}" > tools.json
+          echo "tools=$(cat tools.json)" >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build ${{ matrix.service }} @ ${{ matrix.arch }}
+    name: Build ${{ matrix.tool }} @ ${{ matrix.arch }}
     needs: [matrix]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJSON(needs.matrix.outputs.services).service }}
+        tool: ${{ fromJSON(needs.matrix.outputs.tools).tool }}
         arch: [amd, arm]
         include:
           - arch: amd
@@ -61,7 +77,7 @@ jobs:
       - name: Parse version
         id: ver
         run: |
-          FILE="./bin/${{ matrix.service }}/pyproject.toml"
+          FILE="./bin/${{ matrix.tool }}/pyproject.toml"
           V=""
           if [[ -f "$FILE" ]]; then
             V=$(awk '
@@ -77,7 +93,7 @@ jobs:
         if: steps.ver.outputs.version != ''
         run: |
           set -euo pipefail
-          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
+          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.tool }}"
           TAG="${BASE}:${{ steps.ver.outputs.version }}${{ matrix.suffix }}"
           if docker buildx imagetools inspect "${TAG,,}" >/dev/null 2>&1; then
             echo "skip=true"  >> "$GITHUB_OUTPUT"
@@ -91,7 +107,7 @@ jobs:
         if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.tool }}
           tags: |
             type=raw,value=${{ steps.ver.outputs.version }}${{ matrix.suffix }},enable=true
           flavor: |
@@ -101,8 +117,8 @@ jobs:
         if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
         uses: docker/build-push-action@v6
         with:
-          context: ./bin/${{ matrix.service }}
-          file: ./bin/${{ matrix.service }}/Dockerfile
+          context: ./bin/${{ matrix.tool }}
+          file: ./bin/${{ matrix.tool }}/Dockerfile
           platforms: ${{ matrix.platform }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -113,13 +129,13 @@ jobs:
           sbom: false
 
   manifest:
-    name: Manifest — ${{ matrix.service }}
+    name: Manifest — ${{ matrix.tool }}
     needs: [matrix, build]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJSON(needs.matrix.outputs.services).service }}
+        tool: ${{ fromJSON(needs.matrix.outputs.tools).tool }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -132,7 +148,7 @@ jobs:
       - name: Parse version
         id: ver
         run: |
-          FILE="./bin/${{ matrix.service }}/pyproject.toml"
+          FILE="./bin/${{ matrix.tool }}/pyproject.toml"
           V=""
           if [[ -f "$FILE" ]]; then
             V=$(awk '
@@ -148,7 +164,7 @@ jobs:
         if: steps.ver.outputs.version != ''
         run: |
           set -euo pipefail
-          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
+          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.tool }}"
           V="${{ steps.ver.outputs.version }}"
           AMD="${BASE}:${V}-amd"
           ARM="${BASE}:${V}-arm"

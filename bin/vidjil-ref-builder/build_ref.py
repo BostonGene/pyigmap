@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 import sys
@@ -20,6 +21,16 @@ def configure_logger(logger_format: str = LOGGER_FORMAT) -> None:
     handler.setFormatter(logging.Formatter(logger_format))
     logger.setLevel(logging.INFO)
     logger.addHandler(handler)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--out-archive",
+        help="Full path to the output archive (e.g., /tmp/vidjil.germline.tar.gz)",
+        required=True
+    )
+    return parser.parse_args()
 
 
 def run_and_check_with_message(
@@ -87,6 +98,7 @@ def create_vidjil_archive(germline_dir: str, archive_path: str) -> None:
 
 def main():
     configure_logger()
+    args = parse_args()
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_dir = os.path.join(tmpdir, "vidjil")
         clone_vidjil_repo(repo_dir)
@@ -94,7 +106,7 @@ def main():
 
         germline_dir = os.path.join(repo_dir, "germline")
         merge_presets(germline_dir)
-        create_vidjil_archive(germline_dir, REFERENCE_ARCHIVE_PATH)
+        create_vidjil_archive(germline_dir, args.out_archive)
 
     logger.info("Vidjil reference generation completed successfully.")
 

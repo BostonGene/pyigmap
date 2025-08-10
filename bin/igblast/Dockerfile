@@ -64,13 +64,13 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-ENV SEQTK_VERSION=1.4
+ENV SEQTK_VERSION=1.5
 RUN wget https://github.com/lh3/seqtk/archive/refs/tags/v${SEQTK_VERSION}.tar.gz -O seqtk.tar.gz && \
     tar -xvzf seqtk.tar.gz --one-top-level=seqtk --strip-component 1 && \
     cd seqtk && make && mv seqtk /usr/local/bin && \
     cd .. && rm -r seqtk seqtk.tar.gz
 
-ENV SEQKIT_VERSION=2.8.0
+ENV SEQKIT_VERSION=2.10.0
 RUN if [ "$(uname -m)" = "x86_64" ]; then \
       BIN_ARCH=amd64; \
     elif [ "$(uname -m)" = "aarch64" ]; then \

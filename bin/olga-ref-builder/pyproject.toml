@@ -1,0 +1,4 @@
+[project]
+name = "olga-ref-builder"
+version = "1.0.0-dev1"
+description = "Tool to build OLGA models archive for cdr3nt-error-corrector."

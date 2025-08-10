@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.13-bullseye
 
 RUN apt-get update && \
     apt-get -y install make pigz && \
@@ -29,4 +29,4 @@ RUN if [ "$(uname -m)" = "x86_64" ]; then \
 
 COPY run.py /usr/local/src/
 
-# ENTRYPOINT ["python3.9", "/usr/local/src/run.py"]
+# ENTRYPOINT ["python3", "/usr/local/src/run.py"]
