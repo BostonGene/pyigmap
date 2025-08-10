@@ -31,11 +31,11 @@ jobs:
     outputs:
       tools: ${{ steps.mkjson.outputs.tools }}
     steps:
-      - name: Expand SERVICES_CSV (newline list) -> JSON
+      - name: Expand TOOLS (newline list) -> JSON
         id: mkjson
         shell: bash
         run: |
-          mapfile -t arr < <(printf '%s\n' "${SERVICES_CSV}" \
+          mapfile -t arr < <(printf '%s\n' "${TOOLS}" \
             | sed -E 's/^[[:space:]]+|[[:space:]]+$//g' \
             | sed -E '/^($|#)/d')
 
