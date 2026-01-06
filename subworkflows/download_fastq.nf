@@ -5,21 +5,33 @@ workflow DOWNLOAD_FASTQ_BY_LINK {
     take:
         link_1
         link_2
+
     main:
-        DownloadRead1(params.sample_id, link_1, Channel.from('1'))
-        DownloadRead2(params.sample_id, link_2, Channel.from('2'))
+        DownloadRead1(params.sample_id, link_1, Channel.of('1'))
+
+        if (params.paired) {
+            DownloadRead2(params.sample_id, link_2, Channel.of('2'))
+        }
 
     emit:
         fq1 = DownloadRead1.out
-        fq2 = DownloadRead2.out
+        fq2 = params.paired ? DownloadRead2.out : Channel.empty()
 }
 
 workflow DOWNLOAD_FASTQ_BY_SAMPLE_ID {
     take:
         sample_id
+
     main:
         GetLinks(sample_id)
-        DOWNLOAD_FASTQ_BY_LINK(GetLinks.out.link_1, GetLinks.out.link_2)
+
+        if (params.single) {
+            // только R1
+            DOWNLOAD_FASTQ_BY_LINK(GetLinks.out.link_1, "")
+        } else {
+            // R1 + R2
+            DOWNLOAD_FASTQ_BY_LINK(GetLinks.out.link_1, GetLinks.out.link_2)
+        }
 
     emit:
         fq1 = DOWNLOAD_FASTQ_BY_LINK.out.fq1

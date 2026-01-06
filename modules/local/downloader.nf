@@ -1,6 +1,6 @@
 process GetLinks {
     // labels are defined in conf/base.config
-    // label "process_single"
+    // label "Get_links_from_SRA_ID"
 
     input:
         val sample_id
@@ -11,23 +11,21 @@ process GetLinks {
 
     script:
         """
-        link_1=\$(ffq --ftp $sample_id | jq -r '.[0] | .url')
+        urls=\$(ffq --ftp $sample_id | jq -r '.[].url')
+
+        link_1=\$(echo "\$urls" | sed -n '1p')
         if [ -z "\$link_1" ]; then
-            echo "Error: failed to retrieve fastq1 link for $sample_id" >&2
+            echo "Error: failed to retrieve FASTQ link for $sample_id" >&2
             exit 1
         fi
 
-        link_2=\$(ffq --ftp $sample_id | jq -r '.[1] | .url')
-        if [ -z "\$link_2" ]; then
-            echo "Error: failed to retrieve fastq2 link for $sample_id" >&2
-            exit 1
-        fi
+        link_2=\$(echo "\$urls" | sed -n '2p' || true)
         """
 }
 
 process Download {
     // labels are defined in conf/base.config
-    label "process_single"
+    // label "Download_FASTQ_by_link"
 
     input:
         val sample_id
