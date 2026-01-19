@@ -26,10 +26,8 @@ workflow DOWNLOAD_FASTQ_BY_SAMPLE_ID {
         GetLinks(sample_id)
 
         if (params.single) {
-            // только R1
             DOWNLOAD_FASTQ_BY_LINK(GetLinks.out.link_1, "")
         } else {
-            // R1 + R2
             DOWNLOAD_FASTQ_BY_LINK(GetLinks.out.link_1, GetLinks.out.link_2)
         }
 
