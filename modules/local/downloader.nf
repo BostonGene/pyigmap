@@ -11,7 +11,7 @@ process GetLinks {
 
     script:
         """
-        urls=\$(ffq --ftp $sample_id | jq -r '.[].url')
+        urls=\$(ffq --ftp $sample_id | jq -r '.[].url' | sed 's|^ftp://|https://|')
 
         link_1=\$(echo "\$urls" | sed -n '1p')
         if [ -z "\$link_1" ]; then
