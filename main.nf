@@ -7,6 +7,14 @@ include { DOWNLOAD_FASTQ_BY_SAMPLE_ID; DOWNLOAD_FASTQ_BY_LINK; DOWNSAMPLE_FASTQ 
 
 if (params.help) { exit 0, help_message() }
 
+if (params.single && params.paired) {
+    error "Use only one mode: --single OR --paired"
+}
+
+if (!params.single && !params.paired) {
+    error "You must specify either --single or --paired"
+}
+
 log.info ""
 log.info "                     P Y I G M A P                     "
 log.info "======================================================="
@@ -72,40 +80,51 @@ def help_message() {
 }
 
 workflow {
+    // Download via sample id
     if (params.sample_id && !params.fq1 && !params.fq2) {
 
         DOWNLOAD_FASTQ_BY_SAMPLE_ID(params.sample_id)
 
         fq1 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq1
-        fq2 = DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq2
+        fq2 = params.paired ? DOWNLOAD_FASTQ_BY_SAMPLE_ID.out.fq2 : Channel.empty()
+
+    // Local files or URL
     } else {
 
         fq1 = Channel.fromPath(params.fq1)
-        fq2 = Channel.fromPath(params.fq2)
-
-        if (!params.fq1 || !params.fq2) {
-            error "Error: single-end is not supported, exiting..."
-        }
+        fq2 = params.paired ? Channel.fromPath(params.fq2) : Channel.empty()
 
         def urlPatterns = ["ftp://", "http://", "https://"]
+        def fq1_is_url = params.fq1 && urlPatterns.any { params.fq1.startsWith(it) }
+        def fq2_is_url = params.fq2 && urlPatterns.any { params.fq2.startsWith(it) }
 
-        if (urlPatterns.any { params.fq1.startsWith(it) } || urlPatterns.any { params.fq2.startsWith(it) }) {
+        // Download via URL
+        if (fq1_is_url || fq2_is_url) {
+
             DOWNLOAD_FASTQ_BY_LINK(params.fq1, params.fq2)
+
             fq1 = DOWNLOAD_FASTQ_BY_LINK.out.fq1
-            fq2 = DOWNLOAD_FASTQ_BY_LINK.out.fq2
+            fq2 = params.paired ? DOWNLOAD_FASTQ_BY_LINK.out.fq2 : Channel.empty()
+
+        // Downsampling
         } else if (params.first_reads.toString().isInteger()) {
-            DOWNSAMPLE_FASTQ(params.fq1, params.fq2)
+
+            DOWNSAMPLE_FASTQ(fq1, fq2)
+
             fq1 = DOWNSAMPLE_FASTQ.out.fq1
-            fq2 = DOWNSAMPLE_FASTQ.out.fq2
+            fq2 = params.paired ? DOWNSAMPLE_FASTQ.out.fq2 : Channel.empty()
         }
     }
 
+    // Main workflow
     if (params.library == "amplicon") {
         PYIGMAP_AMPLICON(fq1, fq2)
+
     } else if (params.library == "rnaseq") {
         PYIGMAP_RNASEQ(fq1, fq2)
+
     } else {
-        error "Error: unexpected --library '${params.library}'. Supported only two libraries: 'amplicon' and 'rnaseq'."
+        error "Error: unexpected --library '${params.library}'. Supported only: 'amplicon', 'rnaseq'."
     }
 }
 

@@ -1,3 +1,26 @@
+process FastpSingle {
+    // labels are defined in conf/base.config
+    label "process_low"
+
+    input:
+        path fq1
+
+    output:
+        path params.out_fastp_fq1,  emit: fq1
+        path params.out_fastp_json, emit: json
+        path params.out_fastp_html, emit: html
+
+    script:
+        """
+        python3.9 /usr/local/src/run.py \
+            --in-fq1 $fq1 \
+            --out-fq1 ${params.out_fastp_fq1} \
+            --disable-filters ${params.disable} \
+            --html ${params.out_fastp_html} \
+            --json ${params.out_fastp_json}
+        """
+}
+
 process FastpMerge {
     // labels are defined in conf/base.config
     // label "process_low"

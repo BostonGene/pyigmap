@@ -235,7 +235,7 @@ def parse_total_reads(json_files: list[str]) -> dict:
             logger.warning(f'Total reads count could not be found in {json_file}')
         else:
             total_reads_count += int(json_content.get('summary', 0).get('before_filtering', 0).get('total_reads', 0))
-            if 'fastp_version' in json_content['summary']:
+            if 'fastp_version' in json_content['summary'] and 'paired end' in json_content['summary']['sequencing']:
                 total_reads_count //= 2
     return {"total_reads": total_reads_count}
 
