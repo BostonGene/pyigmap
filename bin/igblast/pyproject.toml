@@ -2,5 +2,6 @@
 name = "igblast"
 version = "1.0.1-dev1"
 description = "Wrapper around tool for V(D)J mapping"
-authors = [{name = "nikita.syzrantsev@gmail.com"}]
-requires-python = ">=3.10"
+authors = [{name = "Pyigmap developers"}]
+requires-python = ">=3.12"
+# No Python dependencies - binary wrapper for IgBLAST

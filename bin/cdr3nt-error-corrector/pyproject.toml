@@ -1,6 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "cdr3nt-error-corrector"
 version = "1.0.1-dev1"
 description = "Tool for removing spurious rearrangements via OLGA tool and/or by means of comparing igblast alignment scores and more"
-authors = [{name = "nikita.syzrantsev@gmail.com"}]
-requires-python = ">=3.10"
+authors = [{name = "Pyigmap developers"}]
+requires-python = ">=3.12"
+dependencies = [
+    "pandas==2.3.1",
+    "olga==1.2.4",
+]

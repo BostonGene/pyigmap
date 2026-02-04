@@ -1,8 +1,12 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "pyigmap"
 version = "0.1.0"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12,<4"
 dependencies = [
     "jupyterlab>=4.3.4",
     "nextflow>=24.4.2",
@@ -18,8 +22,65 @@ dependencies = [
     "tzdata==2023.4",
 ]
 
-[project.optional-dependencies]
-dev = ["mypy>=1.10.0", "ruff>=0.4.2", "nf-core>=2.14.1", "pytest>=8.1.1"]
+[dependency-groups]
+dev = [
+    "pyrefly==0.47.0",
+    "ruff==0.14.10",
+    "pytest==9.0.2",
+    "pytest-asyncio==1.3.0",
+    "nf-core>=2.14.1",
+]
 
-[tool.setuptools.packages.find]
-include = ["pyigmap"]
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pyigmap"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/pyigmap",
+    "/tests",
+    "/bin",
+    "/subworkflows",
+    "/modules",
+]
+
+[tool.ruff]
+exclude = [".git", "__pycache__", "*.md", ".venv", "build", "dist", ".nextflow", "work"]
+line-length = 120
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "UP",  # pyupgrade
+    "I",   # isort
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "B",   # flake8-bugbear
+    "A",   # flake8-builtins
+    "C90", # mccabe complexity
+    "Q",   # flake8-quotes
+    "COM", # flake8-commas
+    "PIE", # flake8-pie
+    "RUF", # ruff-specific rules
+]
+ignore = ["COM812"]  # Trailing comma conflicts with formatter
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 5
+
+[tool.ruff.lint.isort]
+known-first-party = ["pyigmap"]

@@ -1,4 +1,4 @@
-name: Continuous Deployment (Docker multi-arch)
+name: Continuous Deployment (build & push docker images)
 
 on:
   push:

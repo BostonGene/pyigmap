@@ -1,0 +1,7 @@
+[project]
+name = "calib-dedup"
+version = "1.0.0"
+description = "UMI-based clustering and consensus generation using external binaries (calib, starcode)"
+authors = [{name = "Pyigmap developers"}]
+requires-python = ">=3.12"
+# No Python dependencies - uses external binary tools

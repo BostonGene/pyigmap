@@ -6,5 +6,5 @@ build-backend = "maturin"
 name = "fastp"
 version = "1.0.1-dev3"
 description = "An ultra-fast tool for processing FASTQ files: filters low-quality reads, merges overlapped and non-overlapped reads, and more."
-authors = [{name = "nikita.syzrantsev@gmail.com"}]
-requires-python = ">=3.10"
+authors = [{name = "Pyigmap developers"}]
+requires-python = ">=3.12"
