@@ -65,6 +65,15 @@ update-dev:
     @echo "Updating dev packages..."
     uv venv --python {{ PYTHON_VERSION }}
     uv sync --group dev
+    @echo "Installing component packages in editable mode..."
+    uv pip install -e bin/pyumi
+    uv pip install -e bin/calib_dedup
+    uv pip install -e bin/reporter
+    uv pip install -e bin/fastp
+    uv pip install -e bin/vidjil
+    uv pip install -e bin/igblast
+    uv pip install -e bin/cdr3nt-error-corrector
+    uv pip install -e bin/fq-downloader
 
 # ---- Build reference image for a specific step
 [group('build')]
