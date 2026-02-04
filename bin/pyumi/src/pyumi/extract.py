@@ -44,14 +44,13 @@ def get_barcode_fields(read, match, barcode_type='UMI'):
     barcode_seq = ''.join(match.captures(barcode_type)).replace('N', 'A')
     barcode_start_end_indices = match.spans(barcode_type)
     barcode_quality = ''
-    for (barcode_start, barcode_end) in barcode_start_end_indices:
+    for barcode_start, barcode_end in barcode_start_end_indices:
         barcode_quality += read[2][barcode_start:barcode_end]
     pattern_match_start, pattern_match_end = match.span()
     return PatternMarkup(BarcodeMarkup(barcode_seq, barcode_quality), pattern_match_start, pattern_match_end)
 
 
-def replace_umi_to_the_seq_start(read_seq: str, read_quality: str,
-                                 pattern: PatternMarkup) -> tuple[str, str]:
+def replace_umi_to_the_seq_start(read_seq: str, read_quality: str, pattern: PatternMarkup) -> tuple[str, str]:
     if not read_seq:
         return read_seq, read_quality
     new_read_seq = pattern.barcode.sequence + remove_subseq(read_seq, pattern.start, pattern.end)
@@ -71,9 +70,9 @@ def match_in_reverse_complement(read_seq, pattern):
     return match
 
 
-def match_barcode(read1: list[str], read2: list[str], pattern: str,
-                  is_read2: bool, find_umi_in_rc=True) -> tuple[PatternMarkup, list[str], list[str]]:
-
+def match_barcode(
+    read1: list[str], read2: list[str], pattern: str, is_read2: bool, find_umi_in_rc=True
+) -> tuple[PatternMarkup, list[str], list[str]]:
     def find_match(read):
         match = regex.search(pattern, read[1], regex.BESTMATCH)
         if not match and (find_umi_in_rc or not is_read2):
@@ -86,30 +85,35 @@ def match_barcode(read1: list[str], read2: list[str], pattern: str,
     if not match1 and match2:
         read1, read2 = read2, read1
 
-    return (get_barcode_fields(read1, match1) if match1 else
-            PatternMarkup(BarcodeMarkup('', ''), 0, 0)), read1, read2
+    return (get_barcode_fields(read1, match1) if match1 else PatternMarkup(BarcodeMarkup('', ''), 0, 0)), read1, read2
 
 
-def process_umi_in_read(read1: list[str], read2: list[str], pattern: str, find_umi_in_rc=True, is_read2=False,
-                        keep_reads_without_adapter=False, add_to_the_header=False):
+def process_umi_in_read(
+    read1: list[str],
+    read2: list[str],
+    pattern: str,
+    find_umi_in_rc=True,
+    is_read2=False,
+    keep_reads_without_adapter=False,
+    add_to_the_header=False,
+):
     pattern_markup, read1, read2 = match_barcode(read1, read2, pattern, is_read2, find_umi_in_rc)
     if pattern_markup.barcode.sequence or keep_reads_without_adapter:
-        read_header = add_barcode_to_the_header(read1[0], pattern_markup.barcode.sequence) \
-            if add_to_the_header else read1[0]
+        read_header = (
+            add_barcode_to_the_header(read1[0], pattern_markup.barcode.sequence) if add_to_the_header else read1[0]
+        )
         read_seq, read_quality = replace_umi_to_the_seq_start(read1[1], read1[2], pattern_markup)
         return create_new_read(read_header, read_seq, read_quality)
     return ''
 
 
 def create_new_read(header: str, seq: str, quality: str) -> str:
-    return f'@{header}\n' \
-           f'{seq}\n' \
-           '+\n' \
-           f'{quality}\n'
+    return f'@{header}\n{seq}\n+\n{quality}\n'
 
 
-def process_barcode(read1: list[str], read2: list[str], read1_pattern: str,
-                    read2_pattern: str, find_umi_in_rc: bool) -> tuple[str, str]:
+def process_barcode(
+    read1: list[str], read2: list[str], read1_pattern: str, read2_pattern: str, find_umi_in_rc: bool
+) -> tuple[str, str]:
     new_read1, new_read2 = create_new_read(*read1), create_new_read(*read2)
     if read1_pattern:
         new_read1 = process_umi_in_read(read1, read2, read1_pattern, find_umi_in_rc=find_umi_in_rc)
@@ -118,8 +122,9 @@ def process_barcode(read1: list[str], read2: list[str], read1_pattern: str,
     return new_read1, new_read2
 
 
-def get_processed_reads(reads1: list[str], reads2: list[str], read1_pattern: str,
-                        read2_pattern: str, find_umi_in_rc: bool) -> tuple[list, list]:
+def get_processed_reads(
+    reads1: list[str], reads2: list[str], read1_pattern: str, read2_pattern: str, find_umi_in_rc: bool
+) -> tuple[list, list]:
     with multiprocessing.Pool(processes=os.cpu_count()) as pool:
         args_list = list(zip(reads1, reads2, cycle([read1_pattern]), cycle([read2_pattern]), cycle([find_umi_in_rc])))
         processed_reads = list(pool.starmap(process_barcode, args_list))
@@ -139,8 +144,9 @@ def get_fastq_reads(in_fq1_path: str, in_fq2_path: str) -> tuple[list[str], list
     return reads1, reads2
 
 
-def get_processed_fastqs(raw_fq1_path: str, raw_fq2_path: str, read1_pattern: str, read2_pattern: str,
-                         find_umi_in_rc: bool) -> tuple[str, str, int, int]:
+def get_processed_fastqs(
+    raw_fq1_path: str, raw_fq2_path: str, read1_pattern: str, read2_pattern: str, find_umi_in_rc: bool
+) -> tuple[str, str, int, int]:
     reads1, reads2 = get_fastq_reads(raw_fq1_path, raw_fq2_path)
     processed_reads1, processed_reads2 = get_processed_reads(
         reads1, reads2, read1_pattern, read2_pattern, find_umi_in_rc

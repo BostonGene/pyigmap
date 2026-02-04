@@ -35,11 +35,13 @@ class ClonotypeCounter:
         self.confidence = 1.96 * math.sqrt(self.factor * (1.0 - self.factor))
 
     def reassign_parent(
-            self, new_v_call: str, new_j_call: str, new_junction: str, new_count: int, match_vj: bool = False
+        self, new_v_call: str, new_j_call: str, new_junction: str, new_count: int, match_vj: bool = False
     ) -> None:
-        if (not match_vj or (new_v_call == self.v_call and new_j_call == self.j_call)) and \
-                self.parent == self.junction and \
-                self.count / new_count < self.factor + self.confidence / math.sqrt(new_count):
+        if (
+            (not match_vj or (new_v_call == self.v_call and new_j_call == self.j_call))
+            and self.parent == self.junction
+            and self.count / new_count < self.factor + self.confidence / math.sqrt(new_count)
+        ):
             self.parent = new_junction
 
     def __repr__(self):
@@ -60,14 +62,11 @@ class ClonotypeCorrector:
         annotation = annotation.reset_index(drop=True)
         aggregated_annotation = self.aggregate_clonotypes(annotation, CLONOTYPE_COLUMNS)
         fetched_annotation = self.fetch_clonotypes(aggregated_annotation)
-        corrected_annotation = (self.correct_clonotypes(fetched_annotation)
-                                .drop(columns=['count'])
-                                .drop_duplicates())
-        merged_annotation = aggregated_annotation.merge(corrected_annotation,
-                                                        on=CLONOTYPE_COLUMNS,
-                                                        how='left')
-        full_corrected_annotation = (self.aggregate_clonotypes(merged_annotation, ['parent'])
-                                     .drop(columns=['parent', 'factor', 'confidence']))
+        corrected_annotation = self.correct_clonotypes(fetched_annotation).drop(columns=['count']).drop_duplicates()
+        merged_annotation = aggregated_annotation.merge(corrected_annotation, on=CLONOTYPE_COLUMNS, how='left')
+        full_corrected_annotation = self.aggregate_clonotypes(merged_annotation, ['parent']).drop(
+            columns=['parent', 'factor', 'confidence']
+        )
         return full_corrected_annotation
 
     def _aggregate_by_top_c_call(self, group: pd.DataFrame, clonotype: pd.Series) -> Series:
@@ -151,8 +150,9 @@ class ClonotypeCorrector:
         if the smallest (child) has 'threshold' times less duplicate count compared to largest (parent).
         """
         clonotype_count_list, clonotype_count_dict = self._make_counters(annotation)
-        corrected_annotation = self._update_counters_inplace(clonotype_count_list=clonotype_count_list,
-                                                             clonotype_count_dict=clonotype_count_dict)
+        corrected_annotation = self._update_counters_inplace(
+            clonotype_count_list=clonotype_count_list, clonotype_count_dict=clonotype_count_dict
+        )
         logger.info(f'Filtered out {annotation.shape[0] - corrected_annotation.shape[0]} clones while correcting.')
         return corrected_annotation
 
@@ -181,9 +181,9 @@ class ClonotypeCorrector:
                 # Assign parent's junction as parent
                 for counter_to_update in clonotype_count_dict.get(junction_variant, []):
                     counter_to_update.reassign_parent(counter.v_call, counter.j_call, counter.parent, counter.count)
-        return (pd.DataFrame
-                .from_records([count.__dict__ for count in clonotype_count_list])
-                .rename(columns={'seq': JUNCTION_COLUMN}))
+        return pd.DataFrame.from_records([count.__dict__ for count in clonotype_count_list]).rename(
+            columns={'seq': JUNCTION_COLUMN}
+        )
 
     def _get_variants(self, sequence: str) -> Generator:
         """Generates variants of the sequence"""
@@ -195,10 +195,10 @@ class ClonotypeCorrector:
         """Yields sequences with the base at the given index replaced"""
         for bp_new in BASES_GAP:
             if base != bp_new:
-                yield sequence[:index] + bp_new + sequence[(index + 1):]
+                yield sequence[:index] + bp_new + sequence[(index + 1) :]
 
     def _insert_base(self, sequence: str, index: int) -> Generator:
         """Yields sequences with new bases inserted after the given index"""
         for bp_new in BASES_GAP:
             if bp_new:
-                yield sequence[:index + 1] + bp_new + sequence[(index + 1):]
+                yield sequence[: index + 1] + bp_new + sequence[(index + 1) :]

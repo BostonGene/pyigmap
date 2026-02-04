@@ -8,14 +8,13 @@ from reporter.viz import create_report
 
 logger = set_logger(name=__file__)
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in-fq1-pyumi', help='Input fastq.gz file after pyumi step, SE or PE pair 1',
-                        required=True)
+    parser.add_argument('--in-fq1-pyumi', help='Input fastq.gz file after pyumi step, SE or PE pair 1', required=True)
     parser.add_argument('--in-fq2-pyumi', help='Input fastq.gz file after pyumi step, PE pair 2')
 
-    parser.add_argument('--in-fq1-calib', help='Input fastq.gz file after calib step, SE or PE pair 2',
-                        required=True)
+    parser.add_argument('--in-fq1-calib', help='Input fastq.gz file after calib step, SE or PE pair 2', required=True)
     parser.add_argument('--in-fq2-calib', help='Input fastq.gz file after calib step, PE pair 2')
 
     parser.add_argument('--umi-reverse', action='store_true')
@@ -39,11 +38,16 @@ def main() -> None:
     umi_to_count_mapping_post = get_consensus_group_size_per_read(calib_data_path, id_to_umi)
 
     logger.info('Created dataset')
-    res = pd.DataFrame({'umi': umi_to_count_mapping_pre.keys(),
-                        'read_num_pre_dedup': umi_to_count_mapping_pre.values()}).merge(
-        pd.DataFrame({'umi': umi_to_count_mapping_post.keys(),
-                      'read_num_post_dedup': umi_to_count_mapping_post.values()}), how='outer'
-    ).fillna(0)
+    res = (
+        pd.DataFrame({'umi': umi_to_count_mapping_pre.keys(), 'read_num_pre_dedup': umi_to_count_mapping_pre.values()})
+        .merge(
+            pd.DataFrame(
+                {'umi': umi_to_count_mapping_post.keys(), 'read_num_post_dedup': umi_to_count_mapping_post.values()}
+            ),
+            how='outer',
+        )
+        .fillna(0)
+    )
 
     res['umi'] = res['umi'].apply(lambda x: x.decode('ascii'))
 

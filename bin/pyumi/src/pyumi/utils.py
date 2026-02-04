@@ -118,25 +118,24 @@ def check_if_exist(file: str):
     logger.info(f'Expected file {file} found.')
 
 
-def save_results(read1_file: str, read2_file: str,
-                 read1_out_file: str, read2_out_file: str):
-    for file, out_file in [(read1_file, read1_out_file),
-                           (read2_file, read2_out_file)]:
+def save_results(read1_file: str, read2_file: str, read1_out_file: str, read2_out_file: str):
+    for file, out_file in [(read1_file, read1_out_file), (read2_file, read2_out_file)]:
         check_if_exist(file)
         file_gz = compress(file)
         replace_file(file_gz, out_file)
 
 
-def extract_umi(fq12_chunks: list[str], read1_pattern: str,
-                read2_pattern: str, find_umi_in_rc: bool) -> tuple[str, str, int]:
+def extract_umi(
+    fq12_chunks: list[str], read1_pattern: str, read2_pattern: str, find_umi_in_rc: bool
+) -> tuple[str, str, int]:
     total_reads_count, initial_reads_count = 0, 0
     processed_fq1_chunks, processed_fq2_chunks = [], []
 
     logger.info('Extracting UMI...')
     for fq1_chunk, fq2_chunk in fq12_chunks:
-        (processed_fq1_chunk_path, processed_fq2_chunk_path,
-         reads_num_before, reads_num_after) = get_processed_fastqs(fq1_chunk, fq2_chunk, read1_pattern,
-                                                                   read2_pattern, find_umi_in_rc)
+        (processed_fq1_chunk_path, processed_fq2_chunk_path, reads_num_before, reads_num_after) = get_processed_fastqs(
+            fq1_chunk, fq2_chunk, read1_pattern, read2_pattern, find_umi_in_rc
+        )
         processed_fq1_chunks.append(processed_fq1_chunk_path)
         processed_fq2_chunks.append(processed_fq2_chunk_path)
 
@@ -160,8 +159,17 @@ def split_by_chunks(fq1_path: str, fq2_path: str) -> list[str]:
     fq2_outdir = os.path.join(TEMPDIR_NAME, 'chunks', 'fq2')
 
     for fq_path, output_dir in [(fq1_path, fq1_outdir), (fq2_path, fq2_outdir)]:
-        cmd = ['seqkit', 'split2', fq_path, '--by-size', str(FASTQ_CHUNK_SIZE),
-               '--by-size-prefix', '', '--out-dir', output_dir]
+        cmd = [
+            'seqkit',
+            'split2',
+            fq_path,
+            '--by-size',
+            str(FASTQ_CHUNK_SIZE),
+            '--by-size-prefix',
+            '',
+            '--out-dir',
+            output_dir,
+        ]
         run_command(cmd)
 
     fq1_chunks = sorted([entry.path for entry in os.scandir(fq1_outdir)])

@@ -21,8 +21,9 @@ TRP = 'W'  # TRYPTOPHAN amino acid
 PHE = 'F'  # PHENYLALANINE amino acid
 
 
-def run_filtration(annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float | None,
-                   filter_pgen_singletons: bool) -> pd.DataFrame:
+def run_filtration(
+    annotation: pd.DataFrame, only_productive: bool, pgen_threshold: float | None, filter_pgen_singletons: bool
+) -> pd.DataFrame:
     if pgen_threshold is not None:
         annotation = filter_clones_by_pgen(annotation, pgen_threshold, filter_pgen_singletons)
     if only_productive:
@@ -42,17 +43,20 @@ def filter_duplicates_by_vj_score(annotation: pd.DataFrame) -> pd.DataFrame:
     vj_score_annotation['j_score'] = vj_score_annotation['j_score'].fillna(0)
     vj_score_annotation['score'] = vj_score_annotation['v_score'] + vj_score_annotation['j_score']
 
-    max_vj_score_annotation = vj_score_annotation \
-        .groupby('sequence_id', as_index=False)['score'].max() \
+    max_vj_score_annotation = (
+        vj_score_annotation.groupby('sequence_id', as_index=False)['score']
+        .max()
         .merge(vj_score_annotation, on=['sequence_id', 'score'])
+    )
 
     return annotation.merge(max_vj_score_annotation[['sequence_id', 'locus']], on=['sequence_id', 'locus'])
 
 
 def get_duplicates_in_different_loci(annotation: pd.DataFrame) -> list[pd.DataFrame]:
     """Returns list of cdr3 duplicates in different loci"""
-    duplicates_with_different_loci = (annotation[annotation.duplicated(subset=['junction'], keep=False)]
-                                      .groupby('junction'))
+    duplicates_with_different_loci = annotation[annotation.duplicated(subset=['junction'], keep=False)].groupby(
+        'junction'
+    )
     return [group for _, group in duplicates_with_different_loci]
 
 
@@ -100,16 +104,19 @@ def remove_chimeras_by_segment(annotation: pd.DataFrame, segment: str) -> pd.Dat
     # locus = IGL
     # call != locus => this is chimera, and we need to filter it out.
     not_chimeric_clonotypes = [
-        all(not receptor_chain_segment_allele
+        all(
+            not receptor_chain_segment_allele
             or receptor_chain_segment_allele[:3].upper() == locus
             or receptor_chain_segment_allele[:3].upper() in ALLOWED_LOCUS_CHIMERAS
-            for receptor_chain_segment_allele in calls)
+            for receptor_chain_segment_allele in calls
+        )
         for locus, calls in zip(locus_values, segment_calls, strict=False)
     ]
 
     filtered_annotation = annotation[not_chimeric_clonotypes]
-    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} '
-                f'chimeras in {segment.upper()} segment.')
+    logger.info(
+        f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} chimeras in {segment.upper()} segment.'
+    )
 
     return filtered_annotation
 
@@ -131,8 +138,9 @@ def remove_chimeras_clones(annotation: pd.DataFrame) -> pd.DataFrame:
     return annotation
 
 
-def filter_clones_by_pgen(annotation: pd.DataFrame, pgen_threshold: float,
-                          filter_pgen_singletons: bool) -> pd.DataFrame:
+def filter_clones_by_pgen(
+    annotation: pd.DataFrame, pgen_threshold: float, filter_pgen_singletons: bool
+) -> pd.DataFrame:
     """Filters out clones using pgen threshold"""
     condition = (annotation['pgen'].isna()) | (annotation['pgen'] > pgen_threshold)
     if filter_pgen_singletons:
@@ -174,8 +182,8 @@ def remove_non_canonical_clones(annotation: pd.DataFrame) -> pd.DataFrame:
 def remove_non_functional_clones(annotation: pd.DataFrame) -> pd.DataFrame:
     """Filters out non-functional clones: clones with stop codon or with frame shift"""
     filtered_functional = annotation[
-        ~annotation['junction'].isna() &
-        ~annotation['junction_aa'].str.contains(FRAME_SHIFT_SIGN, na=False)
+        ~annotation['junction'].isna()
+        & ~annotation['junction_aa'].str.contains(FRAME_SHIFT_SIGN, na=False)
         & ~annotation['junction_aa'].str.contains(STOP_CODON_SIGN, na=False)
     ]
     logger.info(f'Filtered out {annotation.shape[0] - filtered_functional.shape[0]} non functional clones.')
@@ -188,6 +196,8 @@ def discard_clones_with_n_in_junction(annotation: pd.DataFrame) -> pd.DataFrame:
         ~annotation['junction'].astype(str).str.contains(UNKNOWN_NUCLEOTIDE, na=False)
         & ~annotation['junction_aa'].astype(str).str.contains(UNKNOWN_AMINO_ACID, na=False)
     ]
-    logger.info(f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} clones with undefined nucleotide '
-                f'and amino acid in CDR3.')
+    logger.info(
+        f'Filtered out {annotation.shape[0] - filtered_annotation.shape[0]} clones with undefined nucleotide '
+        f'and amino acid in CDR3.'
+    )
     return filtered_annotation

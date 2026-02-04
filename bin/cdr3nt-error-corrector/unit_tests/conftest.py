@@ -12,7 +12,7 @@ def fastp_json() -> str:
             'fastp_version': '0.23.4',
             'before_filtering': {
                 'total_reads': 20000  # sum of read1 and read2
-            }
+            },
         }
     }
     with tempfile.NamedTemporaryFile(delete=False) as f:
@@ -41,9 +41,28 @@ def calib_json() -> str:
 @fixture(scope='module')
 def empty_annotation() -> pd.DataFrame:
     columns = [
-        'sequence', 'locus', 'stop_codon', 'vj_in_frame', 'v_frameshift', 'productive', 'v_call', 'j_call', 'junction',
-        'junction_aa', 'v_support', 'j_support', 'v_sequence_start', 'v_sequence_end', 'j_sequence_start',
-        'j_sequence_end', 'j_sequence_alignment_aa', 'pgen', 'duplicate_count', 'v_score', 'j_score', 'sequence_id'
+        'sequence',
+        'locus',
+        'stop_codon',
+        'vj_in_frame',
+        'v_frameshift',
+        'productive',
+        'v_call',
+        'j_call',
+        'junction',
+        'junction_aa',
+        'v_support',
+        'j_support',
+        'v_sequence_start',
+        'v_sequence_end',
+        'j_sequence_start',
+        'j_sequence_end',
+        'j_sequence_alignment_aa',
+        'pgen',
+        'duplicate_count',
+        'v_score',
+        'j_score',
+        'sequence_id',
     ]
     return pd.DataFrame(columns=columns)
 

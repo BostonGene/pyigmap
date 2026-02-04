@@ -43,17 +43,18 @@ def run(args: argparse.Namespace):
 
     fq12_chunks = split_by_chunks(fq1_filtered, fq2_filtered)
 
-    processed_fq1, processed_fq2, total_reads_count = extract_umi(fq12_chunks,
-                                                                  fq1_pattern,
-                                                                  fq2_pattern,
-                                                                  args.find_in_reverse_complement)
+    processed_fq1, processed_fq2, total_reads_count = extract_umi(
+        fq12_chunks, fq1_pattern, fq2_pattern, args.find_in_reverse_complement
+    )
 
     fq1_filtered, fq2_filtered = keep_only_paired_reads(processed_fq1, processed_fq2, clear=True)
 
-    save_metrics({'summary': {'before_filtering': {'total_reads': int(total_reads_count)}}},
-                 {'fq1_umi_length': fq1_umi_length},
-                 {'fq2_umi_length': fq2_umi_length},
-                 output_json=args.out_json)
+    save_metrics(
+        {'summary': {'before_filtering': {'total_reads': int(total_reads_count)}}},
+        {'fq1_umi_length': fq1_umi_length},
+        {'fq2_umi_length': fq2_umi_length},
+        output_json=args.out_json,
+    )
 
     save_results(fq1_filtered, fq2_filtered, args.out_fq1, args.out_fq2)
 

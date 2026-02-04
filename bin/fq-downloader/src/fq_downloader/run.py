@@ -63,17 +63,13 @@ def print_error_message(error_message: str | None) -> None:
 
 
 def run_and_check_with_message(
-    cmd: list[str],
-    fail_message: str,
-    exit_on_error: bool = True,
-    return_proc: bool = False,
-    **subprocess_args
+    cmd: list[str], fail_message: str, exit_on_error: bool = True, return_proc: bool = False, **subprocess_args
 ) -> CompletedProcess[str] | CompletedProcess[Any] | CalledProcessError | None:
     """
     Run a command, capture stderr, and optionally return the CompletedProcess.
     If the command fails and exit_on_error is True, exit the program.
     """
-    logger.info(f"Running command {' '.join(cmd)}")
+    logger.info(f'Running command {" ".join(cmd)}')
     if 'stderr' not in subprocess_args:
         subprocess_args['stderr'] = subprocess.PIPE
     try:
@@ -142,15 +138,23 @@ def convert_sra_to_fastq(sra_file: str, accession: str, ngc: str | None = None) 
     """
     logger.info(f"Converting '{sra_file}' to FASTQ via fasterq-dump")
     cmd = [
-        'fasterq-dump', sra_file,
-        '--threads', str(CPU_COUNT),
-        '-O', TEMPDIR,
-        '--temp', TEMPDIR,
+        'fasterq-dump',
+        sra_file,
+        '--threads',
+        str(CPU_COUNT),
+        '-O',
+        TEMPDIR,
+        '--temp',
+        TEMPDIR,
         '-x',
-        '--format', 'fastq',
-        '--size-check', 'off',
-        '--seq-defline', f'@{accession}.$si $sn $ri',
-        '--qual-defline', '+'
+        '--format',
+        'fastq',
+        '--size-check',
+        'off',
+        '--seq-defline',
+        f'@{accession}.$si $sn $ri',
+        '--qual-defline',
+        '+',
     ]
     if ngc:
         cmd += ['--ngc', ngc]
@@ -161,10 +165,7 @@ def convert_sra_to_fastq(sra_file: str, accession: str, ngc: str | None = None) 
     fq_single = os.path.join(TEMPDIR, f'{prefix}.fastq')
     if os.path.exists(fq_single):
         return fq_single, None
-    return (
-        os.path.join(TEMPDIR, f'{prefix}_1.fastq'),
-        os.path.join(TEMPDIR, f'{prefix}_2.fastq')
-    )
+    return (os.path.join(TEMPDIR, f'{prefix}_1.fastq'), os.path.join(TEMPDIR, f'{prefix}_2.fastq'))
 
 
 def download_file(url: str, download_retries: int) -> str:
@@ -175,7 +176,7 @@ def download_file(url: str, download_retries: int) -> str:
             ['axel', '-a', '--num-connections', str(CPU_COUNT), url, f'--output={out}', '--insecure', '--quiet'],
             'axel',
             exit_on_error=False,
-            return_proc=True
+            return_proc=True,
         )
         if cmd is None or cmd.returncode != 0:
             if cmd is not None:

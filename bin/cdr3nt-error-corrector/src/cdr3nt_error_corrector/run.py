@@ -46,109 +46,60 @@ def parse_args() -> argparse.Namespace:
 
     inputs_group = parser.add_argument_group('input files')
     inputs_group.add_argument(
-        '--in-annotation',
-        help='Input raw annotation',
-        nargs='+',
-        action='extend',
-        required=True,
-        type=str
+        '--in-annotation', help='Input raw annotation', nargs='+', action='extend', required=True, type=str
     )
-    inputs_group.add_argument(
-        '--in-json',
-        help='Input json(s) with total reads',
-        nargs='+',
-        action='extend',
-        type=str
-    )
-    inputs_group.add_argument(
-        '--olga-models',
-        help='Archive with OLGA models',
-        type=str
-    )
+    inputs_group.add_argument('--in-json', help='Input json(s) with total reads', nargs='+', action='extend', type=str)
+    inputs_group.add_argument('--olga-models', help='Archive with OLGA models', type=str)
 
     # Arguments for filtering clonotypes
     filters_group = parser.add_argument_group('filters')
-    filters_group.add_argument(
-        '--only-productive',
-        help='Filter out non-productive clonotypes',
-        action='store_true'
-    )
+    filters_group.add_argument('--only-productive', help='Filter out non-productive clonotypes', action='store_true')
     filters_group.add_argument(
         '--remove-chimeras',
         help='Remove chimeras clonotypes, that have different locus in v-/j-genes',
-        action='store_true'
+        action='store_true',
     )
+    filters_group.add_argument('--only-functional', help='Filter out non-functional clonotypes', action='store_true')
+    filters_group.add_argument('--only-canonical', help='Filter out non-canonical clonotypes', action='store_true')
     filters_group.add_argument(
-        '--only-functional',
-        help='Filter out non-functional clonotypes',
-        action='store_true'
-    )
-    filters_group.add_argument(
-        '--only-canonical',
-        help='Filter out non-canonical clonotypes',
-        action='store_true'
-    )
-    filters_group.add_argument(
-        '--only-best-alignment',
-        help='Store the best aligned V, D, J and C genes call',
-        action='store_true'
+        '--only-best-alignment', help='Store the best aligned V, D, J and C genes call', action='store_true'
     )
     filters_group.add_argument(
         '--discard-junctions-with-n',
         help='Discard clonotypes with undefined nucleotide or amino acid in CDR3 sequence',
-        action='store_true'
+        action='store_true',
     )
     filters_group.add_argument(
-        '--skip-pgen-calculation',
-        help='Skip pgen calculation via OLGA tool',
-        action='store_true'
+        '--skip-pgen-calculation', help='Skip pgen calculation via OLGA tool', action='store_true'
     )
     filters_group.add_argument(
         '--error-rate',
         help='Error rate, that involved in collapsing of clonotype duplicates',
         type=float,
-        default=0.001
+        default=0.001,
     )
     filters_group.add_argument(
-        '--filter-pgen-all',
-        help="All clonotypes with 'pgen <= pgen_threshold' will be removed",
-        type=float
+        '--filter-pgen-all', help="All clonotypes with 'pgen <= pgen_threshold' will be removed", type=float
     )
     filters_group.add_argument(
         '--filter-pgen-singletons',
         help="All clonotypes with 'duplicate_count == 1 && pgen <= pgen_threshold' will be removed",
-        type=float
+        type=float,
     )
 
     # Arguments, that involved in clonotypes aggregation
     aggregation_group = parser.add_argument_group('aggregation')
     aggregation_group.add_argument(
-        '--top-c-call',
-        help='Returns clonotypes with the most frequent c_call',
-        action='store_true'
+        '--top-c-call', help='Returns clonotypes with the most frequent c_call', action='store_true'
     )
     aggregation_group.add_argument(
-        '--top-v-alignment-call',
-        help='Returns clonotypes with the most frequent v alignment',
-        action='store_true'
+        '--top-v-alignment-call', help='Returns clonotypes with the most frequent v alignment', action='store_true'
     )
 
     outputs_group = parser.add_argument_group('outputs')
-    outputs_group.add_argument(
-        '--out-corrected-annotation',
-        help='Output corrected annotation',
-        required=True
-    )
-    outputs_group.add_argument(
-        '--out-json',
-        help='Output json with metrics',
-        required=True
-    )
-    outputs_group.add_argument(
-        '--out-archive',
-        help='Output archive with all results',
-        required=True
-    )
+    outputs_group.add_argument('--out-corrected-annotation', help='Output corrected annotation', required=True)
+    outputs_group.add_argument('--out-json', help='Output json with metrics', required=True)
+    outputs_group.add_argument('--out-archive', help='Output archive with all results', required=True)
 
     args = parser.parse_args()
 
@@ -166,13 +117,9 @@ def print_error_message(error_message: str | None) -> None:
 
 
 def run_and_check_with_message(
-    cmd: list[str],
-    fail_message: str,
-    exit_on_error: bool = True,
-    return_proc: bool = False,
-    **subprocess_args
+    cmd: list[str], fail_message: str, exit_on_error: bool = True, return_proc: bool = False, **subprocess_args
 ) -> subprocess.CompletedProcess[str] | None:
-    logger.info(f"Running command {' '.join(cmd)}")
+    logger.info(f'Running command {" ".join(cmd)}')
     if 'stderr' not in subprocess_args:
         subprocess_args['stderr'] = subprocess.PIPE
     try:
@@ -258,15 +205,23 @@ def save_corrected_annotation(annotation: pd.DataFrame, annotation_path: str) ->
     check_if_exist_and_not_empty(annotation_path)
 
 
-def get_pgen_threshold_value(filter_pgen_singletons: float | None,
-                             filter_pgen_all: float | None) -> tuple[float | None, bool]:
+def get_pgen_threshold_value(
+    filter_pgen_singletons: float | None, filter_pgen_all: float | None
+) -> tuple[float | None, bool]:
     pgen_threshold = filter_pgen_singletons if filter_pgen_singletons is not None else filter_pgen_all
     return pgen_threshold, filter_pgen_singletons is not None
 
 
-def get_filtered_annotation(annotation: pd.DataFrame, top_c_call: bool, top_v_alignment_call: bool,
-                            error_rate: float, skip_pgen_calculation: bool, only_productive: bool,
-                            pgen_threshold: float | None, filter_only_pgen_singletons: bool) -> pd.DataFrame:
+def get_filtered_annotation(
+    annotation: pd.DataFrame,
+    top_c_call: bool,
+    top_v_alignment_call: bool,
+    error_rate: float,
+    skip_pgen_calculation: bool,
+    only_productive: bool,
+    pgen_threshold: float | None,
+    filter_only_pgen_singletons: bool,
+) -> pd.DataFrame:
     """Filters annotation and calculates Pgen value for each clonotype"""
     corrected_annotations: list[pd.DataFrame] = []
     for annotation_by_locus, locus in zip(*airr.split_by_loci(annotation), strict=False):
@@ -296,20 +251,30 @@ def main() -> None:
     if not args.skip_pgen_calculation:
         unpack_olga_models(args.olga_models)
 
-    annotation, metrics_dict = airr.read_annotation(*args.in_annotation,
-                                                    only_functional=args.only_functional,
-                                                    only_canonical=args.only_canonical,
-                                                    remove_chimeras=args.remove_chimeras,
-                                                    only_best_alignment=args.only_best_alignment,
-                                                    discard_junctions_with_n=args.discard_junctions_with_n)
+    annotation, metrics_dict = airr.read_annotation(
+        *args.in_annotation,
+        only_functional=args.only_functional,
+        only_canonical=args.only_canonical,
+        remove_chimeras=args.remove_chimeras,
+        only_best_alignment=args.only_best_alignment,
+        discard_junctions_with_n=args.discard_junctions_with_n,
+    )
 
-    pgen_threshold, filter_only_pgen_singletons = get_pgen_threshold_value(args.filter_pgen_singletons,
-                                                                           args.filter_pgen_all)
+    pgen_threshold, filter_only_pgen_singletons = get_pgen_threshold_value(
+        args.filter_pgen_singletons, args.filter_pgen_all
+    )
 
     if len(annotation):
-        filtered_annotation = get_filtered_annotation(annotation, args.top_c_call, args.top_v_alignment_call,
-                                                      args.error_rate, args.skip_pgen_calculation,
-                                                      args.only_productive, pgen_threshold, filter_only_pgen_singletons)
+        filtered_annotation = get_filtered_annotation(
+            annotation,
+            args.top_c_call,
+            args.top_v_alignment_call,
+            args.error_rate,
+            args.skip_pgen_calculation,
+            args.only_productive,
+            pgen_threshold,
+            filter_only_pgen_singletons,
+        )
     else:
         filtered_annotation = annotation
 

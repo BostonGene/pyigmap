@@ -20,12 +20,9 @@ def configure_logger(logger_format: str = LOGGER_FORMAT) -> None:
 
 
 def run_and_check_with_message(
-    cmd: list[str],
-    fail_message: str,
-    exit_on_error: bool = True,
-    **subprocess_args
+    cmd: list[str], fail_message: str, exit_on_error: bool = True, **subprocess_args
 ) -> subprocess.CompletedProcess[str] | None:
-    logger.info(f"Running command: {' '.join(cmd)}")
+    logger.info(f'Running command: {" ".join(cmd)}')
     if 'stderr' not in subprocess_args:
         subprocess_args['stderr'] = subprocess.PIPE
     try:
@@ -43,16 +40,12 @@ def run_and_check_with_message(
 
 
 def clone_olga_repo(repo_dir: str) -> None:
-    run_and_check_with_message(
-        ['git', 'clone', '--quiet', OLGA_REPO_URL, repo_dir],
-        'Cloning OLGA repository'
-    )
+    run_and_check_with_message(['git', 'clone', '--quiet', OLGA_REPO_URL, repo_dir], 'Cloning OLGA repository')
 
 
 def archive_olga_models(models_dir: str, output_archive: str) -> None:
     run_and_check_with_message(
-        ['tar', '-czf', output_archive, '-C', models_dir, '.'],
-        'Creating tar.gz archive with OLGA models'
+        ['tar', '-czf', output_archive, '-C', models_dir, '.'], 'Creating tar.gz archive with OLGA models'
     )
     logger.info(f'Archive with OLGA models here: {output_archive}')
 

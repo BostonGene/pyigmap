@@ -9,13 +9,7 @@ from cdr3nt_error_corrector.logger import set_logger
 
 logger = set_logger(name=__file__)
 
-LOCUS_GLOSSARY = {
-    'TRA': 'T_alpha',
-    'TRB': 'T_beta',
-    'IGH': 'B_heavy',
-    'IGK': 'B_kappa',
-    'IGL': 'B_lambda'
-}
+LOCUS_GLOSSARY = {'TRA': 'T_alpha', 'TRB': 'T_beta', 'IGH': 'B_heavy', 'IGK': 'B_kappa', 'IGL': 'B_lambda'}
 
 VDJ_LOCI = {'IGH', 'TRB'}  # These loci include Variable (V), Diversity (D), and Joining (J) gene segments
 
@@ -53,8 +47,7 @@ class PgenModel:
         return load_model.GenomicDataVDJ() if self.locus in VDJ_LOCI else load_model.GenomicDataVJ()
 
     def _get_model_for_locus(self) -> load_model.GenerativeModelVDJ | load_model.GenerativeModelVJ:
-        return load_model.GenerativeModelVDJ() if self.locus in VDJ_LOCI \
-            else load_model.GenerativeModelVJ()
+        return load_model.GenerativeModelVDJ() if self.locus in VDJ_LOCI else load_model.GenerativeModelVJ()
 
     def _get_pgen_for_locus(self) -> type[GenerationProbabilityVDJ] | type[GenerationProbabilityVJ]:
         return pgen.GenerationProbabilityVDJ if self.locus in VDJ_LOCI else pgen.GenerationProbabilityVJ
@@ -72,8 +65,9 @@ class PgenModel:
             locus_glossary = LOCUS_GLOSSARY.get(self.locus)
             locus_folder_name = f'{self.specie}_{locus_glossary}'
 
-            model_params_file, model_marginals_file, v_anchor_pos_file, j_anchor_pos_file \
-                = self._get_igor_model_files(locus_folder_name)
+            model_params_file, model_marginals_file, v_anchor_pos_file, j_anchor_pos_file = self._get_igor_model_files(
+                locus_folder_name
+            )
 
             generative_model = self._get_model_for_locus()
             generative_model.load_and_process_igor_model(model_marginals_file)

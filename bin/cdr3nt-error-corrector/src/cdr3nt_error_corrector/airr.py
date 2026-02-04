@@ -22,22 +22,70 @@ STOP_CODON = re.compile('T(?:AA|AG|GA)')
 FGXG_CODON = re.compile('T(?:GG|TT|TC)GG....GG')
 FGXG_SHORT_CODON = re.compile('T(?:GG|TT|TC)GG')
 CODONS = {
-    'AAA': 'K', 'AAC': 'N', 'AAG': 'K', 'AAT': 'N',
-    'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T',
-    'AGA': 'R', 'AGC': 'S', 'AGG': 'R', 'AGT': 'S',
-    'ATA': 'I', 'ATC': 'I', 'ATG': 'M', 'ATT': 'I',
-    'CAA': 'Q', 'CAC': 'H', 'CAG': 'Q', 'CAT': 'H',
-    'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
-    'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
-    'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
-    'GAA': 'E', 'GAC': 'D', 'GAG': 'E', 'GAT': 'D',
-    'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
-    'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
-    'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
-    'TAA': '*', 'TAC': 'Y', 'TAG': '*', 'TAT': 'Y',
-    'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
-    'TGA': '*', 'TGC': 'C', 'TGG': 'W', 'TGT': 'C',
-    'TTA': 'L', 'TTC': 'F', 'TTG': 'L', 'TTT': 'F'
+    'AAA': 'K',
+    'AAC': 'N',
+    'AAG': 'K',
+    'AAT': 'N',
+    'ACA': 'T',
+    'ACC': 'T',
+    'ACG': 'T',
+    'ACT': 'T',
+    'AGA': 'R',
+    'AGC': 'S',
+    'AGG': 'R',
+    'AGT': 'S',
+    'ATA': 'I',
+    'ATC': 'I',
+    'ATG': 'M',
+    'ATT': 'I',
+    'CAA': 'Q',
+    'CAC': 'H',
+    'CAG': 'Q',
+    'CAT': 'H',
+    'CCA': 'P',
+    'CCC': 'P',
+    'CCG': 'P',
+    'CCT': 'P',
+    'CGA': 'R',
+    'CGC': 'R',
+    'CGG': 'R',
+    'CGT': 'R',
+    'CTA': 'L',
+    'CTC': 'L',
+    'CTG': 'L',
+    'CTT': 'L',
+    'GAA': 'E',
+    'GAC': 'D',
+    'GAG': 'E',
+    'GAT': 'D',
+    'GCA': 'A',
+    'GCC': 'A',
+    'GCG': 'A',
+    'GCT': 'A',
+    'GGA': 'G',
+    'GGC': 'G',
+    'GGG': 'G',
+    'GGT': 'G',
+    'GTA': 'V',
+    'GTC': 'V',
+    'GTG': 'V',
+    'GTT': 'V',
+    'TAA': '*',
+    'TAC': 'Y',
+    'TAG': '*',
+    'TAT': 'Y',
+    'TCA': 'S',
+    'TCC': 'S',
+    'TCG': 'S',
+    'TCT': 'S',
+    'TGA': '*',
+    'TGC': 'C',
+    'TGG': 'W',
+    'TGT': 'C',
+    'TTA': 'L',
+    'TTC': 'F',
+    'TTG': 'L',
+    'TTT': 'F',
 }
 
 
@@ -74,8 +122,14 @@ def concat_annotations(*annotation_paths: str) -> pd.DataFrame:
     return concatenated_annotation
 
 
-def read_annotation(*annotation_paths: str, only_functional: bool, only_canonical: bool, remove_chimeras: bool,
-                    only_best_alignment: bool, discard_junctions_with_n: bool) -> tuple[pd.DataFrame, dict]:
+def read_annotation(
+    *annotation_paths: str,
+    only_functional: bool,
+    only_canonical: bool,
+    remove_chimeras: bool,
+    only_best_alignment: bool,
+    discard_junctions_with_n: bool,
+) -> tuple[pd.DataFrame, dict]:
     logger.info('Reading annotation...')
     metrics_dict = {}
     annotation = concat_annotations(*annotation_paths)
@@ -142,14 +196,18 @@ def prepare_vdjc_genes_columns(annotation: pd.DataFrame, only_best_alignment: bo
             annotation[gene] = annotation[gene].str.split(',').str[0]
 
     for column in [
-        'v_sequence_end', 'j_sequence_start', 'd_sequence_end',
-        'd_sequence_start', 'c_sequence_end', 'c_sequence_start'
+        'v_sequence_end',
+        'j_sequence_start',
+        'd_sequence_end',
+        'd_sequence_start',
+        'c_sequence_end',
+        'c_sequence_start',
     ]:
         annotation[column] = annotation[column].fillna(-1).astype(int)
 
     annotation['c_call'] = [
-        correct_c_call(c_call, v_call) for c_call, v_call in
-        zip(annotation['c_call'].values, annotation['j_call'].values, strict=False)
+        correct_c_call(c_call, v_call)
+        for c_call, v_call in zip(annotation['c_call'].values, annotation['j_call'].values, strict=False)
     ]
 
     return annotation

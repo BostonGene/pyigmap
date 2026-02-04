@@ -38,8 +38,7 @@ def add_nucleotide_cost(pattern: str, max_error=2) -> str:
     new_pattern = pattern
     for adapter in set(re.findall(ADAPTER_PATTERN_REGEX, pattern)):
         adapter_max_error = math.ceil(len(adapter) * max_error / 10)
-        new_pattern = re.sub(rf'(?<![\w\[])({adapter})(?![\w\]])',
-                             rf'(\1){{s<={adapter_max_error}}}', new_pattern)
+        new_pattern = re.sub(rf'(?<![\w\[])({adapter})(?![\w\]])', rf'(\1){{s<={adapter_max_error}}}', new_pattern)
     return new_pattern
 
 

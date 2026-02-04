@@ -40,12 +40,7 @@ def pattern_markup(barcode_seq, barcode_quality):
 
 
 def test_create_new_read(read_header, read_seq, read_quality):
-    assert (create_new_read(read_header, read_seq, read_quality)
-            == (f'@{read_header}\n'
-                f'{read_seq}\n'
-                '+\n'
-                f'{read_quality}\n')
-            )
+    assert create_new_read(read_header, read_seq, read_quality) == (f'@{read_header}\n{read_seq}\n+\n{read_quality}\n')
 
 
 def test_get_reverse_complement(read_seq):
@@ -53,8 +48,10 @@ def test_get_reverse_complement(read_seq):
 
 
 def test_replace_umi_to_the_seq_start(read_seq, read_quality, pattern_markup):
-    assert (replace_umi_to_the_seq_start(read_seq, read_quality, pattern_markup)
-            == ('TTTTAAAAGGGGCCCC', 'K.KAKK?KKKKK&KKY'))
+    assert replace_umi_to_the_seq_start(read_seq, read_quality, pattern_markup) == (
+        'TTTTAAAAGGGGCCCC',
+        'K.KAKK?KKKKK&KKY',
+    )
 
 
 def test_remove_subseq(read_seq):

@@ -98,13 +98,15 @@ def test_add_brackets_around_barcode(pattern1):
 
 
 def test_replace_umi_barcode_to_regex_group(pattern2):
-    assert (replace_barcode_type_to_regex_group(pattern2, barcode_type='UMI')
-            == '^N{0:2}TGGTATCAACGCAGAGT(?P<UMI>N{14})')
+    assert replace_barcode_type_to_regex_group(pattern2, barcode_type='UMI') == '^N{0:2}TGGTATCAACGCAGAGT(?P<UMI>N{14})'
 
 
 def test_add_nucleotide_cost(pattern7, pattern13):
     assert add_nucleotide_cost(pattern=pattern7) == '^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=4}(?P<UMI>[ATGCN]{14})'
-    assert add_nucleotide_cost(pattern=pattern13) == '(AAAGACAGTGGTATCAACGCAGAGT){s<=5}(?P<UMI>[ATGCN]{4}(T){s<=1}[ATGCN]{4}(T){s<=1}[ATGCN]{4}(TCTT){s<=1})'
+    assert (
+        add_nucleotide_cost(pattern=pattern13)
+        == '(AAAGACAGTGGTATCAACGCAGAGT){s<=5}(?P<UMI>[ATGCN]{4}(T){s<=1}[ATGCN]{4}(T){s<=1}[ATGCN]{4}(TCTT){s<=1})'
+    )
 
 
 def test_without_add_nucleotide_cost(pattern8):
@@ -112,10 +114,14 @@ def test_without_add_nucleotide_cost(pattern8):
 
 
 def test_get_prepared_pattern_and_umi_len(pattern2, pattern12):
-    assert (get_prepared_pattern_and_umi_len(pattern=pattern2)
-            == ('^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=4}(?P<UMI>[ATGCN]{14})', 14))
-    assert (get_prepared_pattern_and_umi_len(pattern=pattern12)
-            == ('^(TGGTATCAACGCAGAGTAC){s<=4}(?P<UMI>[ATGCN]{19})(TCTTGGGGG){s<=2}', 19))
+    assert get_prepared_pattern_and_umi_len(pattern=pattern2) == (
+        '^[ATGCN]{0:2}(TGGTATCAACGCAGAGT){s<=4}(?P<UMI>[ATGCN]{14})',
+        14,
+    )
+    assert get_prepared_pattern_and_umi_len(pattern=pattern12) == (
+        '^(TGGTATCAACGCAGAGTAC){s<=4}(?P<UMI>[ATGCN]{19})(TCTTGGGGG){s<=2}',
+        19,
+    )
 
     # TODO!
     # assert (BarcodePattern(pattern='^N{13}').get_prepared_pattern()
