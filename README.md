@@ -18,10 +18,10 @@
 
 ## Quick start
 
-1. This pipeline requires [Docker](https://docs.docker.com/engine/install/) or [Podman](https://podman.io/), [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [Bash](https://www.gnu.org/software/bash/) and [Make](https://www.gnu.org/software/make/) tool.
+1. This pipeline requires [Docker](https://docs.docker.com/engine/install/) or [Podman](https://podman.io/), [Java 11 (or later, up to 21)](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [Bash](https://www.gnu.org/software/bash/) and [Just](https://github.com/casey/just) command runner.
 
 > [!NOTE]
-> To install the [Make](https://www.gnu.org/software/make/) tool execute: ```sudo apt install make```
+> To install [Just](https://github.com/casey/just) execute: ```curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin```
 
 2. Clone the repository and go inside:
 
@@ -31,17 +31,17 @@ cd pyigmap
 ```
  
 > [!TIP]
-> If you have Ubuntu 20.10 (amd64) or higher, you can install requirements above using:  
-> ```make install-docker``` or ```make install-podman```  
-> ```make install-java```
+> If you have Ubuntu 20.10 (amd64) or higher, you can install requirements above using:
+> ```just install-docker``` or ```just install-podman```
+> ```just install-java```
 
 3. Install Nextflow, build V(D)J references and Docker container images with a single command:
 
 ```bash
-make
+just install
 ```
 > [!TIP]
-> To use a [Podman](https://podman.io/) as a container engine, run: ```make ENGINE=podman```
+> To use a [Podman](https://podman.io/) as a container engine, run: ```ENGINE=podman just install```
 
 4. Start running your own analysis!
 

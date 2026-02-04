@@ -1,0 +1,4 @@
+[project]
+name = "vidjil-ref-builder"
+version = "1.0.0-dev1"
+description = "Script to build IMGT reference for vidjil"

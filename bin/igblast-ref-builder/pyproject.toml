@@ -1,0 +1,4 @@
+[project]
+name = "igblast-ref-builder"
+version = "1.0.0-dev5"
+description = "Tool to build IMGT archive for igblast."

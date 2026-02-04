@@ -27,7 +27,7 @@ Example of merging overlapped reads:
 |----------ATG-----------| Consensus (overlap)
 ```
 
-Example of mock merging not-overlapped reads with `--inner-distance-size 3`:
+Example of mock merging not-overlapped reads with `--innner-distance-size 3`:
 
 ```
 |------------------------| Full sequence

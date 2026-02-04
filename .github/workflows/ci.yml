@@ -1,0 +1,104 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Just
+        uses: extractions/setup-just@v3
+        with:
+          just-version: 1.43.0
+
+      - name: Create virtual environment
+        run: just create-env
+
+      - name: Install dependencies
+        run: just sync
+
+      - name: Run linter
+        run: just lint
+
+  type:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Just
+        uses: extractions/setup-just@v3
+        with:
+          just-version: 1.43.0
+
+      - name: Create virtual environment
+        run: just create-env
+
+      - name: Install dependencies
+        run: just sync
+
+      - name: Run type checker
+        run: just type
+
+  unit-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Just
+        uses: extractions/setup-just@v3
+        with:
+          just-version: 1.43.0
+
+      - name: Create virtual environment
+        run: just create-env
+
+      - name: Install dev dependencies
+        run: just update-dev
+
+      - name: Run unit tests
+        run: just tests-unit

@@ -1,0 +1,199 @@
+name: End-to-End Tests
+
+on:
+  workflow_run:
+    workflows: ["Continuous Deployment (build & push docker images)"]
+    types: [completed]
+    branches: [main, add-ci-cd]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/pyigmap
+
+jobs:
+  component-tests:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Just
+        uses: extractions/setup-just@v3
+        with:
+          just-version: 1.43.0
+
+      - name: Create virtual environment
+        run: just create-env
+
+      - name: Install dev dependencies
+        run: just update-dev
+
+      - name: Build reference archives
+        run: just build-ref
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Pull images from GHCR and tag for local use
+        run: |
+          set -euo pipefail
+
+          # Define mapping: "ghcr-name:local-name:stage"
+          # ghcr-name: name in GHCR (matches directory with hyphens)
+          # local-name: name used in modules.config (may use underscores)
+          # stage: image or tool (what suffix to use for local tag)
+          declare -A IMAGE_MAP=(
+            ["fq-downloader"]="downloader:image"
+            ["fastp"]="fastp:tool"
+            ["vidjil"]="vidjil:image"
+            ["igblast"]="igblast:image"
+            ["cdr3nt-error-corrector"]="cdr3nt_error_corrector:image"
+            ["pyumi"]="pyumi:image"
+            ["calib_dedup"]="calib_dedup:image"
+            ["reporter"]="reporter:image"
+          )
+
+          for ghcr_name in "${!IMAGE_MAP[@]}"; do
+            IFS=':' read -r local_name stage <<< "${IMAGE_MAP[$ghcr_name]}"
+
+            # Directory name matches GHCR name (with hyphens)
+            tool_dir="$ghcr_name"
+
+            # Parse version from pyproject.toml
+            if [[ -f "bin/$tool_dir/pyproject.toml" ]]; then
+              VERSION=$(awk -F'"' '/^version = / {print $2}' "bin/$tool_dir/pyproject.toml")
+            else
+              echo "Warning: pyproject.toml not found for $tool_dir"
+              continue
+            fi
+
+            if [[ -z "$VERSION" ]]; then
+              echo "Warning: Could not parse version for $ghcr_name"
+              continue
+            fi
+
+            # Pull from GHCR (using ghcr_name with hyphens)
+            IMAGE_NAME="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${ghcr_name}:${VERSION}"
+            echo "Pulling ${IMAGE_NAME}"
+            docker pull "${IMAGE_NAME}"
+
+            # Tag for local use (using local_name which may have underscores)
+            LOCAL_TAG="${local_name}-${stage}:latest"
+            docker tag "${IMAGE_NAME}" "${LOCAL_TAG}"
+            echo "Tagged as ${LOCAL_TAG}"
+          done
+
+      - name: Verify images
+        run: docker images | grep -E "(fq-downloader|fastp|vidjil|igblast|cdr3nt|pyumi|calib|reporter)"
+
+      - name: Run component tests
+        run: just tests-component
+
+  integration-tests:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Just
+        uses: extractions/setup-just@v3
+        with:
+          just-version: 1.43.0
+
+      - name: Create virtual environment
+        run: just create-env
+
+      - name: Install dev dependencies
+        run: just update-dev
+
+      - name: Build reference archives
+        run: just build-ref
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Pull images from GHCR and tag for local use
+        run: |
+          set -euo pipefail
+
+          # Define mapping: "ghcr-name:local-name:stage"
+          # ghcr-name: name in GHCR (matches directory with hyphens)
+          # local-name: name used in modules.config (may use underscores)
+          # stage: image or tool (what suffix to use for local tag)
+          declare -A IMAGE_MAP=(
+            ["fq-downloader"]="downloader:image"
+            ["fastp"]="fastp:tool"
+            ["vidjil"]="vidjil:image"
+            ["igblast"]="igblast:image"
+            ["cdr3nt-error-corrector"]="cdr3nt_error_corrector:image"
+            ["pyumi"]="pyumi:image"
+            ["calib_dedup"]="calib_dedup:image"
+            ["reporter"]="reporter:image"
+          )
+
+          for ghcr_name in "${!IMAGE_MAP[@]}"; do
+            IFS=':' read -r local_name stage <<< "${IMAGE_MAP[$ghcr_name]}"
+
+            # Directory name matches GHCR name (with hyphens)
+            tool_dir="$ghcr_name"
+
+            # Parse version from pyproject.toml
+            if [[ -f "bin/$tool_dir/pyproject.toml" ]]; then
+              VERSION=$(awk -F'"' '/^version = / {print $2}' "bin/$tool_dir/pyproject.toml")
+            else
+              echo "Warning: pyproject.toml not found for $tool_dir"
+              continue
+            fi
+
+            if [[ -z "$VERSION" ]]; then
+              echo "Warning: Could not parse version for $ghcr_name"
+              continue
+            fi
+
+            # Pull from GHCR (using ghcr_name with hyphens)
+            IMAGE_NAME="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${ghcr_name}:${VERSION}"
+            echo "Pulling ${IMAGE_NAME}"
+            docker pull "${IMAGE_NAME}"
+
+            # Tag for local use (using local_name which may have underscores)
+            LOCAL_TAG="${local_name}-${stage}:latest"
+            docker tag "${IMAGE_NAME}" "${LOCAL_TAG}"
+            echo "Tagged as ${LOCAL_TAG}"
+          done
+
+      - name: Verify images
+        run: docker images | grep -E "(fq-downloader|fastp|vidjil|igblast|cdr3nt|pyumi|calib|reporter)"
+
+      - name: Run integration tests
+        run: just tests-integration

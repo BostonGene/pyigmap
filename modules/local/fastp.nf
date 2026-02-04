@@ -36,7 +36,7 @@ process FastpMerge {
         path params.out_fastp_html, emit: html
     script:
         """
-        python3.9 /usr/local/src/run.py \
+        python3 /usr/local/src/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
             --out-fq1 ${params.out_fastp_fq1} \
@@ -62,7 +62,7 @@ process FastpMockMerge {
         path params.out_fastp_html, emit: html
     script:
         """
-        python3.9 /usr/local/src/run.py \
+        python3 /usr/local/src/run.py \
             --in-fq1 $fq1 \
             --in-fq2 $fq2 \
             --out-fq12 ${params.out_fastp_fq12} \

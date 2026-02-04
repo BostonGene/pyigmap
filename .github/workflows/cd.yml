@@ -1,0 +1,187 @@
+name: Continuous Deployment (build & push docker images)
+
+on:
+  pull_request:
+  push:
+    branches: [main,add-ci-cd]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/pyigmap
+  TOOLS: |
+    fq-downloader
+    fastp
+    vidjil
+    igblast
+    cdr3nt-error-corrector
+    vidjil-ref-builder
+    igblast-ref-builder
+    olga-ref-builder
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  matrix:
+    runs-on: ubuntu-24.04
+    outputs:
+      tools: ${{ steps.mkjson.outputs.tools }}
+    steps:
+      - name: Expand TOOLS (newline list) -> JSON
+        id: mkjson
+        shell: bash
+        run: |
+          mapfile -t arr < <(printf '%s\n' "${TOOLS}" \
+            | sed -E 's/^[[:space:]]+|[[:space:]]+$//g' \
+            | sed -E '/^($|#)/d')
+
+          json_items=$(printf '"%s",' "${arr[@]}")
+          json_array="[${json_items%,}]"
+
+          printf '{"tool":%s}\n' "${json_array}" > tools.json
+          echo "tools=$(cat tools.json)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.tool }} @ ${{ matrix.arch }}
+    needs: [matrix]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: ${{ fromJSON(needs.matrix.outputs.tools).tool }}
+        arch: [amd, arm]
+        include:
+          - arch: amd
+            os: ubuntu-24.04
+            platform: linux/amd64
+            suffix: -amd
+          - arch: arm
+            os: ubuntu-24.04-arm
+            platform: linux/arm64
+            suffix: -arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse version
+        id: ver
+        run: |
+          FILE="./bin/${{ matrix.tool }}/pyproject.toml"
+          V=""
+          if [[ -f "$FILE" ]]; then
+            V=$(awk '
+              /^\[project\]/ { in_p=1; next }
+              in_p && $0 ~ /^version[[:space:]]*=/ {
+                match($0,/"([^"]+)"/,m); if(m[1]!=""){print m[1]; exit}
+              }' "$FILE" || true)
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Gate (skip if tag exists)
+        id: gate
+        if: steps.ver.outputs.version != ''
+        run: |
+          set -euo pipefail
+          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.tool }}"
+          TAG="${BASE}:${{ steps.ver.outputs.version }}${{ matrix.suffix }}"
+          if docker buildx imagetools inspect "${TAG,,}" >/dev/null 2>&1; then
+            echo "skip=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag=${TAG,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker metadata
+        id: meta
+        if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.tool }}
+          tags: |
+            type=raw,value=${{ steps.ver.outputs.version }}${{ matrix.suffix }},enable=true
+          flavor: |
+            latest=false
+
+      - name: Build & push
+        if: steps.ver.outputs.version != '' && steps.gate.outputs.skip != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./bin/${{ matrix.tool }}
+          file: ./bin/${{ matrix.tool }}/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
+
+  manifest:
+    name: Manifest — ${{ matrix.tool }}
+    needs: [matrix, build]
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: ${{ fromJSON(needs.matrix.outputs.tools).tool }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse version
+        id: ver
+        run: |
+          FILE="./bin/${{ matrix.tool }}/pyproject.toml"
+          V=""
+          if [[ -f "$FILE" ]]; then
+            V=$(awk '
+              /^\[project\]/ { in_p=1; next }
+              in_p && $0 ~ /^version[[:space:]]*=/ {
+                match($0,/"([^"]+)"/,m); if(m[1]!=""){print m[1]; exit}
+              }' "$FILE" || true)
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Gate manifest
+        id: gate
+        if: steps.ver.outputs.version != ''
+        run: |
+          set -euo pipefail
+          BASE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.tool }}"
+          V="${{ steps.ver.outputs.version }}"
+          AMD="${BASE}:${V}-amd"
+          ARM="${BASE}:${V}-arm"
+          TGT="${BASE}:${V}"
+          has_multi=false; has_amd=false; has_arm=false
+          docker buildx imagetools inspect "${TGT,,}" >/dev/null 2>&1 && has_multi=true || true
+          docker buildx imagetools inspect "${AMD,,}" >/dev/null 2>&1 && has_amd=true   || true
+          docker buildx imagetools inspect "${ARM,,}" >/dev/null 2>&1 && has_arm=true   || true
+          echo "has_multi=$has_multi" >> "$GITHUB_OUTPUT"
+          echo "has_amd=$has_amd"     >> "$GITHUB_OUTPUT"
+          echo "has_arm=$has_arm"     >> "$GITHUB_OUTPUT"
+          echo "target=${TGT,,}"      >> "$GITHUB_OUTPUT"
+          echo "amd=${AMD,,}"         >> "$GITHUB_OUTPUT"
+          echo "arm=${ARM,,}"         >> "$GITHUB_OUTPUT"
+
+      - name: Create multi-arch manifest
+        if: steps.ver.outputs.version != '' && steps.gate.outputs.has_multi != 'true' && steps.gate.outputs.has_amd == 'true' && steps.gate.outputs.has_arm == 'true'
+        run: |
+          docker buildx imagetools create --tag "${{ steps.gate.outputs.target }}" \
+            "${{ steps.gate.outputs.amd }}" "${{ steps.gate.outputs.arm }}"
+          docker buildx imagetools inspect "${{ steps.gate.outputs.target }}"

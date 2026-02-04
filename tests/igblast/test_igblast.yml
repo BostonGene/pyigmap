@@ -1,6 +1,6 @@
 - name: test_igblast_rnaseq_bulk
   tags:
-    - unit-tests
+    - component-tests
   command: docker run --rm
     -v ./:/tmp/
     igblast-tool
@@ -14,7 +14,7 @@
       encoding: UTF-8
 - name: test_igblast_amplicon
   tags:
-    - unit-tests
+    - component-tests
   command: docker run --rm
     -v ./:/tmp/
     igblast-tool

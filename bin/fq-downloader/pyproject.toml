@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fq-downloader"
+version = "1.0.0-dev1"
+description = "Tool to download public FASTQ files."
+authors = [{name = "Pyigmap developers"}]
+requires-python = ">=3.12"
+dependencies = [
+    "ffq==0.3.1",
+]
+
+[project.scripts]
+fq-downloader = "fq_downloader.run:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fq_downloader"]

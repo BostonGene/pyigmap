@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cdr3nt-error-corrector"
+version = "1.0.1-dev2"
+description = "Tool for removing spurious rearrangements via OLGA tool and/or by means of comparing igblast alignment scores and more"
+authors = [{name = "Pyigmap developers"}]
+requires-python = ">=3.12"
+dependencies = [
+    "pandas==2.3.1",
+    "olga==1.2.4",
+]
+
+[project.scripts]
+cdr3nt-error-corrector = "cdr3nt_error_corrector.run:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cdr3nt_error_corrector"]

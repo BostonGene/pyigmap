@@ -1,6 +1,6 @@
 - name: test_cdr3nt_error_corrector_rnaseq
   tags:
-    - unit-tests
+    - component-tests
   command: docker run --rm
     -v ./:/tmp/
     cdr3nt_error_corrector-tool
@@ -26,7 +26,7 @@
       encoding: UTF-8
 - name: test_cdr3nt_error_corrector_amplicon
   tags:
-    - unit-tests
+    - component-tests
   command: docker run --rm
     -v ./:/tmp/
     cdr3nt_error_corrector-tool
