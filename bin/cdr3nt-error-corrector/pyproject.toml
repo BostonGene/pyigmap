@@ -12,3 +12,9 @@ dependencies = [
     "pandas==2.3.1",
     "olga==1.2.4",
 ]
+
+[project.scripts]
+cdr3nt-error-corrector = "cdr3nt_error_corrector.run:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cdr3nt_error_corrector"]

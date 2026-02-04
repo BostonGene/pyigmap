@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "reporter"
 version = "1.0.0"
@@ -5,7 +9,7 @@ description = "UMI metrics visualization tool"
 authors = [{name = "Pyigmap developers"}]
 requires-python = ">=3.12"
 dependencies = [
-    "pandas==2.1.4",
+    "pandas==2.3.1",
     "panel==1.6.2",
     "matplotlib==3.10.1",
     "seaborn==0.13.2",
@@ -14,3 +18,9 @@ dependencies = [
     "numpy==1.26.4",
     "bokeh==3.7.2",
 ]
+
+[project.scripts]
+reporter = "reporter.run:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/reporter"]

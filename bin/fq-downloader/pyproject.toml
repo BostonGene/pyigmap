@@ -11,3 +11,9 @@ requires-python = ">=3.12"
 dependencies = [
     "ffq==0.3.1",
 ]
+
+[project.scripts]
+fq-downloader = "fq_downloader.run:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fq_downloader"]

@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:24.04 AS image
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -26,13 +26,14 @@ RUN apt-get update && \
     wget \
     xxd \
     zlib1g-dev \
-    python3 \
-    python3-pip \
-    python3-venv && \
+    python3.12 \
+    python3.12-dev \
+    python3.12-venv && \
     apt-get autoremove --purge --yes && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Install fastp binary
 ENV FASTP_VERSION=1.0.1
 ENV LIBDEFLATE_VERSION=1.23
 ENV ISAL_VERSION=2.31.1
@@ -50,22 +51,36 @@ RUN if [ "$(uname -m)" = "x86_64" ]; then \
       cd fastp && make -j$(nproc) && make install && cd -; \
     fi
 
-RUN curl -sSf https://sh.rustup.rs | sh -s -- -y \
- && . "/root/.cargo/env" \
- && cargo --version \
- && python3 -m venv /venv
+# Install Rust
+RUN curl -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:$PATH"
 
-ENV PATH="/root/.cargo/bin:/venv/bin:$PATH"
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-COPY pyproject.toml mock_merger/Cargo.toml ./
-COPY mock_merger/src/ src/
-COPY run.py logger.py /usr/local/src/
+# Create venv for isolation
+RUN python3.12 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv"
 
-RUN pip install --upgrade pip && \
-    pip install build maturin && \
-    maturin build --release -o dist && \
-    pip install dist/*.whl && \
-    rm -rf dist
+# Copy project files
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+COPY mock_merger/ ./mock_merger/
+COPY src/ ./src/
+
+# Build with maturin using uv
+# Install build dependencies
+RUN uv pip install --system maturin patchelf tomli
+
+# Build the Rust extension
+RUN maturin build --release --out dist
+
+# Install the built wheel (this installs the fastp package)
+RUN uv pip install --system dist/*.whl && rm -rf dist
 
 ENV RUST_LOG=info
-# ENTRYPOINT ["python3", "/usr/local/src/run.py"]
+
+FROM image AS tool
+
+ENTRYPOINT ["python3.12", "-m", "fastp.run"]

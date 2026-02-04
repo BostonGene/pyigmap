@@ -119,7 +119,7 @@ build-step-image STEP STAGE:
 dev:
     @echo "Building development environment..."
     just clean
-    just build-step-image downloader image
+    just build-step-image fq-downloader image
     #!/usr/bin/env bash
     set -euo pipefail
     for step in pyumi calib_dedup reporter fastp vidjil igblast cdr3nt_error_corrector; do
@@ -132,7 +132,7 @@ dev:
 [group('quality')]
 clean:
     @echo "Removing temporary files and images..."
-    -{{ ENGINE }} rmi -f downloader-image \
+    -{{ ENGINE }} rmi -f fq-downloader-image \
         pyumi-tool pyumi-image \
         calib_dedup-tool calib_dedup-image \
         reporter-tool reporter-image \
@@ -154,23 +154,26 @@ clean:
 [group('quality')]
 lint:
     @echo "Running ruff check..."
-    {{ ruff }} check bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
+    {{ ruff }} check bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt-error-corrector/ bin/pyumi/ bin/reporter/ bin/fq-downloader/
 
 # ---- Auto-format code with ruff
 [group('quality')]
 format:
     @echo "Running ruff format..."
-    {{ ruff }} format bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt_error_corrector/
+    {{ ruff }} format bin/calib_dedup/ bin/fastp/ bin/vidjil/ bin/igblast/ bin/cdr3nt-error-corrector/ bin/pyumi/ bin/reporter/ bin/fq-downloader/
 
 # ---- Run pyrefly type checker
 [group('quality')]
-check-types:
+type:
     @echo "Running pyrefly type checker..."
     {{ pyrefly }} check bin/calib_dedup/
     {{ pyrefly }} check bin/fastp/
     {{ pyrefly }} check bin/vidjil/
     {{ pyrefly }} check bin/igblast/
-    {{ pyrefly }} check bin/cdr3nt_error_corrector/
+    {{ pyrefly }} check bin/cdr3nt-error-corrector/
+    {{ pyrefly }} check bin/pyumi/
+    {{ pyrefly }} check bin/reporter/
+    {{ pyrefly }} check bin/fq-downloader/
 
 # ---- Run unit tests (Python function-level tests)
 [group('quality')]
@@ -204,7 +207,7 @@ tests:
 check:
     just format
     just lint
-    just check-types
+    just type
     just tests
     @echo "✅ All checks passed"
 
@@ -213,7 +216,7 @@ check:
 install:
     just update
     just build-ref
-    just build-step-image downloader image
+    just build-step-image fq-downloader image
     #!/usr/bin/env bash
     set -euo pipefail
     for step in pyumi calib_dedup reporter fastp vidjil igblast cdr3nt_error_corrector; do

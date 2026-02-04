@@ -1,12 +1,10 @@
-FROM ubuntu:24.04
+FROM python:3.12-slim-bookworm AS image
 
+# Install system dependencies
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
     dash \
     pigz \
-    python3.12 \
-    python3-pip \
-    python3.12-venv \
     wget \
     build-essential \
     cmake \
@@ -18,6 +16,7 @@ RUN apt-get update && \
     axel && \
     rm -rf /var/lib/apt/lists/*
 
+# Install SRA toolkit
 ENV SRA_VERSION=3.2.1
 ENV VDB_VERSION=3.2.1
 RUN mkdir /usr/local/bin/sratoolkit && \
@@ -40,10 +39,22 @@ RUN mkdir /usr/local/bin/sratoolkit && \
 
 ENV PATH=${PATH}:/usr/local/bin/sratoolkit/bin
 
-COPY run.py metadata.py /usr/local/src/
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-COPY requirements.txt .
-RUN python3 -m venv venv && \
-    venv/bin/pip3 install --no-deps -r requirements.txt
+# Set UV environment variables
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_PYTHON_DOWNLOADS=never
 
-# ENTRYPOINT ["venv/bin/python3", "/usr/local/src/run.py"]
+# Copy project files and install
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+COPY src/ ./src/
+
+# Install dependencies and the package itself
+RUN uv pip install --system -e .
+
+FROM image AS tool
+
+ENTRYPOINT ["python3.12", "-m", "fq_downloader.run"]

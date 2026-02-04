@@ -1,0 +1,8 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[[package]]
+name = "igblast"
+version = "1.0.1.dev1"
+source = { editable = "." }

@@ -1,12 +1,18 @@
-from pytest import fixture
 import pandas as pd
-
-from filter import (remove_non_canonical_clones, remove_non_functional_clones, remove_non_productive_clones, filter_clones_by_pgen,
-                    get_duplicates_in_different_loci, drop_clones_with_duplicates_in_different_loci,
-                    remove_chimeras_by_segment, remove_chimeras_by_segment, remove_clones_without_junction,
-                    discard_clones_with_n_in_junction, filter_duplicates_by_vj_score)
-
-from logger import set_logger
+from cdr3nt_error_corrector.filter import (
+    discard_clones_with_n_in_junction,
+    drop_clones_with_duplicates_in_different_loci,
+    filter_clones_by_pgen,
+    filter_duplicates_by_vj_score,
+    get_duplicates_in_different_loci,
+    remove_chimeras_by_segment,
+    remove_clones_without_junction,
+    remove_non_canonical_clones,
+    remove_non_functional_clones,
+    remove_non_productive_clones,
+)
+from cdr3nt_error_corrector.logger import set_logger
+from pytest import fixture
 
 logger = set_logger(name=__file__)
 
@@ -34,7 +40,7 @@ def annotation_non_productive() -> pd.DataFrame:
     return pd.DataFrame(data={'stop_codon': ['F', 'T', 'F', 'F', 'F'],
                               'vj_in_frame': ['T', 'F', 'T', 'T', 'T'],
                               'v_frameshift': ['F', 'F', 'F', 'T', 'F'],
-                              'productive': ['T', 'T', 'T', 'T', 'F'], })
+                              'productive': ['T', 'T', 'T', 'T', 'F'] })
 
 
 @fixture(scope='module')
@@ -46,8 +52,8 @@ def annotation_non_functional() -> pd.DataFrame:
 
 @fixture(scope='module')
 def annotation_junctions_with_n() -> pd.DataFrame:
-    return pd.DataFrame(data={"junction_aa": ["CXA", "KC", "CA", "KC"],
-                              "junction": ["TGTNGCG", "AAATGT", "TGTNGCG", "AAATGTN"]
+    return pd.DataFrame(data={'junction_aa': ['CXA', 'KC', 'CA', 'KC'],
+                              'junction': ['TGTNGCG', 'AAATGT', 'TGTNGCG', 'AAATGTN']
                               })
 
 
@@ -59,7 +65,7 @@ def annotation_non_canonical() -> pd.DataFrame:
 
 @fixture(scope='module')
 def annotation_out_of_frame() -> pd.DataFrame:
-    return pd.DataFrame(data={'junction': ['TTTTTTT', 'GGGG', 'GGG', 'AAAAAA'], })
+    return pd.DataFrame(data={'junction': ['TTTTTTT', 'GGGG', 'GGG', 'AAAAAA'] })
 
 
 @fixture(scope='module')
@@ -75,25 +81,25 @@ def annotation_with_j_chimeras() -> pd.DataFrame:
 
 @fixture(scope='module')
 def annotation_with_tcr_bcr_duplicates() -> pd.DataFrame:
-    return pd.DataFrame(data={"sequence_id": ["1", "1", "2", "2", "3", "4"],
-                              "locus": ["IGK", "TRA", "IGH", "TRB", "TRD", "IGL"],
-                              "v_score": [200, 20, None, 100, 200, 150],
-                              "j_score": [150, 20, 10, 100, 300, 200]})
+    return pd.DataFrame(data={'sequence_id': ['1', '1', '2', '2', '3', '4'],
+                              'locus': ['IGK', 'TRA', 'IGH', 'TRB', 'TRD', 'IGL'],
+                              'v_score': [200, 20, None, 100, 200, 150],
+                              'j_score': [150, 20, 10, 100, 300, 200]})
 
 
 def test_remove_clones_without_junction(annotation_non_functional):
-    filtered_annotation, no_junction_count = remove_clones_without_junction(annotation_non_functional, "junction")
+    filtered_annotation, no_junction_count = remove_clones_without_junction(annotation_non_functional, 'junction')
     assert filtered_annotation.equals(
         pd.DataFrame(data={'junction_aa': ['AAAA', 'AA*A', 'AA_A'],
                            'junction': ['AAAA', 'AAAA', 'AAAA']
                            },
                      index=[1, 2, 3])
     )
-    assert no_junction_count == {"no_junction": 1}
+    assert no_junction_count == {'no_junction': 1}
 
 
 def test_remove_clones_without_junction_on_empty_annotation(empty_annotation):
-    filtered_annotation, no_junction_count = remove_clones_without_junction(empty_annotation, "junction")
+    filtered_annotation, no_junction_count = remove_clones_without_junction(empty_annotation, 'junction')
     assert filtered_annotation.empty and no_junction_count == {'no_junction': 0}
 
 
@@ -117,7 +123,7 @@ def test_remove_non_productive_clones(annotation_non_productive):
         pd.DataFrame(data={'stop_codon': ['F', 'F'],
                            'vj_in_frame': ['T', 'T'],
                            'v_frameshift': ['F', 'F'],
-                           'productive': ['T', 'T'], },
+                           'productive': ['T', 'T'] },
                      index=[0, 2])
     )
 
@@ -200,7 +206,7 @@ def test_remove_j_chimeras(annotation_with_j_chimeras):
 
 
 def test_remove_chimeras_by_segment_on_empty_annotation(empty_annotation):
-    filtered_annotation = remove_chimeras_by_segment(empty_annotation, "j")
+    filtered_annotation = remove_chimeras_by_segment(empty_annotation, 'j')
     assert filtered_annotation.empty
 
 
@@ -235,8 +241,8 @@ def test_filter_clones_by_pgen_default_on_empty_annotation(empty_annotation):
 def test_discard_clones_with_n_in_junction(annotation_junctions_with_n):
     filtered_annotation = discard_clones_with_n_in_junction(annotation_junctions_with_n)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={"junction_aa": ["KC"],
-                           "junction": ["AAATGT"]},
+        pd.DataFrame(data={'junction_aa': ['KC'],
+                           'junction': ['AAATGT']},
                      index=[1])
     )
 
@@ -249,8 +255,8 @@ def test_discard_clones_with_n_in_junction_on_empty_annotation(empty_annotation)
 def test_filter_duplicates_by_vj_score(annotation_with_tcr_bcr_duplicates):
     filtered_annotation = filter_duplicates_by_vj_score(annotation_with_tcr_bcr_duplicates)
     assert filtered_annotation.equals(
-        pd.DataFrame(data={"sequence_id": ["1", "2", "3", "4"],
-                           "locus": ["IGK", "TRB", "TRD", "IGL"],
-                           "v_score": [200.0, 100.0, 200.0, 150.0],
-                           "j_score": [150, 100, 300, 200]})
+        pd.DataFrame(data={'sequence_id': ['1', '2', '3', '4'],
+                           'locus': ['IGK', 'TRB', 'TRD', 'IGL'],
+                           'v_score': [200.0, 100.0, 200.0, 150.0],
+                           'j_score': [150, 100, 300, 200]})
     )

@@ -1,13 +1,24 @@
-FROM python:3.13-bullseye
+FROM python:3.12-slim-bullseye AS image
 
-ENV VENV=/opt/venv
-RUN python3 -m venv "$VENV"
-ENV PATH="$VENV/bin:$PATH"
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --no-deps --no-cache-dir -r requirements.txt
+# Set UV environment variables
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_PYTHON_DOWNLOADS=never
 
-COPY run.py airr.py pgen.py correct.py logger.py filter.py /usr/local/src/
+# Copy project files and install
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+COPY src/ ./src/
 
-# ENTRYPOINT ["python3", "/usr/local/src/run.py"]
+# Keep build_ref.py at root for reference building
+COPY build_ref.py ./
+
+# Install dependencies and the package itself
+RUN uv pip install --system -e .
+
+FROM image AS tool
+
+ENTRYPOINT ["python3.12", "-m", "cdr3nt_error_corrector.run"]
