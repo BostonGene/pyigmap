@@ -4,6 +4,7 @@
   command: nextflow run main.nf
     --library rnaseq
     --sample_id SRR3743469
+    --paired
     --first_reads 10000
     --outdir ./
   files:
@@ -14,6 +15,7 @@
   command: nextflow run main.nf
     --library amplicon
     --sample_id ERR7425614
+    --paired
     --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG"
     --first_reads 10
     --outdir ./
@@ -26,6 +28,18 @@
     --library amplicon
     --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz
     --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz
+    --paired
+    --first_reads 5000
+    --outdir ./
+  files:
+    - path: "pyigmap.tar.gz"
+- name: test_main_single-end
+  tags:
+    - integration-tests
+  command: nextflow run main.nf
+    --library rnaseq
+    --fq1 tests/fixtures/SRR32033075.fastq.gz
+    --single
     --first_reads 5000
     --outdir ./
   files:

@@ -51,6 +51,7 @@ uv run nextflow main.nf \
     --library <amplicon/rnaseq> \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \
+    --<paired\single>
     --outdir "./results"
 ```
 
@@ -61,12 +62,12 @@ uv run nextflow main.nf \
 ## Pipeline summary
 
 `pyigmap` allows the processing of raw BCR/TCR sequencing data from **bulk** and **targeted** sequencing protocols.
-For more details on the supported protocols, please refer to the [usage](#Usage) documentation.
+For more details on the supported protocols, please refer to the [usage](#usage) documentation.
 
 ### 1. FASTQ pre-processing
 
 * RNASeq-bulk:
-  * Merging overlapping reads, joining non-overlapping reads with a selected insert size, and raw read quality control (`Fastp`).
+  * Merging overlapping reads, joining non-overlapping reads with a selected insert size, and raw read quality control for paired-end data (`Fastp`).
 
 * AIRR-Seq (target):
   * Extracting the UMI from the reads (`PyUMI`).
@@ -96,25 +97,30 @@ For more details on the supported protocols, please refer to the [usage](#Usage)
 
 ## Usage
 
+**RNASeq workflow** supports both single‑end and paired‑end input data. Specify the sequencing mode explicitly using either the `--single` or `--paired` flag when launching the pipeline. **Amplicon workflow** requires paired‑end input and must be executed with the `--paired` flag.
+
 A typical command to run the pipeline from **RNASeq-bulk** sequencing data is:
 
 ```bash
-uv run nextflow -profile <docker/podman> \
+uv run nextflow main.nf \
+    -profile <docker/podman> \
     --library rnaseq \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \
+    --<paired\single>
     --outdir "./results"
 ```
-
 For common **AIRR-Seq targeted** sequencing protocols we provide pre-set parameters, including a parameter for specifying a UMI barcode pattern.  
 
 Here is an example command to process the data from the **AIRR-Seq targeted** protocol, where there is a 19-base pair UMI located between two adapters in the reverse FASTQ file:
 
 ```bash
-uv run nextflow -profile <docker/podman> \
+uv run nextflow main.nf \
+    -profile <docker/podman> \
     --library amplicon \
     --fq1 "R1.fastq.gz" \
     --fq2 "R2.fastq.gz" \
+    --paired \
     --fq2_pattern "^TGGTATCAACGCAGAGTAC(UMI:N{19})TCTTGGGGG" \
     --outdir "./results"
 ```
@@ -122,19 +128,23 @@ uv run nextflow -profile <docker/podman> \
 You can also use public data from these databases by using a sample ID: [GEO](https://www.ncbi.nlm.nih.gov/geo/), [SRA](https://www.ncbi.nlm.nih.gov/sra), [EMBL-EBI](https://www.ebi.ac.uk/), [DDBJ](https://www.ddbj.nig.ac.jp/index-e.html), [NIH Biosample](https://www.ncbi.nlm.nih.gov/biosample) and [ENCODE](https://www.encodeproject.org/):
 
 ```bash
-uv run nextflow -profile <docker/podman> \
+uv run nextflow main.nf \
+    -profile <docker/podman> \
     --library rnaseq \
     --sample_id SRR3743469 \
+    --paired \
     --outdir "./results"
 ```
 
 Alternatively, you can provide an HTTP/HTTPS/FTP link to your FASTQ files.
 
 ```bash
-uv run nextflow -profile <docker/podman> \
+uv run nextflow main.nf \
+    -profile <docker/podman> \
     --library amplicon \
     --fq1 https://zenodo.org/records/11103555/files/fmba_TRAB_R1.fastq.gz \
     --fq2 https://zenodo.org/records/11103555/files/fmba_TRAB_R2.fastq.gz \
+    --paired \
     --outdir "./results"
 ```
 
