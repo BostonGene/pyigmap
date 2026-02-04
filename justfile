@@ -19,12 +19,15 @@ PYTHON_VERSION := env("PYTHON_VERSION", "3.12")
 UV_VERSION := env("UV_VERSION", "latest")
 
 # Container engine: docker or podman
+
 ENGINE := env("ENGINE", "docker")
 
 # Podman-specific flags
+
 PODMAN_PARAM := if ENGINE == "podman" { "--format docker" } else { "" }
 
 # Reference builder stage name
+
 BUILD_REF_STAGE := "build-ref"
 
 # ---- Binaries
@@ -169,25 +172,31 @@ check-types:
     {{ pyrefly }} check bin/igblast/
     {{ pyrefly }} check bin/cdr3nt_error_corrector/
 
-# ---- Run unit tests
+# ---- Run unit tests (Python function-level tests)
 [group('quality')]
 tests-unit:
-    @echo "Running unit tests..."
+    @echo "Running Python unit tests..."
     {{ pytest }} bin/pyumi/unit_tests -vv
-    {{ pytest }} tests -vv --kwdof --tag unit-tests
-    {{ pytest }} bin/cdr3nt_error_corrector/unit_tests -vv
+    {{ pytest }} bin/cdr3nt-error-corrector/unit_tests -vv
 
-# ---- Run integration tests (workflow tests)
+# ---- Run component tests (individual tool/container tests)
+[group('quality')]
+tests-component:
+    @echo "Running component tests..."
+    {{ pytest }} tests -vv --kwdof --tag component-tests
+
+# ---- Run integration tests (full workflow tests)
 [group('quality')]
 tests-integration:
-    @echo "Running workflow tests..."
+    @echo "Running integration tests..."
     {{ pytest }} tests -vv --kwdof --tag integration-tests
 
-# ---- Run all tests (unit + integration)
+# ---- Run all tests (unit + component + integration)
 [group('quality')]
 tests:
     @echo "Running all tests..."
     just tests-unit
+    just tests-component
     just tests-integration
 
 # ---- Run full quality suite: format + lint + type check + tests
@@ -240,6 +249,24 @@ install-java:
 [group('ci-cd')]
 install-gh:
     curl -sS https://webi.sh/gh | sh
+
+# ---- Start Docker
+[group('ci-cd')]
+docker-up:
+    @if command -v brew >/dev/null; then \
+        open -a Docker; \
+    else \
+        sudo systemctl start docker; \
+    fi
+
+# ---- Stop Docker
+[group('ci-cd')]
+docker-down:
+    @if command -v brew >/dev/null; then \
+        osascript -e 'quit app "Docker"'; \
+    else \
+        sudo systemctl stop docker; \
+    fi
 
 # ---- Install git-cliff for changelog generation
 [group('release')]

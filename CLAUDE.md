@@ -34,14 +34,19 @@ just clean
 
 ## Testing Commands
 
+The project has three levels of tests:
+
 ```bash
-# Run all tests
+# Run all tests (unit + component + integration)
 just tests
 
-# Run unit tests only (pytest for step-level code)
+# Run unit tests only (Python function-level tests)
 just tests-unit
 
-# Run integration tests only (workflow-level tests)
+# Run component tests only (individual tool/container tests)
+just tests-component
+
+# Run integration tests only (full pipeline end-to-end tests)
 just tests-integration
 
 # Code quality checks
@@ -50,6 +55,23 @@ just lint        # ruff linter
 just format      # ruff formatter
 just check-types # pyrefly type checking
 ```
+
+### Test Levels Explained
+
+1. **Unit Tests** (`just tests-unit`): Python function/class tests in `bin/*/unit_tests/`
+   - Test individual Python functions in isolation
+   - Fast, no Docker required
+   - Example: `bin/pyumi/unit_tests/test_pattern.py`
+
+2. **Component Tests** (`just tests-component`): Individual tool/container tests in `tests/*/`
+   - Test single Docker containers/tools with real data
+   - Tagged with `component-tests` in pytest-workflow YAML files
+   - Example: `tests/fastp/test_fastp.yml` (runs `docker run fastp-tool`)
+
+3. **Integration Tests** (`just tests-integration`): Full pipeline tests in `tests/test_main.yml`
+   - Test complete Nextflow workflows end-to-end
+   - Tagged with `integration-tests` in pytest-workflow YAML files
+   - Example: `tests/test_main.yml` (runs `nextflow run main.nf`)
 
 ## Running the Pipeline
 
@@ -159,14 +181,17 @@ These are built via `just build-ref` which creates temporary Docker containers t
 ### Running a Single Test
 
 ```bash
-# Single workflow test
+# Single component test (individual tool/container)
 uv run pytest tests/fastp/test_fastp.yml -vv
 
-# Single unit test file
+# Single Python unit test file
 uv run pytest bin/pyumi/unit_tests/test_pattern.py -vv
 
-# Specific test function
+# Specific Python unit test function
 uv run pytest bin/pyumi/unit_tests/test_pattern.py::test_function_name -vv
+
+# Single integration test (full workflow)
+uv run pytest tests/test_main.yml::test_main_rnaseq_sample_id -vv
 ```
 
 ### Modifying Container Images

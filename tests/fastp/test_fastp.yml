@@ -1,6 +1,6 @@
 - name: test_fastp_mock_merge
   tags:
-    - unit-tests
+    - component-tests
   command: docker run --rm
     -v ./:/tmp/
     fastp-tool
@@ -19,7 +19,7 @@
       encoding: UTF-8
 - name: test_fastp_merge
   tags:
-    - unit-tests
+    - component-tests
   command: docker run --rm
     -v ./:/tmp/
     fastp-tool

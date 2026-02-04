@@ -1,6 +1,6 @@
 - name: test_vidjil
   tags:
-    - unit-tests
+    - component-tests
   command: docker run --rm
     -v ./:/tmp/
     vidjil-tool
